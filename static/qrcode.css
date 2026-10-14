@@ -1,0 +1,404 @@
+/* =========================================================
+   QR CODE PAGE
+   ========================================================= */
+
+.qr-page-content {
+    width: 100%;
+    min-height: calc(100vh - 90px);
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+
+    padding: 35px 30px 50px;
+    box-sizing: border-box;
+}
+
+
+/* MAIN QR CARD */
+
+.qr-card {
+    width: 100%;
+    max-width: 520px;
+
+    background: #ffffff;
+    border: 1px solid #e8ece9;
+    border-radius: 22px;
+
+    padding: 36px 38px 32px;
+
+    text-align: center;
+    box-sizing: border-box;
+
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.06),
+        0 2px 8px rgba(0, 0, 0, 0.03);
+
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.qr-card:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 14px 35px rgba(0, 0, 0, 0.08),
+        0 3px 10px rgba(0, 0, 0, 0.04);
+}
+
+
+
+/* TITLE */
+
+.qr-card h2 {
+    margin: 0;
+
+    font-size: 25px;
+    font-weight: 700;
+
+    color: #17221b;
+
+    letter-spacing: -0.3px;
+}
+
+
+/* DESCRIPTION */
+
+.qr-description {
+    max-width: 390px;
+
+    margin: 10px auto 28px;
+
+    color: #737b76;
+
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+
+/* QR IMAGE CONTAINER */
+
+.qr-image-wrapper {
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 22px;
+
+    box-sizing: border-box;
+
+    background: #f8faf8;
+
+    border: 1px solid #e6ebe7;
+    border-radius: 18px;
+}
+
+
+/* QR IMAGE */
+
+.student-qr {
+    width: 270px;
+    height: 270px;
+
+    max-width: 100%;
+    display: block;
+
+    object-fit: contain;
+
+    background: #ffffff;
+
+    padding: 8px;
+    box-sizing: border-box;
+
+    border-radius: 8px;
+}
+
+
+/* STUDENT CODE */
+
+.student-code-section {
+    margin-top: 24px;
+
+
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 6px;
+}
+
+
+.student-code-section span {
+    font-size: 11px;
+    font-weight: 600;
+
+    color: #7b847e;
+
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+}
+
+
+.student-code-section strong {
+    font-size: 21px;
+    font-weight: 700;
+
+    color: #063b1d;
+
+    letter-spacing: 1px;
+}
+
+/* =========================================================
+   SAVE QR BUTTON
+   ========================================================= */
+
+.save-qr-btn {
+    width: 100%;
+    margin-top: 18px;
+
+    min-height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #063b1d;
+    color: #ffffff;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.15s ease,
+        box-shadow 0.2s ease;
+
+    -webkit-tap-highlight-color: transparent;
+}
+
+.save-qr-btn i {
+    font-size: 15px;
+}
+
+.save-qr-btn:hover {
+    background: #19c94a;
+
+    box-shadow: 0 5px 15px rgba(6, 59, 29, 0.18);
+}
+
+.save-qr-btn:active {
+    transform: scale(0.98);
+}
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+    .save-qr-btn {
+        min-height: 50px;
+
+        margin-top: 16px;
+
+        font-size: 14px;
+    }
+
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .qr-page-content {
+        padding: 28px 18px 40px;
+    }
+
+    .qr-card {
+        max-width: 560px;
+        padding: 35px 30px;
+    }
+
+    .student-qr {
+        width: 300px;
+        height: 300px;
+    }
+
+    .qr-image-wrapper {
+        padding: 20px;
+    }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .qr-page-content {
+        min-height: auto;
+
+        width: 100%;
+
+        padding: 18px 8px 35px;
+
+        align-items: flex-start;
+    }
+
+
+    .qr-card {
+        width: 100%;
+        max-width: 100%;
+
+        padding: 28px 12px 25px;
+
+        border-radius: 18px;
+    }
+
+
+    .qr-icon {
+        width: 55px;
+        height: 55px;
+
+        margin-bottom: 13px;
+
+        border-radius: 14px;
+
+        font-size: 23px;
+    }
+
+
+    .qr-card h2 {
+        font-size: 22px;
+    }
+
+
+    .qr-description {
+        margin: 8px auto 22px;
+
+        font-size: 13px;
+        line-height: 1.55;
+
+        max-width: 340px;
+    }
+
+
+    /* QR CONTAINER */
+
+    .qr-image-wrapper {
+        width: 100%;
+
+        padding: 12px;
+
+        border-radius: 15px;
+
+        box-sizing: border-box;
+    }
+
+
+    /* BIGGER QR ON PHONE */
+
+    .student-qr {
+        width: min(82vw, 320px);
+        height: min(82vw, 320px);
+
+        max-width: 100%;
+
+        padding: 5px;
+
+        object-fit: contain;
+    }
+
+
+    .student-code-section {
+        margin-top: 18px;
+
+        padding: 16px;
+
+        border-radius: 12px;
+    }
+
+
+    .student-code-section span {
+        font-size: 10px;
+    }
+
+
+    .student-code-section strong {
+        font-size: 19px;
+    }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 380px) {
+
+    .qr-page-content {
+        padding: 14px 6px 30px;
+    }
+
+
+    .qr-card {
+        padding: 25px 10px 22px;
+    }
+
+
+    .qr-icon {
+        width: 50px;
+        height: 50px;
+
+        font-size: 21px;
+    }
+
+
+    .qr-card h2 {
+        font-size: 20px;
+    }
+
+
+    .qr-description {
+        font-size: 12px;
+
+        margin-bottom: 20px;
+    }
+
+
+    .qr-image-wrapper {
+        padding: 9px;
+    }
+
+
+    /* STILL LARGE ON SMALL PHONES */
+
+    .student-qr {
+        width: min(84vw, 300px);
+        height: min(84vw, 300px);
+
+        padding: 4px;
+    }
+
+
+    .student-code-section {
+        margin-top: 16px;
+        padding: 14px;
+    }
+
+
+    .student-code-section strong {
+        font-size: 18px;
+    }
+}

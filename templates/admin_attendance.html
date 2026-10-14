@@ -1,0 +1,961 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Attendance Analytics - E-JoseLib</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='admin-mobile.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <!-- MOBILE TOPBAR PILL (mobile only) -->
+    <div class="mobile-topbar" id="mobileTopbar">
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <span class="mobile-topbar-title">Attendance Analytics</span>
+    </div>
+
+    <!-- SIDEBAR OVERLAY (mobile only) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="dashboard">
+      <div class="sidebar" id="sidebar">
+        <div class="logo-section">
+          <img
+            src="{{ url_for('static', filename='SJC_LOGO3.png') }}"
+            class="school-logo"
+          />
+        </div>
+
+        <ul>
+          <a href="{{ url_for('admin_dashboard') }}">
+            <li>
+              <i class="fa-solid fa-chart-line"></i>
+              <span>Dashboard</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('admin_books') }}">
+            <li>
+              <i class="fa-solid fa-book"></i>
+              <span>Books</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('admin_borrow_request') }}">
+            <li>
+              <i class="fa-solid fa-clipboard-check"></i>
+              <span>Approval</span>
+            </li>
+          </a>
+          
+          <a href="{{ url_for('admin_attendance') }}">
+            <li class="active">
+              <i class="fa-solid fa-clock"></i>
+              <span>Attendance</span>
+            </li>
+          </a>
+      
+          <a href="{{ url_for('admin_users') }}">
+            <li>
+              <i class="fa-solid fa-users"></i>
+              <span> Users </span>
+            </li>
+          </a>
+        </ul>
+
+        <!-- MOBILE ONLY: Logout -->
+        <div class="sidebar-profile-mobile">
+          <a href="{{ url_for('logout') }}" class="sidebar-logout">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %} {% for category, message in messages %}
+        <div id="toastNotification" class="toast-notification {{ category }}">
+          {% if category == "success" %}
+          <i class="fa-solid fa-circle-check"></i>
+          {% else %}
+          <i class="fa-solid fa-circle-xmark"></i>
+          {% endif %}
+          <span>{{ message }}</span>
+        </div>
+        {% endfor %} {% endif %} {% endwith %}
+
+        <!-- Header -->
+        <div class="dashboard-header">
+          <div>
+            <h1>Attendance Analytics</h1>
+            <p>Monitor user time in and time out records</p>
+          </div>
+
+            <div class="attendance-actions desktop-attendance-actions">
+
+              <a href="{{ url_for('attendance_kiosk') }}"
+                class="add-book-btn">
+                <i class="fa-solid fa-desktop"></i>
+                Open Kiosk
+              </a>
+
+              <a href="#" id="exportExcel" class="excel-btn">
+                  <i class="fa-solid fa-file-excel"></i>
+                  Export Excel
+              </a>
+
+              <a href="#" id="exportPDF"
+                class="export-btn">
+                <i class="fa-solid fa-file-pdf"></i>
+                Export PDF
+              </a>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+
+        <div class="admin-stats-grid">
+
+            <div class="admin-stat-card">
+                <div>
+                    <h4>Today's Visits</h4>
+                    <h2 id="todayVisitsCount">
+                        {{ today_visits }}
+                    </h2>
+                </div>
+
+                <i class="fa-solid fa-door-open"></i>
+            </div>
+
+
+            <div class="admin-stat-card">
+                <div>
+                    <h4>Currently Inside</h4>
+                    <h2 id="currentlyInsideCount">
+                        {{ currently_inside }}
+                    </h2>
+                </div>
+
+                <i class="fa-solid fa-user-check"></i>
+            </div>
+
+
+            <div class="admin-stat-card">
+                <div>
+                    <h4>Completed Logs</h4>
+                    <h2 id="completedLogsCount">
+                        {{ completed_logs }}
+                    </h2>
+                </div>
+
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+
+        </div>
+
+        <!-- Recent Attendance Logs -->
+
+        <div class="admin-table-card attendance-table-card">
+
+            <div class="table-header attendance-header">
+
+                <div>
+
+                    <h2>Recent Attendance Logs</h2>
+
+                    <p>Latest attendance records</p>
+
+                </div>
+
+                <div class="attendance-filter">
+
+                    <input
+                        type="date"
+                        id="attendanceDate"
+                    >
+
+                    <a
+                        href="{{ url_for('admin_attendance') }}"
+                        class="restore-btn"
+                    >
+                        Reset
+                    </a>
+
+                </div>
+
+            </div>
+
+
+    <table class="admin-table attendance-admin-table">
+
+        <thead>
+
+            <tr>
+
+                <th>Name</th>
+
+                <th>User Code</th>
+
+                <th>Classification</th>
+
+                <th>Date</th>
+
+                <th>Time In</th>
+
+                <th>Time Out</th>
+
+                <th>Status</th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody id="attendanceTableBody">
+
+            {% for log in attendance_logs %}
+
+            <tr data-attendance-id="{{ log.id }}">
+
+                <td>
+                    {{ log.name }}
+                </td>
+
+                <td>
+                    {{ log.student_code }}
+                </td>
+
+                <td>
+
+                    {% if log.classification %}
+
+                        {{ log.classification|upper }}
+
+                    {% else %}
+
+                        -
+
+                    {% endif %}
+
+                </td>
+
+                <td>
+                    {{ log.log_date }}
+                </td>
+
+                <td>
+
+                    {% if log.time_in %}
+
+                        {{ log.time_in.strftime('%I:%M %p') }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </td>
+
+                <td>
+
+                    {% if log.time_out %}
+
+                        {{ log.time_out.strftime('%I:%M %p') }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </td>
+
+                <td>
+
+                    {% if log.status == "Inside" %}
+
+                        <span class="admin-status-badge status-available">
+                            Inside
+                        </span>
+
+                    {% else %}
+
+                        <span class="admin-status-badge status-archived">
+                            Completed
+                        </span>
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+            {% else %}
+
+            <tr>
+
+                <td
+                    colspan="7"
+                    style="text-align:center;padding:40px;"
+                >
+                    No attendance records found.
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+          {% if total_pages > 1 %}
+
+          <div class="global-pagination">
+
+              <!-- PREVIOUS -->
+
+              {% if page > 1 %}
+
+              <a
+                  href="{{ url_for('admin_attendance', page=page-1, date=filter_date) }}"
+                  class="pagination-prev"
+              >
+                  <i class="fa-solid fa-chevron-left"></i>
+                  <span>Previous</span>
+              </a>
+
+              {% else %}
+
+              <span class="pagination-prev disabled">
+                  <i class="fa-solid fa-chevron-left"></i>
+                  <span>Previous</span>
+              </span>
+
+              {% endif %}
+
+
+              <!-- DESKTOP NUMBERS -->
+
+              <div class="pagination-numbers">
+
+                  {% if page > 3 %}
+
+                  <a
+                      href="{{ url_for('admin_attendance', page=1, date=filter_date) }}"
+                      class="pagination-number"
+                  >
+                      1
+                  </a>
+
+                  {% if page > 4 %}
+                  <span class="pagination-dots">...</span>
+                  {% endif %}
+
+                  {% endif %}
+
+
+                  {% for p in range(
+                      [1, page-2]|max,
+                      [total_pages, page+2]|min + 1
+                  ) %}
+
+                      {% if p == page %}
+
+                      <span class="pagination-number active">
+                          {{ p }}
+                      </span>
+
+                      {% else %}
+
+                      <a
+                          href="{{ url_for('admin_attendance', page=p, date=filter_date) }}"
+                          class="pagination-number"
+                      >
+                          {{ p }}
+                      </a>
+
+                      {% endif %}
+
+                  {% endfor %}
+
+
+                  {% if page < total_pages - 2 %}
+
+                      {% if page < total_pages - 3 %}
+                      <span class="pagination-dots">...</span>
+                      {% endif %}
+
+                      <a
+                          href="{{ url_for('admin_attendance', page=total_pages, date=filter_date) }}"
+                          class="pagination-number"
+                      >
+                          {{ total_pages }}
+                      </a>
+
+                  {% endif %}
+
+              </div>
+
+              <!-- MOBILE -->
+
+              <span class="pagination-mobile-page">
+                  {{ page }} / {{ total_pages }}
+              </span>
+
+
+              <!-- NEXT -->
+
+              {% if page < total_pages %}
+
+              <a
+                  href="{{ url_for('admin_attendance', page=page+1, date=filter_date) }}"
+                  class="pagination-next"
+              >
+                  <span>Next</span>
+                  <i class="fa-solid fa-chevron-right"></i>
+              </a>
+
+              {% else %}
+
+              <span class="pagination-next disabled">
+                  <span>Next</span>
+                  <i class="fa-solid fa-chevron-right"></i>
+              </span>
+
+              {% endif %}
+
+          </div>
+
+          {% endif %}
+
+        <!-- MOBILE ATTENDANCE -->
+
+        <div class="mobile-attendance-heading">
+          <div>
+            <h2>Recent Attendance Logs</h2>
+
+            <p>Latest attendance records</p>
+          </div>
+        </div>
+
+        <div class="mobile-attendance-list">
+          {% for log in attendance_logs %}
+
+          <div class="mobile-attendance-card">
+            <div class="mobile-attendance-header">
+              <h3>{{ log.name }}</h3>
+
+              {% if log.status=="Inside" %}
+
+              <span class="admin-status-badge status-available"> Inside </span>
+
+              {% else %}
+
+              <span class="admin-status-badge status-archived">
+                Completed
+              </span>
+
+              {% endif %}
+            </div>
+
+            <div class="mobile-attendance-info">
+              <div class="attendance-row">
+                <span>UserCode</span>
+                <strong>{{ log.student_code }}</strong>
+              </div>
+
+              <div class="attendance-row">
+                <span>Classification</span>
+                {{ log.grade_section if log.grade_section else "-" }}
+              </div>
+
+              <div class="attendance-row">
+                <span>Date</span>
+                <strong>{{ log.log_date }}</strong>
+              </div>
+
+              <div class="attendance-row">
+                <span>Time In</span>
+                <strong>{{ log.time_in }}</strong>
+              </div>
+
+              <div class="attendance-row">
+                <span>Time Out</span>
+                <strong>{{ log.time_out if log.time_out else "—" }}</strong>
+              </div>
+            </div>
+          </div>
+
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+
+    const socket = io();
+
+    socket.on("attendance_updated", function(data) {
+
+        console.log(
+            "[ATTENDANCE REALTIME]",
+            data
+        );
+
+
+        /* UPDATE STATISTICS */
+
+        const todayVisits =
+            document.getElementById(
+                "todayVisitsCount"
+            );
+
+        const currentlyInside =
+            document.getElementById(
+                "currentlyInsideCount"
+            );
+
+        const completedLogs =
+            document.getElementById(
+                "completedLogsCount"
+            );
+
+
+        if (todayVisits) {
+
+            todayVisits.textContent =
+                data.today_visits;
+
+        }
+
+
+        if (currentlyInside) {
+
+            currentlyInside.textContent =
+                data.currently_inside;
+
+        }
+
+
+        if (completedLogs) {
+
+            completedLogs.textContent =
+                data.completed_logs;
+
+        }
+
+
+        /* UPDATE ATTENDANCE TABLE */
+
+        const tableBody =
+            document.getElementById(
+                "attendanceTableBody"
+            );
+
+
+        if (!tableBody) {
+            return;
+        }
+
+
+        const selectedDate =
+            document.getElementById(
+                "attendanceDate"
+            )?.value;
+
+        if (
+            selectedDate &&
+            data.log_date !== selectedDate
+        ) {
+
+            return;
+
+        }
+
+
+        let existingRow =
+            tableBody.querySelector(
+                `tr[data-attendance-id="${data.id}"]`
+            );
+
+
+        let statusHTML = "";
+
+
+        if (data.status === "Inside") {
+
+            statusHTML = `
+                <span class="admin-status-badge status-available">
+                    Inside
+                </span>
+            `;
+
+        } else {
+
+            statusHTML = `
+                <span class="admin-status-badge status-archived">
+                    Completed
+                </span>
+            `;
+
+        }
+
+
+        /* UPDATE EXISTING RECORD */
+
+        if (existingRow) {
+
+            existingRow.innerHTML = `
+
+                <td>
+                    ${data.name || "-"}
+                </td>
+
+                <td>
+                    ${data.student_code || "-"}
+                </td>
+
+                <td>
+                    ${(data.classification || "-").toUpperCase()}
+                </td>
+
+                <td>
+                    ${data.log_date || "-"}
+                </td>
+
+                <td>
+                    ${data.time_in || "—"}
+                </td>
+
+                <td>
+                    ${data.time_out || "—"}
+                </td>
+
+                <td>
+                    ${statusHTML}
+                </td>
+
+            `;
+
+            return;
+
+        }
+
+
+        /* ADD NEW TIME-IN RECORD */
+
+        const row =
+            document.createElement("tr");
+
+
+        row.dataset.attendanceId =
+            data.id;
+
+
+        row.innerHTML = `
+
+            <td>
+                ${data.name || "-"}
+            </td>
+
+            <td>
+                ${data.student_code || "-"}
+            </td>
+
+            <td>
+                ${(data.classification || "-").toUpperCase()}
+            </td>
+
+            <td>
+                ${data.log_date || "-"}
+            </td>
+
+            <td>
+                ${data.time_in || "—"}
+            </td>
+
+            <td>
+                ${data.time_out || "—"}
+            </td>
+
+            <td>
+                ${statusHTML}
+            </td>
+
+        `;
+
+
+        tableBody.prepend(row);
+
+
+        /*
+        * Keep maximum 20 records
+        */
+
+        while (
+            tableBody.children.length > 20
+        ) {
+
+            tableBody.removeChild(
+                tableBody.lastElementChild
+            );
+
+        }
+
+    });
+
+      /* ATTENDANCE DATE FILTER */
+
+      const dateFilter =
+          document.getElementById("attendanceDate");
+
+      const mobileDateFilter =
+          document.getElementById("mobileAttendanceDate");
+
+
+      function applyAttendanceFilter(date) {
+
+          let url = new URL(
+              window.location.href
+          );
+
+          url.searchParams.delete("page");
+
+          if (date) {
+
+              url.searchParams.set(
+                  "date",
+                  date
+              );
+
+          } else {
+
+              url.searchParams.delete(
+                  "date"
+              );
+          }
+
+          window.location.href = url.toString();
+      }
+
+
+      /* DESKTOP DATE */
+
+      if (dateFilter) {
+
+          dateFilter.value =
+              "{{ filter_date }}";
+
+          dateFilter.addEventListener(
+              "change",
+              function () {
+
+                  if (mobileDateFilter) {
+
+                      mobileDateFilter.value =
+                          this.value;
+                  }
+
+                  applyAttendanceFilter(
+                      this.value
+                  );
+
+              }
+          );
+      }
+
+
+      /* MOBILE DATE */
+
+      if (mobileDateFilter) {
+
+          mobileDateFilter.value =
+              "{{ filter_date }}";
+
+          mobileDateFilter.addEventListener(
+              "change",
+              function () {
+
+                  if (dateFilter) {
+
+                      dateFilter.value =
+                          this.value;
+                  }
+
+                  applyAttendanceFilter(
+                      this.value
+                  );
+
+              }
+          );
+      }
+
+      /* EXPORT EXCEL */
+
+      function exportAttendance(date) {
+        let url = "/export_attendance";
+
+        if (date) {
+          url += "?date=" + date;
+        }
+
+        window.location.href = url;
+      }
+
+      const exportBtn = document.getElementById("exportExcel");
+
+      if (exportBtn) {
+        exportBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+
+          exportAttendance(dateFilter ? dateFilter.value : "");
+        });
+      }
+
+      const mobileExportBtn = document.getElementById("mobileExportExcel");
+
+      if (mobileExportBtn) {
+        mobileExportBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+
+          exportAttendance(mobileDateFilter ? mobileDateFilter.value : "");
+        });
+      }
+
+      /* EXPORT PDF */
+
+      function exportAttendancePDF(date) {
+
+        let url = "/export_attendance_pdf";
+
+        if (date) {
+          url += "?date=" + encodeURIComponent(date);
+        }
+
+        window.location.href = url;
+      }
+
+
+      /* DESKTOP PDF */
+
+      const exportPDFBtn =
+        document.getElementById("exportPDF");
+
+      if (exportPDFBtn) {
+
+        exportPDFBtn.addEventListener(
+          "click",
+          function (e) {
+
+            e.preventDefault();
+
+            exportAttendancePDF(
+              dateFilter
+                ? dateFilter.value
+                : ""
+            );
+
+          }
+        );
+
+      }
+
+
+      /* MOBILE PDF */
+
+      const mobileExportPDFBtn =
+        document.getElementById("mobileExportPDF");
+
+      if (mobileExportPDFBtn) {
+
+        mobileExportPDFBtn.addEventListener(
+          "click",
+          function (e) {
+
+            e.preventDefault();
+
+            exportAttendancePDF(
+              mobileDateFilter
+                ? mobileDateFilter.value
+                : ""
+            );
+
+          }
+        );
+
+      }
+
+      /*TOAST*/
+
+      const toast = document.getElementById("toastNotification");
+
+      if (toast) {
+        setTimeout(function () {
+          toast.style.transition = "opacity .4s";
+
+          toast.style.opacity = "0";
+
+          setTimeout(function () {
+            toast.remove();
+          }, 400);
+        }, 2500);
+      }
+
+      /* MOBILE SIDEBAR */
+
+      const menuToggle = document.getElementById("menuToggle");
+
+      const sidebar = document.getElementById("sidebar");
+
+      const sidebarOverlay = document.getElementById("sidebarOverlay");
+
+      if (menuToggle) {
+        menuToggle.addEventListener("click", function () {
+          sidebar.classList.toggle("show");
+
+          sidebarOverlay.classList.toggle("show");
+        });
+      }
+
+      if (sidebarOverlay) {
+        sidebarOverlay.addEventListener("click", function () {
+          sidebar.classList.remove("show");
+
+          sidebarOverlay.classList.remove("show");
+        });
+      }
+
+      if (sidebar) {
+        sidebar.querySelectorAll("a").forEach((link) => {
+          link.addEventListener("click", function () {
+            sidebar.classList.remove("show");
+
+            sidebarOverlay.classList.remove("show");
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

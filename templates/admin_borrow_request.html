@@ -1,0 +1,4178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Approval - E-JoseLib</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='dashboard.css') }}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='admin-mobile.css') }}"
+    >
+
+        <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='approval.css') }}"
+    >
+
+    </head>
+
+    <body>
+
+        <!-- MOBILE TOPBAR -->
+
+        <div class="mobile-topbar" id="mobileTopbar">
+
+            <button
+                class="menu-toggle"
+                id="menuToggle"
+            >
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <span class="mobile-topbar-title">
+                Approval
+            </span>
+
+            <!-- MOBILE APPROVAL TAB MENU -->
+
+            <div class="mobile-approval-menu">
+
+                <!-- ACTIVE TAB -->
+
+                <button
+                    type="button"
+                    class="mobile-approval-active"
+                    id="mobileApprovalToggle"
+                    aria-label="Current approval tab"
+                >
+                    <i
+                        id="mobileApprovalActiveIcon"
+                        class="fa-solid fa-inbox"
+                    ></i>
+                </button>
+
+                <!-- OTHER TABS -->
+
+                <div
+                    class="mobile-approval-options"
+                    id="mobileApprovalOptions"
+                >
+
+                <!-- OTHER TABS -->
+
+                <div
+                    class="mobile-approval-options"
+                    id="mobileApprovalOptions"
+                ></div>
+
+                </div>
+
+            </div>
+
+        </div>
+    
+
+    <!-- MOBILE OVERLAY -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="dashboard">
+      <!--SIDEBAR-->
+
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-close" id="sidebarClose">
+          <i class="fa-solid fa-xmark"></i>
+        </div>
+
+        <div class="logo-section">
+          <img
+            src="{{ url_for('static', filename='SJC_LOGO3.png') }}"
+            class="school-logo"
+          />
+        </div>
+
+      <ul>
+
+        <a href="{{ url_for('admin_dashboard') }}">
+          <li>
+            <i class="fa-solid fa-chart-line"></i>
+            <span>Dashboard</span>
+          </li>
+        </a>
+
+        <a href="{{ url_for('admin_books') }}">
+          <li>
+            <i class="fa-solid fa-book"></i>
+            <span>Books</span>
+          </li>
+        </a>
+
+        <a href="{{ url_for('admin_borrow_request') }}">
+          <li class="active">
+            <i class="fa-solid fa-clipboard-check"></i>
+            <span>Approval</span>
+          </li>
+        </a>
+
+        <a href="{{ url_for('admin_attendance') }}">
+          <li>
+            <i class="fa-solid fa-clock"></i>
+            <span>Attendance</span>
+          </li>
+        </a>
+
+        <a href="{{ url_for('admin_users') }}">
+          <li>
+            <i class="fa-solid fa-users"></i>
+            <span>Users</span>
+          </li>
+        </a>
+
+      </ul>
+      
+        <!--  MOBILE ONLY-->
+        <div class="sidebar-profile-mobile">
+            <a href="{{ url_for('logout') }}" class="sidebar-logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+
+        </div>
+
+
+        <!-- MAIN CONTENT -->
+
+        <div class="main-content">
+            <div class="dashboard-header approval-header">
+
+                <div class="approval-title">
+                    <h1 id="approvalPageTitle">
+                        Approval
+                    </h1>
+
+                    <p id="approvalPageDescription">
+                        Review and manage students' book borrowing requests.
+                    </p>
+                </div>
+
+
+                <!-- APPROVAL TABS -->
+
+                <div class="pending-tabs">
+
+                    <button
+                        class="pending-tab"
+                        onclick="showApprovalTab('borrowRequestTab', this)"
+                        id="requestBorrowButton"
+                    >
+                        <i class="fa-solid fa-book-open"></i>
+                        Request Borrow
+                    </button>
+
+                    <button
+                        class="pending-tab"
+                        onclick="showApprovalTab('pendingReturnsTab', this)"
+                    >
+                        <i class="fa-solid fa-arrow-rotate-left"></i>
+                        Pending Returns
+                    </button>
+
+                    <button
+                        class="pending-tab"
+                        onclick="showApprovalTab('borrowBooksTab', this)"
+                    >
+                        <i class="fa-solid fa-book"></i>
+                        Borrowed Books
+                    </button>
+
+                </div>
+            </div>
+
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="approval-toast-container">
+                            {% for category, message in messages %}
+                                <div class="approval-toast {{ category }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+
+                <!-- REAL-TIME SOCKET NOTIFICATION -->
+                <div id="realtimeApprovalToastContainer"
+                    class="approval-toast-container">
+                </div>
+
+
+                <!-- Request Borrow Tab -->
+                <div
+                    id="borrowRequestTab"
+                    class="pending-tab-content"
+                >
+
+                    <div class="admin-table-card">
+
+<!-- Desktop Table -->
+<div class="desktop-table">
+
+    <table class="admin-table">
+
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Student Code</th>
+                <th>Book</th>
+                <th>Requested</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody id="borrowRequestTableBody">
+
+            {% if pending_borrow_requests %}
+
+                {% for row in pending_borrow_requests %}
+
+                    <tr>
+
+                        <td>
+                            {{ row.name }}
+                        </td>
+
+                        <td>
+                            {{ row.student_code }}
+                        </td>
+
+                        <td class="request-book-cell">
+
+                            <div
+                                class="request-book-preview"
+                                data-title="{{ row.title }}"
+                                data-author="{{ row.author or '' }}"
+                            >
+
+                                <strong class="request-book-title">
+                                    {{ row.display_title }}
+                                </strong>
+
+                                {% if row.author %}
+                                    <small class="request-book-author">
+                                        {{ row.display_author }}
+                                    </small>
+                                {% endif %}
+
+                            </div>
+
+                            {% if row.title_truncated or row.author_truncated %}
+                                <button
+                                    type="button"
+                                    class="request-book-toggle"
+                                    onclick="toggleRequestBook(this)"
+                                >
+                                    See more..
+                                </button>
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+                            {{ row.request_date.strftime('%b %d, %Y %I:%M %p') }}
+                        </td>
+
+                        <td>
+                            {% if row.status == 'Pending' %}
+                                <span class="admin-pending-badge">
+                                    Pending
+                                </span>
+
+                            {% elif row.status == 'Approved' %}
+                                <span class="admin-approved-badge">
+                                    Pickup
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+
+                            {% if row.status == 'Pending' %}
+
+                                <div class="admin-actions">
+
+                                    <form
+                                        action="{{ url_for('process_borrow_request') }}"
+                                        method="POST"
+                                        class="borrowRequestForm"
+                                    >
+
+                                        <input
+                                            type="hidden"
+                                            name="request_id"
+                                            value="{{ row.request_id }}"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="action"
+                                            value="approve"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="restore-btn action-trigger"
+                                            data-action="approve-borrow"
+                                        >
+                                            Approve
+                                        </button>
+
+                                    </form>
+
+                                    <form
+                                        action="{{ url_for('process_borrow_request') }}"
+                                        method="POST"
+                                        class="borrowRequestForm"
+                                    >
+
+                                        <input
+                                            type="hidden"
+                                            name="request_id"
+                                            value="{{ row.request_id }}"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="action"
+                                            value="reject"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="delete-btn action-trigger"
+                                            data-action="reject-borrow"
+                                        >
+                                            Reject
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            {% elif row.status == 'Approved' %}
+
+                                <div class="admin-actions">
+
+                                    <form
+                                        action="{{ url_for('process_pickup') }}"
+                                        method="POST"
+                                        class="pickupForm"
+                                    >
+
+                                        <input
+                                            type="hidden"
+                                            name="request_id"
+                                            value="{{ row.request_id }}"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="action"
+                                            value="confirm"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="restore-btn action-trigger"
+                                            data-action="confirm-pickup"
+                                        >
+                                            Confirm Pickup
+                                        </button>
+
+                                    </form>
+
+                                    <form
+                                        action="{{ url_for('process_pickup') }}"
+                                        method="POST"
+                                        class="pickupForm"
+                                    >
+
+                                        <input
+                                            type="hidden"
+                                            name="request_id"
+                                            value="{{ row.request_id }}"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="action"
+                                            value="cancel"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="delete-btn action-trigger"
+                                            data-action="cancel-approval"
+                                        >
+                                            Cancel Approval
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+            {% else %}
+
+                <tr id="noBorrowRequestsRow">
+                    <td colspan="7" class="empty-table">
+                        <i class="fa-solid fa-inbox"></i>
+                        <strong>No borrow requests.</strong>
+                    </td>
+                </tr>
+
+            {% endif %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<!-- Mobile Cards -->
+<div class="mobile-request-card" id="borrowRequestMobileContainer">
+
+    {% set ns = namespace(has_mobile_requests=false) %}
+
+    {% for row in pending_borrow_requests %}
+        {% if row.status in ['Pending', 'Approved'] %}
+            {% set ns.has_mobile_requests = true %}
+
+            <div class="mobile-request-item"
+                 data-request-id="{{ row.request_id }}">
+
+                <!-- Student Name -->
+                <div class="mobile-card-title">
+                    {{ row.title }}
+                </div>
+
+                <!-- Student Code -->
+                <div class="mobile-card-row">
+                    <span>{{ row.student_code }}</span>
+                </div>
+
+                <!-- Book Title -->
+                <div class="mobile-card-row">
+                    <span>{{ row.name }}</span>
+                </div>
+
+                <!-- Requested Date -->
+                <div class="mobile-card-row">
+                    <span>{{ row.request_date.strftime("%b %d, %Y %I:%M %p") }}</span>
+                </div>
+
+                <!-- Status -->
+                <div class="mobile-card-row">
+                    <span>
+                        {% if row.status == 'Approved' %}
+                            <span class="admin-approved-badge">Pickup</span>
+                        {% else %}
+                            <span class="admin-pending-badge">Pending</span>
+                        {% endif %}
+                    </span>
+                </div>
+
+                <!-- Keep all existing actions -->
+                <div class="mobile-card-actions">
+
+                    {% if row.status == 'Pending' %}
+
+                        <form
+                            action="{{ url_for('process_borrow_request') }}"
+                            method="POST"
+                            class="borrowRequestForm">
+
+                            <input type="hidden" name="request_id"
+                                   value="{{ row.request_id }}">
+                            <input type="hidden" name="action" value="approve">
+
+                            <button type="submit"
+                                    class="restore-btn action-trigger"
+                                    data-action="approve-borrow">
+                                <i class="fa-solid fa-check"></i>
+                                Approve
+                            </button>
+                        </form>
+
+                        <form
+                            action="{{ url_for('process_borrow_request') }}"
+                            method="POST"
+                            class="borrowRequestForm">
+
+                            <input type="hidden" name="request_id"
+                                   value="{{ row.request_id }}">
+                            <input type="hidden" name="action" value="reject">
+
+                            <button type="submit"
+                                    class="delete-btn action-trigger"
+                                    data-action="reject-borrow">
+                                <i class="fa-solid fa-xmark"></i>
+                                Reject
+                            </button>
+                        </form>
+
+                    {% elif row.status == 'Approved' %}
+
+                        <form
+                            action="{{ url_for('process_pickup') }}"
+                            method="POST"
+                            class="pickupForm">
+
+                            <input type="hidden" name="request_id"
+                                   value="{{ row.request_id }}">
+                            <input type="hidden" name="action" value="confirm">
+
+                            <button type="submit"
+                                    class="restore-btn action-trigger"
+                                    data-action="confirm-pickup">
+                                <i class="fa-solid fa-hand-holding"></i>
+                                Confirm Pickup
+                            </button>
+                        </form>
+
+                        <form
+                            action="{{ url_for('process_pickup') }}"
+                            method="POST"
+                            class="pickupForm">
+
+                            <input type="hidden" name="request_id"
+                                   value="{{ row.request_id }}">
+                            <input type="hidden" name="action" value="cancel">
+
+                            <button type="submit"
+                                    class="delete-btn action-trigger"
+                                    data-action="cancel-approval">
+                                <i class="fa-solid fa-xmark"></i>
+                                Cancel Approval
+                            </button>
+                        </form>
+
+                    {% endif %}
+
+                </div>
+            </div>
+
+        {% endif %}
+    {% endfor %}
+
+    {% if not ns.has_mobile_requests %}
+        <div class="empty-table" id="noBorrowRequestsMobile">
+            <i class="fa-solid fa-inbox"></i>
+            No borrow requests.
+        </div>
+    {% endif %}
+
+</div>
+
+            </div>
+        </div>
+
+
+        <!-- Pending Returns Tab -->
+        <div id="pendingReturnsTab" class="pending-tab-content">
+
+            <div class="admin-table-card">
+        <div class="desktop-table"id="pendingReturnsDesktop">
+
+            <table class="admin-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Student</th>
+                        <th>Student Code</th>
+                        <th>Book</th>
+                        <th>Requested</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% if pending_returns %}
+
+                    {% for row in pending_returns %}
+
+                    <tr>
+
+                        <td>
+                            {{ row.name }}
+                        </td>
+
+                        <td>
+                            {{ row.student_code }}
+                        </td>
+
+                        <td>
+                            <div
+                                class="request-book-preview"
+                                data-title="{{ row.title }}"
+                                data-author="{{ row.author or '' }}"
+                            >
+                                <strong class="request-book-title">
+                                    {{ row.display_title }}
+                                </strong>
+
+                                {% if row.author %}
+                                    <small class="request-book-author">
+                                        {{ row.display_author }}
+                                    </small>
+                                {% endif %}
+                            </div>
+
+                            {% if row.title_truncated or row.author_truncated %}
+                                <button
+                                    type="button"
+                                    class="request-book-toggle"
+                                    onclick="toggleRequestBook(this)"
+                                >
+                                    See more..
+                                </button>
+                            {% endif %}
+                        </td>
+
+                        <td>
+
+                            {% if row.borrow_date %}
+
+                                {{ row.borrow_date.strftime("%b %d, %Y") }}
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if row.return_status == "Reported" %}
+
+                                <span class="admin-pending-badge">
+                                    Damage Reported
+                                </span>
+
+                            {% else %}
+
+                                <span class="admin-pending-badge">
+                                    Pending
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            <div class="admin-actions">
+
+                                <!-- Approve Return -->
+
+                                <form
+                                    action="{{ url_for('approve_return') }}"
+                                    method="POST"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="transaction_id"
+                                        value="{{ row.transaction_id }}"
+                                    >
+
+                                    <input
+                                        type="hidden"
+                                        name="book_id"
+                                        value="{{ row.book_id }}"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="restore-btn action-trigger"
+                                        data-action="approve-return"
+                                    >
+                                        Approve
+
+                                    </button>
+
+                                </form>
+
+
+                                <!-- Damage -->
+
+                                {% if row.return_status == "Reported" %}
+
+                                    <button
+                                        type="button"
+                                        class="view-btn viewDamageBtn"
+                                        data-damage-id="{{ row.damage_id }}"
+                                        data-student="{{ row.name }}"
+                                        data-book="{{ row.title }}"
+                                        data-damage-type="{{ row.damage_type }}"
+                                        data-description="{{ row.damage_description }}"
+                                        data-penalty="{{ row.penalty_amount }}"
+                                        data-replacement="{{ row.replacement_required }}"
+                                    >
+                                        View
+
+                                    </button>
+
+                                {% else %}
+
+                                    <button
+                                        type="button"
+                                        class="view-btn reportDamageBtn"
+                                        data-transaction="{{ row.transaction_id }}"
+                                        data-user="{{ row.user_id }}"
+                                        data-book="{{ row.book_id }}"
+                                        data-student="{{ row.name }}"
+                                        data-title="{{ row.title }}"
+                                    >
+                                        Report
+
+                                    </button>
+
+                                {% endif %}
+
+
+                                <!-- Reject Return -->
+
+                                <form
+                                    action="{{ url_for('reject_return') }}"
+                                    method="POST"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="transaction_id"
+                                        value="{{ row.transaction_id }}"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="delete-btn action-trigger"
+                                        data-action="reject-return"
+                                    >
+                                        Reject
+
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
+            {% else %}
+
+                <tr>
+
+                    <td
+                        colspan="6"
+                        class="empty-table"
+                    >
+
+                        <i class="fa-solid fa-circle-check"></i>
+                        No pending returns.
+                    </td>
+                </tr>
+                 {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+
+        <!-- Mobile Cards -->
+        <div class="mobile-return-card" id="pendingReturnsMobile">
+
+            {% if pending_returns %}
+
+                {% for row in pending_returns %}
+
+                    <div class="mobile-return-item">
+                        <div class="mobile-card-title">
+                            {{ row.title }}
+                        </div>
+
+                        <div class="mobile-card-row">
+
+                            <span>
+                                Student
+                            </span>
+
+                            <span>
+                                {{ row.name }}
+                            </span>
+
+                        </div>
+
+                        <div class="mobile-card-row">
+
+                            <span>
+                                Student Code
+                            </span>
+
+                            <span>
+                                {{ row.student_code }}
+                            </span>
+
+                        </div>
+
+                        <div class="mobile-card-row">
+
+                            <span>
+                                Requested
+                            </span>
+
+                            <span>
+
+                                {% if row.borrow_date %}
+
+                                    {{ row.borrow_date.strftime("%b %d, %Y") }}
+
+                                {% endif %}
+
+                            </span>
+                        </div>
+
+                        <div class="mobile-card-row">
+
+                            <span>
+                                Status
+                            </span>
+
+                            <span>
+
+                                {% if row.return_status == "Reported" %}
+
+                                    <span class="admin-pending-badge">
+                                        Damage Reported
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="admin-pending-badge">
+                                        Pending
+                                    </span>
+
+                                {% endif %}
+
+                            </span>
+                        </div>
+
+                        <div class="mobile-card-actions">
+
+                            <!-- Approve -->
+                            <form
+                                action="{{ url_for('approve_return') }}"
+                                method="POST"
+                            >
+
+                                <input
+                                    type="hidden"
+                                    name="transaction_id"
+                                    value="{{ row.transaction_id }}"
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="book_id"
+                                    value="{{ row.book_id }}"
+                                >
+
+                                <button
+                                    type="submit"
+                                    class="restore-btn action-trigger"
+                                    data-action="approve-return"
+                                >
+                                    <i class="fa-solid fa-check"></i>
+                                    Approve
+                                </button>
+                            </form>
+
+
+                            <!-- Damage -->
+                            {% if row.return_status == "Reported" %}
+
+                                <button
+                                    type="button"
+                                    class="view-btn viewDamageBtn"
+                                    data-damage-id="{{ row.damage_id }}"
+                                    data-student="{{ row.name }}"
+                                    data-book="{{ row.title }}"
+                                    data-damage-type="{{ row.damage_type }}"
+                                    data-description="{{ row.damage_description }}"
+                                    data-penalty="{{ row.penalty_amount }}"
+                                    data-replacement="{{ row.replacement_required }}"
+                                >
+
+                                    <i class="fa-solid fa-eye"></i>
+                                    View
+
+                                </button>
+
+                            {% else %}
+
+                                <button
+                                    type="button"
+                                    class="view-btn reportDamageBtn"
+                                    data-transaction="{{ row.transaction_id }}"
+                                    data-user="{{ row.user_id }}"
+                                    data-book="{{ row.book_id }}"
+                                    data-student="{{ row.name }}"
+                                    data-title="{{ row.title }}"
+                                >
+
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                    Damage
+
+                                </button>
+
+                            {% endif %}
+
+
+                            <!-- Reject -->
+                            <form
+                                action="{{ url_for('reject_return') }}"
+                                method="POST"
+                            >
+
+                                <input
+                                    type="hidden"
+                                    name="transaction_id"
+                                    value="{{ row.transaction_id }}"
+                                >
+
+                                <button
+                                    type="submit"
+                                    class="delete-btn action-trigger"
+                                    data-action="reject-return"
+                                >
+                                    <i class="fa-solid fa-xmark"></i>
+                                    Reject
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="empty-table">
+
+                    <i class="fa-solid fa-circle-check"></i>
+
+                    No pending returns.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+
+
+
+<!-- Borrowed Books Tab -->
+<div id="borrowBooksTab" class="pending-tab-content">
+
+    <div class="admin-table-card">
+
+        <!-- DESKTOP TABLE -->
+        <div class="desktop-table">
+
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Book</th>
+                        <th>Borrow Date</th>
+                        <th>Due Date</th>
+                        <th>Returned Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% if recent_borrows %}
+
+                        {% for row in recent_borrows %}
+
+                        <tr>
+
+                            <!-- STUDENT -->
+                            <td>
+                                <strong>
+                                    {{ row.name }}
+                                </strong>
+
+                                {% if row.student_code %}
+                                    <br>
+                                    <small style="color:#64748b;">
+                                        {{ row.student_code }}
+                                    </small>
+                                {% endif %}
+                            </td>
+
+                            <!-- BOOK -->
+                            <td class="request-book-cell">
+
+                                <div
+                                    class="request-book-preview"
+                                    data-title="{{ row.title }}"
+                                    data-author="{{ row.author or '' }}"
+                                >
+
+                                    <strong class="request-book-title">
+                                        {{ row.display_title }}
+                                    </strong>
+
+                                    {% if row.author %}
+                                        <small class="request-book-author">
+                                            {{ row.display_author }}
+                                        </small>
+                                    {% endif %}
+
+                                </div>
+
+                                {% if row.title_truncated or row.author_truncated %}
+                                    <button
+                                        type="button"
+                                        class="request-book-toggle"
+                                        onclick="toggleRequestBook(this)"
+                                    >
+                                        See more..
+                                    </button>
+                                {% endif %}
+
+                            </td>
+
+                            <!-- BORROW DATE -->
+                            <td>
+                                {% if row.borrow_date %}
+                                    {{ row.borrow_date.strftime("%b %d, %Y") }}
+                                {% else %}
+                                    — —
+                                {% endif %}
+                            </td>
+
+                            <!-- DUE DATE -->
+                            <td>
+                                {% if row.due_date %}
+                                    {{ row.due_date.strftime("%b %d, %Y") }}
+                                {% else %}
+                                    — —
+                                {% endif %}
+                            </td>
+
+                            <!-- RETURNED DATE -->
+                            <td>
+                                {% if row.return_date %}
+                                    {{ row.return_date.strftime("%b %d, %Y") }}
+                                {% else %}
+                                    — —
+                                {% endif %}
+                            </td>
+
+                            <!-- STATUS -->
+                            <td>
+                                {% if row.status in ['Returned', 'Completed'] %}
+
+                                    <span class="admin-completed-badge">
+                                        Completed
+                                    </span>
+
+                                {% elif row.due_date and row.due_date < current_date %}
+
+                                    <span class="admin-overdue-badge">
+                                        Overdue
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="admin-borrowed-badge">
+                                        Borrowed
+                                    </span>
+
+                                {% endif %}
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <tr>
+                            <td colspan="6" class="empty-table">
+                                <i class="fa-solid fa-book-open"></i>
+                                No borrowed books.
+                            </td>
+                        </tr>
+
+                    {% endif %}
+
+                </tbody>
+            </table>
+
+        </div>
+
+
+<!-- MOBILE CARDS -->
+<div class="mobile-borrow-card">
+
+    {% if recent_borrows %}
+
+        {% for row in recent_borrows %}
+
+            <div class="mobile-borrow-item">
+
+                <!-- BOOK TITLE -->
+                <div class="mobile-card-title">
+                    {{ row.title }}
+                </div>
+
+                <!-- STUDENT -->
+                <div class="mobile-card-row">
+                    <span>Student</span>
+                    <span>{{ row.name }}</span>
+                </div>
+
+                <!-- STUDENT CODE -->
+                <div class="mobile-card-row">
+                    <span>Student Code</span>
+                    <span>{{ row.student_code or "—" }}</span>
+                </div>
+
+                <!-- BORROW DATE -->
+                <div class="mobile-card-row">
+                    <span>Borrow Date</span>
+                    <span>
+                        {% if row.borrow_date %}
+                            {{ row.borrow_date.strftime("%b %d, %Y") }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </span>
+                </div>
+
+                <!-- DUE DATE - RIGHT SIDE -->
+                <div class="mobile-card-row mobile-due-date">
+                    <span>Due Date</span>
+                    <span>
+                        {% if row.due_date %}
+                            {{ row.due_date.strftime("%b %d, %Y") }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </span>
+                </div>
+
+                <!-- RETURNED DATE - BELOW DUE DATE -->
+                <div class="mobile-card-row mobile-returned-date">
+                    <span>Returned Date</span>
+                    <span>
+                        {% if row.return_date %}
+                            {{ row.return_date.strftime("%b %d, %Y") }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </span>
+                </div>
+
+                <!-- STATUS - LEFT SIDE -->
+                <div class="mobile-card-row mobile-status-row">
+                    <span>Status</span>
+                    <span>
+                        {% if row.status in ['Returned', 'Completed'] %}
+
+                            <span class="admin-completed-badge">
+                                Completed
+                            </span>
+
+                        {% elif row.due_date and row.due_date < current_date %}
+
+                            <span class="admin-overdue-badge">
+                                Overdue
+                            </span>
+
+                        {% else %}
+
+                            <span class="admin-approved-badge">
+                                Borrowed
+                            </span>
+
+                        {% endif %}
+                    </span>
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <!-- EMPTY STATE -->
+        <div class="empty-table">
+            <i class="fa-solid fa-book-open"></i>
+            <span>No borrowed books.</span>
+        </div>
+
+    {% endif %}
+
+</div>
+
+    </div>
+
+        <!-- BORROWED BOOKS SERVER-SIDE PAGINATION -->
+        <div class="borrowed-pagination">
+
+            <div class="pagination-info">
+                Showing
+                <span>{{ start_record }}</span>–
+                <span>{{ end_record }}</span>
+                of
+                <span>{{ total_borrowed }}</span>
+                borrowed books
+            </div>
+
+            <div class="pagination-controls">
+
+                <!-- PREVIOUS PAGE -->
+                {% if page > 1 %}
+                    <a
+                        href="{{ url_for('admin_borrow_books', page=page-1) }}"
+                        class="pagination-btn"
+                    >
+                        <i class="fa-solid fa-chevron-left"></i>
+                        Previous
+                    </a>
+                {% else %}
+                    <button
+                        type="button"
+                        class="pagination-btn"
+                        disabled
+                    >
+                        <i class="fa-solid fa-chevron-left"></i>
+                        Previous
+                    </button>
+                {% endif %}
+
+                <!-- CURRENT PAGE -->
+                <span class="pagination-page-info">
+                    Page {{ page }} of {{ total_pages if total_pages > 0 else 1 }}
+                </span>
+
+                <!-- NEXT PAGE -->
+                {% if page < total_pages %}
+                    <a
+                        href="{{ url_for('admin_borrow_books', page=page+1) }}"
+                        class="pagination-btn"
+                    >
+                        Next
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                {% else %}
+                    <button
+                        type="button"
+                        class="pagination-btn"
+                        disabled
+                    >
+                        Next
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+    <!-- Damage Details Modal -->
+
+    <div id="damageDetailsModal" class="damage-modal">
+        <div class="damage-modal-box">
+
+            <div class="damage-modal-header">
+                <div class="damage-modal-header-left">
+
+                    <div class="damage-modal-icon">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <h3>
+                        Damage Report
+                    </h3>
+                </div>
+
+                <button
+                    type="button"
+                    class="damage-modal-close"
+                    onclick="closeDamageModal()"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+            </div>
+
+
+        <!-- Body -->
+
+        <div class="damage-modal-body">
+            <div class="damage-info-message">
+                <i class="fa-solid fa-circle-info"></i>
+
+                <div>
+                    <strong>Reported Book Damage</strong>
+                    <p>
+                        Review the damage information and image proof
+                        before processing the return.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Book Title -->
+
+            <div class="damage-book-title">
+                <span id="damageBook" class="damage-book-name">
+                    —
+                </span>
+            </div>
+
+
+            <!-- Damage Details -->
+
+            <div class="damage-details-grid">
+
+                <!-- LEFT COLUMN -->
+
+                <div class="damage-details-left">
+
+                    <div class="damage-detail">
+
+                        <span class="damage-detail-label">
+                            Student
+                        </span>
+
+                        <span
+                            id="damageStudent"
+                            class="damage-detail-value"
+                        >
+                            —
+                        </span>
+
+                    </div>
+
+
+                    <div class="damage-detail">
+
+                        <span class="damage-detail-label">
+                            Penalty
+                        </span>
+
+                        <span
+                            id="damagePenalty"
+                            class="damage-detail-value damage-penalty"
+                        >
+                            ₱0.00
+                        </span>
+                    </div>
+                </div>
+
+
+                <!-- RIGHT COLUMN -->
+
+                <div class="damage-details-right">
+                    <div class="damage-detail">
+
+                        <span class="damage-detail-label">
+                            Damage Type
+                        </span>
+
+                        <span
+                            id="damageType"
+                            class="damage-detail-value"
+                        >
+                            —
+                        </span>
+                    </div>
+
+
+                    <div class="damage-detail">
+
+                        <span class="damage-detail-label">
+                            Replacement
+                        </span>
+                        <span
+                            id="damageReplacement"
+                            class="damage-detail-value"
+                        >
+                            —
+                        </span>
+                    </div>
+                </div>
+
+
+                <!-- DESCRIPTION -->
+
+                <div class="damage-detail damage-description">
+                    <span
+                        id="damageDescription"
+                        class="damage-detail-value damage-description"
+                    >
+                        —
+                    </span>
+                </div>
+            </div>
+
+            <!-- Image Proof -->
+
+            <div class="damage-proof-section">
+                <span class="damage-detail-label">
+                    Image Proof
+                </span>
+
+                <div class="damage-proof-container">
+
+                    <img
+                        id="damageProofImage"
+                        class="damage-proof-image"
+                        src=""
+                        alt="Damage proof"
+                        style="display: none;"
+                    >
+
+                    <span
+                        id="damageNoProof"
+                        class="damage-no-proof"
+                    >
+                        No image proof available.
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+
+            <div class="damage-modal-footer">
+
+                <button
+                    type="button"
+                    class="damage-close-btn"
+                    onclick="closeDamageModal()"
+                >
+                    Close
+                </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action confirmation modal -->
+
+    <div id="approvalActionModal" class="approval-modal">
+        <div class="approval-modal-box">
+
+            <div id="approvalModalIcon" class="approval-modal-icon approve">
+                <i class="fa-solid fa-circle-question"></i>
+            </div>
+
+            <h3 id="approvalModalTitle">
+                Confirm Action
+            </h3>
+
+            <p id="approvalModalMessage">
+                Are you sure you want to continue?
+            </p>
+
+            <div class="approval-modal-actions">
+
+                <button
+                    type="button"
+                    class="modal-cancel-btn"
+                    id="approvalModalCancel"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    class="modal-confirm-btn"
+                    id="approvalModalConfirm"
+                >
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    <script>
+
+    /* SOCKET.IO */
+
+    const socket = io();
+
+    const processBorrowRequestUrl =
+        "{{ url_for('process_borrow_request') }}";
+
+    const pendingReturnsDataUrl =
+        "{{ url_for('pending_returns_data') }}";
+
+    socket.on("connect", function () {
+
+        console.log(
+            "ADMIN SOCKET CONNECTED:",
+            socket.id
+        );
+
+    });
+
+
+    socket.on("disconnect", function () {
+
+        console.log(
+            "ADMIN SOCKET DISCONNECTED"
+        );
+
+    });
+
+
+    socket.on("pending_return_updated", function (data) {
+
+        console.log(
+            "PENDING RETURN UPDATED:",
+            data
+        );
+
+        loadPendingReturns();
+
+    });
+
+
+    socket.on("damage_report_updated", function (data) {
+
+        console.log(
+            "DAMAGE REPORT UPDATED:",
+            data
+        );
+
+        loadPendingReturns();
+
+    });
+
+    /* ESCAPE HTML */
+
+    function escapeHtml(value) {
+
+        if (
+            value === null ||
+            value === undefined
+        ) {
+
+            return "";
+        }
+
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    /* Pending returns realtime */
+    async function loadPendingReturns() {
+
+        console.log(
+            "LOADING PENDING RETURNS..."
+        );
+
+        try {
+
+            const response = await fetch(
+                pendingReturnsDataUrl,
+                {
+                    method: "GET",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                }
+            );
+
+            console.log(
+                "PENDING RETURNS RESPONSE:",
+                response.status
+            );
+
+            const data = await response.json();
+
+            console.log(
+                "PENDING RETURNS DATA:",
+                data
+            );
+
+            if (!data.success) {
+
+                console.error(
+                    "PENDING RETURNS FAILED:",
+                    data.message
+                );
+
+                return;
+            }
+
+            renderPendingReturns(
+                data.pending_returns
+            );
+
+            console.log(
+                "PENDING RETURNS RENDERED"
+            );
+
+        } catch (error) {
+
+            console.error(
+                "PENDING RETURNS AJAX ERROR:",
+                error
+            );
+
+        }
+
+    }
+
+
+function renderPendingReturns(rows) {
+
+    const desktopContainer =
+        document.getElementById(
+            "pendingReturnsDesktop"
+        );
+
+    const mobileContainer =
+        document.getElementById(
+            "pendingReturnsMobile"
+        );
+
+    if (
+        !desktopContainer ||
+        !mobileContainer
+    ) {
+
+        console.error(
+            "Pending returns containers not found."
+        );
+
+        return;
+    }
+
+    /* EMPTY STATE */
+
+    if (
+        !rows ||
+        rows.length === 0
+    ) {
+
+        desktopContainer.innerHTML = `
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Student Code</th>
+                        <th>Book</th>
+                        <th>Requested</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td
+                            colspan="6"
+                            class="empty-table"
+                        >
+                            <i class="fa-solid fa-circle-check"></i>
+                            No pending returns.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+
+        mobileContainer.innerHTML = `
+            <div class="empty-table">
+                <i class="fa-solid fa-circle-check"></i>
+                No pending returns.
+            </div>
+        `;
+
+        return;
+    }
+
+    let desktopRows = "";
+    let mobileCards = "";
+
+    rows.forEach(function (row) {
+
+        const studentName =
+            escapeHtml(row.name);
+
+        const studentCode =
+            escapeHtml(row.student_code);
+
+        const title =
+            escapeHtml(row.title);
+
+        const author =
+            escapeHtml(row.author);
+
+        const transactionId =
+            escapeHtml(row.transaction_id);
+
+        const userId =
+            escapeHtml(row.user_id);
+
+        const bookId =
+            escapeHtml(row.book_id);
+
+        const damageId =
+            escapeHtml(row.damage_id);
+
+        const damageType =
+            escapeHtml(row.damage_type);
+
+        const description =
+            escapeHtml(row.damage_description);
+
+        const penalty =
+            escapeHtml(row.penalty_amount);
+
+        const replacement =
+            escapeHtml(row.replacement_required);
+
+        const damageStatus =
+            escapeHtml(
+                row.damage_status || "Reported"
+            );
+
+        const damageProofUrl =
+            escapeHtml(
+                row.damage_proof_url || ""
+            );
+
+        /* REQUESTED DATE */
+
+        let requestedDate = "";
+
+        if (row.borrow_date) {
+
+            const date =
+                new Date(row.borrow_date);
+
+            if (!isNaN(date.getTime())) {
+
+                requestedDate =
+                    date.toLocaleDateString(
+                        "en-US",
+                        {
+                            month: "short",
+                            day: "2-digit",
+                            year: "numeric"
+                        }
+                    );
+
+            } else {
+
+                requestedDate =
+                    escapeHtml(
+                        row.borrow_date
+                    );
+            }
+        }
+
+        /* DUE DATE */
+
+        let dueDate = "";
+
+        if (row.due_date) {
+
+            const due =
+                new Date(row.due_date);
+
+            if (!isNaN(due.getTime())) {
+
+                dueDate =
+                    due.toLocaleDateString(
+                        "en-US",
+                        {
+                            month: "short",
+                            day: "2-digit",
+                            year: "numeric"
+                        }
+                    );
+
+            } else {
+
+                dueDate =
+                    escapeHtml(
+                        row.due_date
+                    );
+            }
+        }
+
+        /* STATUS */
+
+        let statusHtml = "";
+
+        if (
+            row.return_status === "Reported"
+        ) {
+
+            statusHtml = `
+                <span class="admin-pending-badge">
+                    Damage Reported
+                </span>
+            `;
+
+        } else {
+
+            statusHtml = `
+                <span class="admin-pending-badge">
+                    Pending
+                </span>
+            `;
+        }
+
+        /* DAMAGE BUTTON */
+
+        let damageButton = "";
+
+        if (
+            row.return_status === "Reported"
+        ) {
+
+            damageButton = `
+                <button
+                    type="button"
+                    class="view-btn viewDamageBtn"
+                    data-damage-id="${damageId}"
+                    data-student="${studentName}"
+                    data-book="${title}"
+                    data-damage-type="${damageType}"
+                    data-description="${description}"
+                    data-penalty="${penalty}"
+                    data-replacement="${replacement}"
+                >
+                    View Damage
+                </button>
+            `;
+
+        } else {
+
+            damageButton = `
+                <button
+                    type="button"
+                    class="view-btn reportDamageBtn"
+                    data-transaction="${transactionId}"
+                    data-user="${userId}"
+                    data-book="${bookId}"
+                    data-student="${studentName}"
+                    data-title="${title}"
+                >
+                    Report
+                </button>
+            `;
+        }
+
+        /* DESKTOP ROW */
+
+        desktopRows += `
+            <tr>
+
+                <td>
+                    ${studentName}
+                </td>
+
+                <td>
+                    ${studentCode}
+                </td>
+
+                <td class="request-book-cell">
+
+                    <div
+                        class="request-book-preview"
+                        data-title="${title}"
+                        data-author="${author || ""}"
+                    >
+
+                        <strong class="request-book-title">
+                            ${escapeHtml(
+                                truncateText(
+                                    row.title || "",
+                                    30
+                                )
+                            )}
+                        </strong>
+
+                        ${
+                            row.author
+                                ? `
+                                    <small class="request-book-author">
+                                        ${escapeHtml(
+                                            truncateText(
+                                                row.author,
+                                                22
+                                            )
+                                        )}
+                                    </small>
+                                `
+                                : ""
+                        }
+
+                    </div>
+
+                    ${
+                        (row.title || "").length > 30 ||
+                        (row.author || "").length > 22
+                            ? `
+                                <button
+                                    type="button"
+                                    class="request-book-toggle"
+                                    onclick="toggleRequestBook(this)"
+                                >
+                                    See more..
+                                </button>
+                            `
+                            : ""
+                    }
+
+                </td>
+
+                <td>
+                    ${requestedDate}
+                </td>
+
+                <td>
+                    ${statusHtml}
+                </td>
+
+                <td>
+
+                    <div class="admin-actions">
+
+                        <!-- APPROVE RETURN -->
+
+                        <form
+                            action="{{ url_for('approve_return') }}"
+                            method="POST"
+                        >
+
+                            <input
+                                type="hidden"
+                                name="transaction_id"
+                                value="${transactionId}"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="book_id"
+                                value="${bookId}"
+                            >
+
+                            <button
+                                type="submit"
+                                class="restore-btn action-trigger"
+                                data-action="approve-return"
+                            >
+                                Approve
+                            </button>
+
+                        </form>
+
+                        ${damageButton}
+
+                        <!-- REJECT RETURN -->
+
+                        <form
+                            action="{{ url_for('reject_return') }}"
+                            method="POST"
+                        >
+
+                            <input
+                                type="hidden"
+                                name="transaction_id"
+                                value="${transactionId}"
+                            >
+
+                            <button
+                                type="submit"
+                                class="delete-btn action-trigger"
+                                data-action="reject-return"
+                            >
+                                Reject
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </td>
+
+            </tr>
+        `;
+
+        /* MOBILE CARD */
+
+        mobileCards += `
+            <div class="mobile-return-item">
+
+                <div class="mobile-card-title">
+                    ${title}
+                </div>
+
+                <div class="mobile-card-row">
+
+                    <span>
+                        Student
+                    </span>
+
+                    <span>
+                        ${studentName}
+                    </span>
+
+                </div>
+
+                <div class="mobile-card-row">
+
+                    <span>
+                        Student Code
+                    </span>
+
+                    <span>
+                        ${studentCode}
+                    </span>
+
+                </div>
+
+                <div class="mobile-card-row">
+
+                    <span>
+                        Requested
+                    </span>
+
+                    <span>
+                        ${requestedDate}
+                    </span>
+
+                </div>
+
+                <div class="mobile-card-row">
+
+                    <span>
+                        Status
+                    </span>
+
+                    <span>
+                        ${statusHtml}
+                    </span>
+
+                </div>
+
+                <div class="mobile-card-actions">
+
+                    <!-- APPROVE RETURN -->
+
+                    <form
+                        action="{{ url_for('approve_return') }}"
+                        method="POST"
+                    >
+
+                        <input
+                            type="hidden"
+                            name="transaction_id"
+                            value="${transactionId}"
+                        >
+
+                        <input
+                            type="hidden"
+                            name="book_id"
+                            value="${bookId}"
+                        >
+
+                        <button
+                            type="submit"
+                            class="restore-btn action-trigger"
+                            data-action="approve-return"
+                        >
+                            <i class="fa-solid fa-check"></i>
+                            Approve
+                        </button>
+
+                    </form>
+
+                    ${damageButton}
+
+                    <!-- REJECT RETURN -->
+
+                    <form
+                        action="{{ url_for('reject_return') }}"
+                        method="POST"
+                    >
+
+                        <input
+                            type="hidden"
+                            name="transaction_id"
+                            value="${transactionId}"
+                        >
+
+                        <button
+                            type="submit"
+                            class="delete-btn action-trigger"
+                            data-action="reject-return"
+                        >
+                            <i class="fa-solid fa-xmark"></i>
+                            Reject
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+        `;
+
+    });
+
+    /* RENDER DESKTOP TABLE */
+
+    desktopContainer.innerHTML = `
+        <table class="admin-table">
+
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Student Code</th>
+                    <th>Book</th>
+                    <th>Requested</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                ${desktopRows}
+            </tbody>
+
+        </table>
+    `;
+
+    /* RENDER MOBILE CARDS */
+
+    mobileContainer.innerHTML =
+        mobileCards;
+
+    /* ATTACH ACTION TRIGGERS */
+
+    if (
+        typeof window.attachActionTriggers ===
+        "function"
+    ) {
+
+        window.attachActionTriggers(
+            desktopContainer
+        );
+
+        window.attachActionTriggers(
+            mobileContainer
+        );
+    }
+
+}
+
+    /* NEW BORROW REQUEST - REAL TIME */
+
+    socket.on(
+        "new_borrow_request",
+        function (data) {
+
+            console.log(
+                "NEW BORROW REQUEST:",
+                data
+            );
+
+            const emptyRow =
+                document.getElementById(
+                    "noBorrowRequestsRow"
+                );
+
+            if (emptyRow) {
+
+                emptyRow.remove();
+
+            }
+
+            const mobileEmpty =
+                document.getElementById(
+                    "noBorrowRequestsMobile"
+                );
+
+            if (mobileEmpty) {
+
+                mobileEmpty.remove();
+
+            }
+
+            /* DESKTOP TABLE */
+
+            const tableBody =
+                document.getElementById(
+                    "borrowRequestTableBody"
+                );
+
+            if (tableBody) {
+
+                const existingRow =
+                    tableBody.querySelector(
+                        `[data-request-id="${data.request_id}"]`
+                    );
+
+                if (!existingRow) {
+
+                    const row =
+                        document.createElement("tr");
+
+                    row.setAttribute(
+                        "data-request-id",
+                        data.request_id
+                    );
+
+                    row.innerHTML = `
+
+                        <td>
+                            ${escapeHtml(
+                                data.student_name
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                data.student_code
+                            )}
+                        </td>
+
+                            <td class="request-book-cell">
+
+                                <div
+                                    class="request-book-preview"
+                                    data-title="${escapeHtml(data.title || "")}"
+                                    data-author="${escapeHtml(data.author || "")}"
+                                >
+
+                                    <strong class="request-book-title">
+                                        ${escapeHtml(
+                                            truncateText(data.title || "", 30)
+                                        )}
+                                    </strong>
+
+                                    ${
+                                        data.author
+                                            ? `
+                                                <small class="request-book-author">
+                                                    ${escapeHtml(
+                                                        truncateText(data.author, 22)
+                                                    )}
+                                                </small>
+                                            `
+                                            : ""
+                                    }
+
+                                </div>
+
+                                ${
+                                    (data.title || "").length > 30 ||
+                                    (data.author || "").length > 22
+                                        ? `
+                                            <button
+                                                type="button"
+                                                class="request-book-toggle"
+                                                onclick="toggleRequestBook(this)"
+                                            >
+                                                See more..
+                                            </button>
+                                        `
+                                        : ""
+                                }
+
+                            </td>
+
+                        <td>
+                            ${escapeHtml(
+                                data.request_date
+                            )}
+                        </td>
+
+                        <td>
+
+                            <span class="admin-pending-badge">
+                                Pending
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <div class="admin-actions">
+
+                                <!-- APPROVE -->
+
+                                <form
+                                    action="${processBorrowRequestUrl}"
+                                    method="POST"
+                                    class="borrowRequestForm"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="request_id"
+                                        value="${escapeHtml(
+                                            data.request_id
+                                        )}"
+                                    >
+
+                                    <input
+                                        type="hidden"
+                                        name="action"
+                                        value="approve"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="restore-btn action-trigger"
+                                        data-action="approve-borrow"
+                                    >
+                                        Approve
+                                    </button>
+
+                                </form>
+
+                                <!-- REJECT -->
+
+                                <form
+                                    action="${processBorrowRequestUrl}"
+                                    method="POST"
+                                    class="borrowRequestForm"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="request_id"
+                                        value="${escapeHtml(
+                                            data.request_id
+                                        )}"
+                                    >
+
+                                    <input
+                                        type="hidden"
+                                        name="action"
+                                        value="reject"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="delete-btn action-trigger"
+                                        data-action="reject-borrow"
+                                    >
+
+                                        Reject
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+                    `;
+
+                    tableBody.prepend(row);
+
+                    if (
+                        typeof window.attachActionTriggers ===
+                        "function"
+                    ) {
+
+                        window.attachActionTriggers(
+                            row
+                        );
+                    }
+                }
+            }
+
+            /* MOBILE CARD */
+
+            const mobileContainer =
+                document.getElementById(
+                    "borrowRequestMobileContainer"
+                );
+
+            if (mobileContainer) {
+
+                const existingCard =
+                    mobileContainer.querySelector(
+                        `[data-request-id="${data.request_id}"]`
+                    );
+
+                if (!existingCard) {
+
+                    const card =
+                        document.createElement(
+                            "div"
+                        );
+
+                    card.className =
+                        "mobile-request-item";
+
+                    card.setAttribute(
+                        "data-request-id",
+                        data.request_id
+                    );
+
+                    card.setAttribute(
+                        "aria-expanded",
+                        "false"
+                    );
+
+                    card.innerHTML = `
+
+                        <div class="mobile-card-title">
+                            ${escapeHtml(
+                                data.title
+                            )}
+                        </div>
+
+                        <div class="mobile-card-row">
+
+                            <span>
+                                Student
+                            </span>
+
+                            <span>
+                                ${escapeHtml(
+                                    data.student_name
+                                )}
+                            </span>
+
+                        </div>
+
+                        <div class="mobile-card-row">
+
+                            <span>
+                                Student Code
+                            </span>
+
+                            <span>
+                                ${escapeHtml(
+                                    data.student_code
+                                )}
+                            </span>
+
+                        </div>
+
+                        <div class="mobile-card-row">
+
+                            <span>
+                                Requested
+                            </span>
+
+                            <span>
+                                ${escapeHtml(
+                                    data.request_date
+                                )}
+                            </span>
+
+                        </div>
+
+                        <div class="mobile-card-row">
+
+                            <span>
+                                Status
+                            </span>
+
+                            <span>
+
+                                <span class="admin-pending-badge">
+                                    Pending
+                                </span>
+
+                            </span>
+
+                        </div>
+
+                        <div class="mobile-card-actions">
+
+                            <!-- APPROVE -->
+
+                            <form
+                                action="${processBorrowRequestUrl}"
+                                method="POST"
+                                class="borrowRequestForm"
+                            >
+
+                                <input
+                                    type="hidden"
+                                    name="request_id"
+                                    value="${escapeHtml(
+                                        data.request_id
+                                    )}"
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="action"
+                                    value="approve"
+                                >
+
+                                <button
+                                    type="submit"
+                                    class="restore-btn action-trigger"
+                                    data-action="approve-borrow"
+                                >
+
+                                    <i class="fa-solid fa-check"></i>
+                                    Approve
+
+                                </button>
+
+                            </form>
+
+                            <!-- REJECT -->
+
+                            <form
+                                action="${processBorrowRequestUrl}"
+                                method="POST"
+                                class="borrowRequestForm"
+                            >
+
+                                <input
+                                    type="hidden"
+                                    name="request_id"
+                                    value="${escapeHtml(
+                                        data.request_id
+                                    )}"
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="action"
+                                    value="reject"
+                                >
+
+                                <button
+                                    type="submit"
+                                    class="delete-btn action-trigger"
+                                    data-action="reject-borrow"
+                                >
+
+                                    <i class="fa-solid fa-xmark"></i>
+                                    Reject
+
+                                </button>
+
+                            </form>
+
+                        </div>
+                    `;
+
+                    mobileContainer.prepend(card);
+
+                    attachMobileRequestExpansion(
+                        card
+                    );
+
+                    if (
+                        typeof window.attachActionTriggers ===
+                        "function"
+                    ) {
+
+                        window.attachActionTriggers(
+                            card
+                        );
+                    }
+                }
+            }
+        }
+    );
+
+    /* SIDEBAR */
+
+    const menuToggle =
+        document.getElementById(
+            "menuToggle"
+        );
+
+    const sidebar =
+        document.getElementById(
+            "sidebar"
+        );
+
+    const sidebarOverlay =
+        document.getElementById(
+            "sidebarOverlay"
+        );
+
+    const sidebarClose =
+        document.getElementById(
+            "sidebarClose"
+        );
+
+    if (
+        menuToggle &&
+        sidebar &&
+        sidebarOverlay
+    ) {
+
+        menuToggle.addEventListener(
+            "click",
+            () => {
+
+                sidebar.classList.toggle(
+                    "show"
+                );
+
+                sidebarOverlay.classList.toggle(
+                    "show"
+                );
+            }
+        );
+
+        sidebarOverlay.addEventListener(
+            "click",
+            () => {
+
+                sidebar.classList.remove(
+                    "show"
+                );
+
+                sidebarOverlay.classList.remove(
+                    "show"
+                );
+            }
+        );
+
+        sidebar.querySelectorAll("a")
+            .forEach((link) => {
+
+                link.addEventListener(
+                    "click",
+                    () => {
+
+                        sidebar.classList.remove(
+                            "show"
+                        );
+
+                        sidebarOverlay.classList.remove(
+                            "show"
+                        );
+                    }
+                );
+            });
+    }
+
+    /* SIDEBAR CLOSE */
+
+    if (
+        sidebarClose &&
+        sidebar &&
+        sidebarOverlay
+    ) {
+
+        sidebarClose.addEventListener(
+            "click",
+            () => {
+
+                sidebar.classList.remove(
+                    "show"
+                );
+
+                sidebarOverlay.classList.remove(
+                    "show"
+                );
+            }
+        );
+    }
+
+    function toggleSidebar() {
+
+        const sidebar =
+            document.getElementById(
+                "sidebar"
+            );
+
+        if (sidebar) {
+
+            sidebar.classList.toggle(
+                "show"
+            );
+        }
+    }
+
+    /* MOBILE REQUEST EXPANSION */
+
+    function attachMobileRequestExpansion(item) {
+
+        if (!item) {
+            return;
+        }
+
+        if (
+            item.dataset.expansionAttached ===
+            "true"
+        ) {
+
+            return;
+        }
+
+        item.dataset.expansionAttached =
+            "true";
+
+        item.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+
+        item.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    event.target.closest("button") ||
+                    event.target.closest("form") ||
+                    event.target.closest("input") ||
+                    event.target.closest("a")
+                ) {
+
+                    return;
+                }
+
+                document
+                    .querySelectorAll(
+                        ".mobile-request-card .mobile-request-item"
+                    )
+                    .forEach(
+                        function (otherItem) {
+
+                            if (
+                                otherItem !== item
+                            ) {
+
+                                otherItem.classList.remove(
+                                    "expanded"
+                                );
+
+                                otherItem.setAttribute(
+                                    "aria-expanded",
+                                    "false"
+                                );
+                            }
+                        }
+                    );
+
+                const isExpanded =
+                    item.classList.toggle(
+                        "expanded"
+                    );
+
+                item.setAttribute(
+                    "aria-expanded",
+                    isExpanded
+                        ? "true"
+                        : "false"
+                );
+            }
+        );
+    }
+
+    /* INITIAL MOBILE EXPANSION */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const expandableItems =
+                document.querySelectorAll(
+                    ".mobile-request-card .mobile-request-item, " +
+                    ".mobile-return-card .mobile-return-item"
+                );
+
+            expandableItems.forEach(
+                function (item) {
+
+                    item.setAttribute(
+                        "aria-expanded",
+                        "false"
+                    );
+
+                    item.addEventListener(
+                        "click",
+                        function (event) {
+
+                            if (
+                                event.target.closest(
+                                    "button"
+                                ) ||
+                                event.target.closest(
+                                    "form"
+                                ) ||
+                                event.target.closest(
+                                    "input"
+                                ) ||
+                                event.target.closest(
+                                    "a"
+                                )
+                            ) {
+
+                                return;
+                            }
+
+                            expandableItems.forEach(
+                                function (
+                                    otherItem
+                                ) {
+
+                                    if (
+                                        otherItem !==
+                                        item
+                                    ) {
+
+                                        otherItem.classList.remove(
+                                            "expanded"
+                                        );
+
+                                        otherItem.setAttribute(
+                                            "aria-expanded",
+                                            "false"
+                                        );
+                                    }
+                                }
+                            );
+
+                            const isExpanded =
+                                item.classList.toggle(
+                                    "expanded"
+                                );
+
+                            item.setAttribute(
+                                "aria-expanded",
+                                isExpanded
+                                    ? "true"
+                                    : "false"
+                            );
+                        }
+                    );
+                }
+            );
+        }
+    );
+
+    /* APPROVAL TABS */
+    function showApprovalTab(
+        tabId,
+        button
+    ) {
+
+        document
+            .querySelectorAll(
+                ".pending-tab-content"
+            )
+            .forEach(
+                tab => {
+
+                    tab.classList.remove(
+                        "active"
+                    );
+                }
+            );
+
+        document
+            .querySelectorAll(
+                ".pending-tab"
+            )
+            .forEach(
+                tabButton => {
+
+                    tabButton.classList.remove(
+                        "active"
+                    );
+                }
+            );
+
+        const selectedTab =
+            document.getElementById(
+                tabId
+            );
+
+        if (selectedTab) {
+
+            selectedTab.classList.add(
+                "active"
+            );
+        }
+
+        if (button) {
+
+            button.classList.add(
+                "active"
+            );
+        }
+
+        history.replaceState(
+            null,
+            null,
+            "#" + tabId
+        );
+
+        /* UPDATE MOBILE APPROVAL MENU */
+        if (typeof updateMobileApprovalMenu === "function") {
+
+            updateMobileApprovalMenu(
+                tabId
+            );
+
+        }
+    }
+
+    /* DOM CONTENT LOADED */
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const validTabs = [
+                "borrowRequestTab",
+                "pendingReturnsTab",
+                "borrowBooksTab"
+            ];
+
+            const urlParams =
+                new URLSearchParams(
+                    window.location.search
+                );
+
+            let activeTab =
+                urlParams.get("tab");
+
+            /* FALLBACK TO HASH */
+            if (
+                !validTabs.includes(activeTab)
+            ) {
+
+                activeTab =
+                    window.location.hash.replace(
+                        "#",
+                        ""
+                    );
+            }
+
+            /* DEFAULT */
+            if (
+                !validTabs.includes(activeTab)
+            ) {
+
+                activeTab =
+                    "borrowRequestTab";
+            }
+
+            const button =
+                document.querySelector(
+                    `.pending-tab[onclick*="${activeTab}"]`
+                );
+
+            showApprovalTab(
+                activeTab,
+                button
+            );
+        }
+    );
+
+
+    /* REPORT DAMAGE */
+
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            const button =
+                event.target.closest(
+                    ".reportDamageBtn"
+                );
+
+            if (!button) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const transaction =
+                button.dataset.transaction;
+
+            const user =
+                button.dataset.user;
+
+            const book =
+                button.dataset.book;
+
+            const student =
+                button.dataset.student;
+
+            const title =
+                button.dataset.title;
+
+            if (
+                !transaction ||
+                !user ||
+                !book
+            ) {
+
+                console.error(
+                    "Missing damage report data:",
+                    {
+                        transaction,
+                        user,
+                        book,
+                        student,
+                        title
+                    }
+                );
+
+                return;
+            }
+
+            const url =
+                "{{ url_for('add_damage_report') }}"
+                + "?transaction_id="
+                + encodeURIComponent(
+                    transaction
+                )
+                + "&user_id="
+                + encodeURIComponent(
+                    user
+                )
+                + "&book_id="
+                + encodeURIComponent(
+                    book
+                )
+                + "&student="
+                + encodeURIComponent(
+                    student || ""
+                )
+                + "&book="
+                + encodeURIComponent(
+                    title || ""
+                );
+
+            window.location.href =
+                url;
+
+        }
+    );
+
+    /* VIEW DAMAGE - DYNAMICALLY RENDERED BUTTONS */
+
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            const button =
+                event.target.closest(
+                    ".viewDamageBtn"
+                );
+
+            if (!button) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const damageId =
+                button.dataset.damageId;
+
+
+            const studentElement =
+                document.getElementById(
+                    "damageStudent"
+                );
+
+            const bookElement =
+                document.getElementById(
+                    "damageBook"
+                );
+
+            const typeElement =
+                document.getElementById(
+                    "damageType"
+                );
+
+            const descriptionElement =
+                document.getElementById(
+                    "damageDescription"
+                );
+
+            const penaltyElement =
+                document.getElementById(
+                    "damagePenalty"
+                );
+
+            const replacementElement =
+                document.getElementById(
+                    "damageReplacement"
+                );
+
+            const image =
+                document.getElementById(
+                    "damageProofImage"
+                );
+
+            const noProof =
+                document.getElementById(
+                    "damageNoProof"
+                );
+
+            /* STUDENT */
+
+            if (
+                studentElement
+            ) {
+
+                studentElement.textContent =
+                    button.dataset.student ||
+                    "—";
+            }
+
+            /* BOOK */
+
+            if (
+                bookElement
+            ) {
+
+                bookElement.textContent =
+                    button.dataset.book ||
+                    "—";
+            }
+
+            /* DAMAGE TYPE */
+
+            if (
+                typeElement
+            ) {
+
+                typeElement.textContent =
+                    button.dataset.damageType ||
+                    "—";
+            }
+
+            /* DESCRIPTION */
+
+            if (
+                descriptionElement
+            ) {
+
+                descriptionElement.textContent =
+                    button.dataset.description ||
+                    "—";
+            }
+
+            /* PENALTY */
+
+            if (
+                penaltyElement
+            ) {
+
+                penaltyElement.textContent =
+                    button.dataset.penalty
+                        ? "₱" +
+                        button.dataset.penalty
+                        : "₱0.00";
+            }
+
+            /* REPLACEMENT */
+
+            if (
+                replacementElement
+            ) {
+
+                replacementElement.textContent =
+                    button.dataset.replacement ||
+                    "—";
+            }
+
+            /* RESET IMAGE */
+
+            if (
+                image
+            ) {
+
+                image.style.display =
+                    "none";
+
+                image.removeAttribute(
+                    "src"
+                );
+            }
+
+            /* RESET NO PROOF MESSAGE */
+
+            if (
+                noProof
+            ) {
+
+                noProof.style.display =
+                    "none";
+            }
+
+            /* DAMAGE PROOF IMAGE */
+
+            if (
+                damageId &&
+                image
+            ) {
+
+                image.src =
+                    "{{ url_for('damage_proof', damage_id=0) }}"
+                    .replace(
+                        "/0",
+                        "/" + damageId
+                    );
+
+                image.onload =
+                    function () {
+
+                        image.style.display =
+                            "block";
+
+                        if (
+                            noProof
+                        ) {
+
+                            noProof.style.display =
+                                "none";
+                        }
+                    };
+
+                image.onerror =
+                    function () {
+
+                        image.style.display =
+                            "none";
+
+                        if (
+                            noProof
+                        ) {
+
+                            noProof.style.display =
+                                "block";
+                        }
+                    };
+
+            } else {
+
+                if (
+                    noProof
+                ) {
+
+                    noProof.style.display =
+                        "block";
+                }
+            }
+
+            /* OPEN DAMAGE MODAL */
+
+            const damageModal =
+                document.getElementById(
+                    "damageDetailsModal"
+                );
+
+            if (
+                damageModal
+            ) {
+
+                damageModal.classList.add(
+                    "show"
+                );
+            }
+
+        }
+    );
+
+    /* APPROVAL MODAL */
+
+    const approvalModal =
+        document.getElementById(
+            "approvalActionModal"
+        );
+
+    const approvalModalIcon =
+        document.getElementById(
+            "approvalModalIcon"
+        );
+
+    const approvalModalTitle =
+        document.getElementById(
+            "approvalModalTitle"
+        );
+
+    const approvalModalMessage =
+        document.getElementById(
+            "approvalModalMessage"
+        );
+
+    const approvalModalConfirm =
+        document.getElementById(
+            "approvalModalConfirm"
+        );
+
+    const approvalModalCancel =
+        document.getElementById(
+            "approvalModalCancel"
+        );
+
+    let selectedApprovalForm =
+        null;
+
+    const approvalActions = {
+
+        "approve-borrow": {
+
+            title:
+                "Approve Borrow Request?",
+
+            message:
+                "Are you sure you want to approve this borrow request?",
+
+            icon:
+                "fa-check",
+
+            className:
+                "approve",
+
+            button:
+                "Approve"
+        },
+
+        "reject-borrow": {
+
+            title:
+                "Reject Borrow Request?",
+
+            message:
+                "Are you sure you want to reject this borrow request?",
+
+            icon:
+                "fa-xmark",
+
+            className:
+                "reject",
+
+            button:
+                "Reject"
+        },
+
+        "confirm-pickup": {
+
+            title:
+                "Confirm Book Pickup?",
+
+            message:
+                "Confirm that the physical book has been released to the borrower?",
+
+            icon:
+                "fa-hand-holding",
+
+            className:
+                "approve",
+
+            button:
+                "Confirm Pickup"
+        },
+
+        "cancel-approval": {
+
+            title:
+                "Cancel Approval?",
+
+            message:
+                "Are you sure you want to cancel this approved borrow request?",
+
+            icon:
+                "fa-xmark",
+
+            className:
+                "reject",
+
+            button:
+                "Cancel Approval"
+        },
+
+        "approve-return": {
+
+            title:
+                "Approve Return?",
+
+            message:
+                "Are you sure you want to approve this book return?",
+
+            icon:
+                "fa-check",
+
+            className:
+                "approve",
+
+            button:
+                "Approve"
+        },
+
+        "reject-return": {
+
+            title:
+                "Reject Return?",
+
+            message:
+                "Are you sure you want to reject this return request?",
+
+            icon:
+                "fa-xmark",
+
+            className:
+                "reject",
+
+            button:
+                "Reject"
+        }
+    };
+
+    /* ACTION TRIGGER */
+
+    function attachActionTrigger(
+        button
+    ) {
+
+        if (!button) {
+            return;
+        }
+
+        if (
+            button.dataset.actionAttached ===
+            "true"
+        ) {
+
+            return;
+        }
+
+        button.dataset.actionAttached =
+            "true";
+
+        button.addEventListener(
+            "click",
+            function (event) {
+
+                event.preventDefault();
+
+                selectedApprovalForm =
+                    this.closest("form");
+
+                if (
+                    !selectedApprovalForm
+                ) {
+
+                    return;
+                }
+
+                const action =
+                    this.dataset.action;
+
+                const settings =
+                    approvalActions[action];
+
+                if (!settings) {
+
+                    return;
+                }
+
+                if (
+                    !approvalModal ||
+                    !approvalModalIcon ||
+                    !approvalModalTitle ||
+                    !approvalModalMessage ||
+                    !approvalModalConfirm
+                ) {
+
+                    selectedApprovalForm.submit();
+
+                    return;
+                }
+
+                approvalModalTitle.textContent =
+                    settings.title;
+
+                approvalModalMessage.textContent =
+                    settings.message;
+
+                approvalModalIcon.className =
+                    "approval-modal-icon " +
+                    settings.className;
+
+                approvalModalIcon.innerHTML = `
+                    <i class="fa-solid ${settings.icon}"></i>
+                `;
+
+                approvalModalConfirm.textContent =
+                    settings.button;
+
+                approvalModalConfirm.className =
+                    "modal-confirm-btn";
+
+                approvalModalConfirm.disabled =
+                    false;
+
+                if (
+                    settings.className ===
+                    "reject"
+                ) {
+
+                    approvalModalConfirm.classList.add(
+                        "reject"
+                    );
+                }
+
+                approvalModal.classList.add(
+                    "show"
+                );
+            }
+        );
+    }
+
+    /* ATTACH ACTION TRIGGERS */
+
+    function attachActionTriggers(
+        container
+    ) {
+
+        if (!container) {
+            return;
+        }
+
+        container
+            .querySelectorAll(
+                ".action-trigger"
+            )
+            .forEach(
+                button => {
+
+                    attachActionTrigger(
+                        button
+                    );
+                }
+            );
+    }
+
+    window.attachActionTriggers =
+        attachActionTriggers;
+
+    /* INITIAL ACTION BUTTONS */
+
+    if (
+        approvalModal &&
+        approvalModalIcon &&
+        approvalModalTitle &&
+        approvalModalMessage &&
+        approvalModalConfirm &&
+        approvalModalCancel
+    ) {
+
+        document
+            .querySelectorAll(
+                ".action-trigger"
+            )
+            .forEach(
+                button => {
+
+                    attachActionTrigger(
+                        button
+                    );
+                }
+            );
+
+        /* CONFIRM */
+
+        approvalModalConfirm.addEventListener(
+            "click",
+            function () {
+
+                if (
+                    selectedApprovalForm
+                ) {
+
+                    approvalModalConfirm.disabled =
+                        true;
+
+                    /* REMEMBER CURRENT APPROVAL TAB */
+                    sessionStorage.setItem(
+                        "approvalActiveTab",
+                        "pendingReturnsTab"
+                    );
+
+                    selectedApprovalForm.requestSubmit();
+                }
+            }
+        );
+
+        /* CANCEL */
+
+        approvalModalCancel.addEventListener(
+            "click",
+            function () {
+
+                approvalModal.classList.remove(
+                    "show"
+                );
+
+                selectedApprovalForm =
+                    null;
+
+                approvalModalConfirm.disabled =
+                    false;
+            }
+        );
+
+        /* CLICK OUTSIDE */
+
+        approvalModal.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    event.target ===
+                    approvalModal
+                ) {
+
+                    approvalModal.classList.remove(
+                        "show"
+                    );
+
+                    selectedApprovalForm =
+                        null;
+
+                    approvalModalConfirm.disabled =
+                        false;
+                }
+            }
+        );
+    }
+
+
+    /* CLOSE DAMAGE MODAL */
+
+    function closeDamageModal() {
+
+        const modal =
+            document.getElementById(
+                "damageDetailsModal"
+            );
+
+        if (modal) {
+
+            modal.classList.remove(
+                "show"
+            );
+        }
+    }
+
+    /* CLOSE APPROVAL MODAL */
+
+    function closeApprovalActionModal() {
+
+        const modal =
+            document.getElementById(
+                "approvalActionModal"
+            );
+
+        if (modal) {
+
+            modal.classList.remove(
+                "show"
+            );
+        }
+    }
+
+    /* GLOBAL MODAL CLICK */
+
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            const damageModal =
+                document.getElementById(
+                    "damageDetailsModal"
+                );
+
+            const approvalModal =
+                document.getElementById(
+                    "approvalActionModal"
+                );
+
+            if (
+                damageModal &&
+                event.target ===
+                damageModal
+            ) {
+
+                closeDamageModal();
+            }
+
+            if (
+                approvalModal &&
+                event.target ===
+                approvalModal
+            ) {
+
+                closeApprovalActionModal();
+            }
+        }
+    );
+
+    /* ESCAPE KEY */
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key ===
+                "Escape"
+            ) {
+
+                closeDamageModal();
+                closeApprovalActionModal();
+            }
+        }
+    );
+
+    /* EXISTING FLASH TOASTS */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            document
+                .querySelectorAll(
+                    ".approval-toast"
+                )
+                .forEach(
+                    (toast, index) => {
+
+                        setTimeout(
+                            () => {
+
+                                toast.style.transition =
+                                    "opacity 0.5s ease";
+
+                                toast.style.opacity =
+                                    "0";
+
+                                setTimeout(
+                                    () => {
+
+                                        toast.remove();
+
+                                    },
+                                    500
+                                );
+
+                            },
+                            5000 +
+                            (index * 300)
+                        );
+                    }
+                );
+        }
+    );
+        
+    const mobileApprovalMenu =
+        document.getElementById(
+            "mobileApprovalToggle"
+        );
+
+    const mobileApprovalContainer =
+        document.querySelector(
+            ".mobile-approval-menu"
+        );
+
+    const mobileApprovalOptions =
+        document.getElementById(
+            "mobileApprovalOptions"
+        );
+
+    const mobileApprovalActiveIcon =
+        document.getElementById(
+            "mobileApprovalActiveIcon"
+        );
+
+
+    const mobileApprovalTabs = {
+
+        borrowRequestTab: {
+            icon: "fa-solid fa-inbox",
+            label: "Request Borrow"
+        },
+
+        pendingReturnsTab: {
+            icon: "fa-solid fa-clock",
+            label: "Pending Returns"
+        },
+
+        borrowBooksTab: {
+            icon: "fa-solid fa-book",
+            label: "Borrowed Books"
+        }
+
+    };
+
+
+    let currentMobileApprovalTab =
+        "borrowRequestTab";
+
+
+    function updateMobileApprovalMenu(tabId) {
+
+        const activeTab =
+            mobileApprovalTabs[tabId];
+
+        if (!activeTab) {
+            return;
+        }
+
+
+        currentMobileApprovalTab =
+            tabId;
+
+        if (mobileApprovalActiveIcon) {
+
+            mobileApprovalActiveIcon.className =
+                activeTab.icon;
+
+        }
+
+
+        if (!mobileApprovalOptions) {
+            return;
+        }
+
+        mobileApprovalOptions.innerHTML = "";
+
+
+    /*CREATE ONLY THE TWO NON-ACTIVE TAB OPTIONS*/
+
+    Object.keys(mobileApprovalTabs).forEach(
+        function (otherTabId) {
+
+            if (otherTabId === tabId) {
+                return;
+            }
+
+
+            const tab =
+                mobileApprovalTabs[otherTabId];
+
+
+            const button =
+                document.createElement("button");
+
+
+            button.type =
+                "button";
+
+
+            button.className =
+                "mobile-approval-option";
+
+
+            button.dataset.tab =
+                otherTabId;
+
+
+            button.setAttribute(
+                "aria-label",
+                tab.label
+            );
+
+
+            const icon =
+                document.createElement("i");
+
+
+            icon.className =
+                tab.icon;
+
+
+            button.appendChild(icon);
+
+
+            mobileApprovalOptions.appendChild(
+                button
+            );
+
+
+            /* CLICK OTHER TAB */
+
+            button.addEventListener(
+                "click",
+                function (event) {
+
+                    event.stopPropagation();
+
+
+                    const desktopButton =
+                        document.querySelector(
+                            '[onclick*="' +
+                            otherTabId +
+                            '"]'
+                        );
+
+
+                    if (desktopButton) {
+
+                        showApprovalTab(
+                            otherTabId,
+                            desktopButton
+                        );
+
+                    }
+
+
+                    updateMobileApprovalMenu(
+                        otherTabId
+                    );
+
+
+                    mobileApprovalContainer.classList.remove(
+                        "open"
+                    );
+
+                }
+            );
+
+        }
+    );}
+
+
+    /* OPEN / CLOSE MOBILE MENU */
+
+    if (mobileApprovalMenu) {
+
+        mobileApprovalMenu.addEventListener(
+            "click",
+            function (event) {
+
+                event.stopPropagation();
+
+
+                mobileApprovalContainer.classList.toggle(
+                    "open"
+                );
+
+            }
+        );
+
+    }
+
+    /* CLOSE WHEN CLICKING OUTSIDE */
+
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            if (
+                mobileApprovalContainer &&
+                !mobileApprovalContainer.contains(
+                    event.target
+                )
+            ) {
+
+                mobileApprovalContainer.classList.remove(
+                    "open"
+                );
+
+            }
+
+        }
+    );
+
+
+    /* INITIAL STATE */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const validTabs = [
+                "borrowRequestTab",
+                "pendingReturnsTab",
+                "borrowBooksTab"
+            ];
+
+            let activeTab =
+                window.location.hash.replace(
+                    "#",
+                    ""
+                );
+
+            if (!validTabs.includes(activeTab)) {
+
+                activeTab =
+                    "borrowRequestTab";
+
+            }
+
+            updateMobileApprovalMenu(
+                activeTab
+            );
+
+        }
+    );
+
+
+    function toggleRequestBook(button) {
+        const preview = button.previousElementSibling;
+
+        if (!preview) {
+            return;
+        }
+
+        const title = preview.dataset.title || "";
+        const author = preview.dataset.author || "";
+
+        const titleElement = preview.querySelector(".request-book-title");
+        const authorElement = preview.querySelector(".request-book-author");
+
+        const expanded = preview.classList.toggle("is-expanded");
+
+        if (expanded) {
+            titleElement.textContent = title;
+
+            if (authorElement) {
+                authorElement.textContent = author;
+            }
+
+            button.textContent = "See less";
+        } else {
+            titleElement.textContent = truncateText(title, 30);
+
+            if (authorElement) {
+                authorElement.textContent = truncateText(author, 22);
+            }
+
+            button.textContent = "See more..";
+        }
+    }
+
+    function truncateText(text, maxLength) {
+        if (!text) {
+            return "";
+        }
+
+        if (text.length <= maxLength) {
+            return text;
+        }
+
+        return text.substring(0, maxLength).trimEnd() + "...";
+    }
+
+    function toggleRequestBook(button) {
+        const preview = button.previousElementSibling;
+
+        if (!preview) {
+            return;
+        }
+
+        const title = preview.dataset.title || "";
+        const author = preview.dataset.author || "";
+
+        const titleElement = preview.querySelector(".request-book-title");
+        const authorElement = preview.querySelector(".request-book-author");
+
+        const expanded = preview.classList.toggle("is-expanded");
+
+        if (expanded) {
+            titleElement.textContent = title;
+
+            if (authorElement) {
+                authorElement.textContent = author;
+            }
+
+            button.textContent = "See less";
+        } else {
+            titleElement.textContent = truncateText(title, 30);
+
+            if (authorElement) {
+                authorElement.textContent = truncateText(author, 22);
+            }
+
+            button.textContent = "See more..";
+        }
+    }
+
+    function truncateText(text, maxLength) {
+        if (!text) {
+            return "";
+        }
+
+        if (text.length <= maxLength) {
+            return text;
+        }
+
+        return text.substring(0, maxLength).trimEnd() + "...";
+    }
+</script>
+</body>
+</html>

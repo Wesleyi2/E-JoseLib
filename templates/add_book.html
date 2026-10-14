@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Add Book - E-JoseLib</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='admin-mobile.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <!-- MOBILE TOPBAR -->
+    <div class="mobile-topbar">
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <span class="mobile-topbar-title"> Add Book </span>
+
+      <a href="{{ url_for('admin_books') }}" class="mobile-add-book">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+    </div>
+
+    <!-- SIDEBAR OVERLAY -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="dashboard">
+      <!-- SIDEBAR -->
+      <div class="sidebar" id="sidebar">
+        <!-- Close Button (Mobile Only) -->
+        <div class="sidebar-close" id="sidebarClose">
+          <i class="fa-solid fa-xmark"></i>
+        </div>
+
+        <!-- Logo -->
+        <div class="logo-section">
+          <img
+            src="{{ url_for('static', filename='SJC_LOGO3.png') }}"
+            class="school-logo"
+          />
+        </div>
+
+        <!-- Navigation -->
+        <ul>
+          <a href="{{ url_for('admin_dashboard') }}">
+            <li>
+              <i class="fa-solid fa-chart-line"></i>
+              <span>Dashboard</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('admin_books') }}">
+            <li class="active">
+              <i class="fa-solid fa-book"></i>
+              <span>Books</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('admin_borrow_request') }}">
+            <li>
+              <i class="fa-solid fa-clipboard-check"></i>
+              <span>Approval</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('admin_attendance') }}">
+            <li>
+              <i class="fa-solid fa-clock"></i>
+              <span>Attendance</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('admin_users') }}">
+            <li>
+              <i class="fa-solid fa-users"></i>
+              <span> Users </span>
+            </li>
+          </a>
+        </ul>
+
+        <!-- Mobile Logout -->
+        <div class="sidebar-profile-mobile">
+          <a href="{{ url_for('logout') }}" class="sidebar-logout">
+            <i class="fa-solid fa-right-from-bracket"></i>
+
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div class="main-content">
+        <div class="dashboard-header">
+          <div>
+            <h1>Add Book</h1>
+
+            <p>Add a new book to the library.</p>
+          </div>
+
+          <a href="{{ url_for('admin_books') }}" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i>
+
+            Back to Books
+          </a>
+        </div>
+
+        <div class="admin-table-card add-book-card">
+          <form id="addBookForm" method="POST" enctype="multipart/form-data">
+            <div class="add-book-layout">
+              <!-- Cover Upload Panel -->
+              <div class="cover-upload-panel">
+                <label class="section-label">Cover Image</label>
+
+                <div class="cover-preview" id="coverPreview">
+                  <div class="field-error" id="coverError">
+                    Please choose a cover image.
+                  </div>
+                  <i class="fa-solid fa-image"></i>
+                  <p>No image selected</p>
+                </div>
+
+                <input
+                  type="file"
+                  name="cover_image"
+                  id="coverInput"
+                  accept="image/*"
+                  required
+                  hidden
+                />
+
+                <label for="coverInput" class="upload-btn">
+                  <i class="fa-solid fa-upload"></i> Choose Image
+                </label>
+
+                <p class="upload-hint">JPG or PNG, recommended 3:4 ratio</p>
+              </div>
+
+              <!-- Book Fields Panel -->
+              <div class="book-fields-panel">
+                <div class="section-label-row">
+                  <i class="fa-solid fa-book-open"></i>
+                  <span>Book Information</span>
+                </div>
+                <div class="field-grid">
+                  <!-- TITLE -->
+                  <div class="form-group full">
+                    <label class="form-label">Title</label>
+                    <input type="text" name="title" required />
+                    <small class="field-error">This field is required.</small>
+                  </div>
+
+                  <!-- AUTHOR -->
+                  <div class="form-group">
+                    <label class="form-label">Author</label>
+                    <input type="text" name="author" required />
+                    <small class="field-error">This field is required.</small>
+                  </div>
+
+                  <!-- PUBLISHER -->
+                  <div class="form-group">
+                    <label class="form-label">Publisher</label>
+                    <input type="text" name="publisher" required />
+                    <small class="field-error">This field is required.</small>
+                  </div>
+
+                  <!-- ISBN -->
+                  <div class="form-group">
+                    <label class="form-label">ISBN</label>
+                    <input type="text" name="isbn" required />
+                    <small class="field-error">This field is required.</small>
+                  </div>
+
+                  <!-- COPYRIGHT -->
+                  <div class="form-group">
+                    <label class="form-label">Copyright</label>
+                    <input type="text" name="copyright" required />
+                    <small class="field-error">This field is required.</small>
+                  </div>
+
+                  <!-- GENRE -->
+                  <div class="form-group">
+                    <label class="form-label">Genre</label>
+
+                    <div class="custom-select" data-name="genre">
+                      <button type="button" class="custom-select-button">
+                        <span>Select Genre</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                      </button>
+
+                      <div class="custom-select-menu">
+                        {% for genre in genres %}
+                        <button
+                          type="button"
+                          class="custom-option"
+                          data-value="{{ genre }}"
+                        >
+                          {{ genre }}
+                        </button>
+                        {% endfor %}
+                      </div>
+
+                      <input type="hidden" name="genre" id="genre" value="" />
+                    </div>
+
+                    <small class="field-error">Please select a genre.</small>
+                  </div>
+
+                  <!-- CATEGORY -->
+                  <div class="form-group">
+                    <label class="form-label">Category</label>
+
+                    <div class="custom-select" data-name="category">
+                      <button type="button" class="custom-select-button">
+                        <span>Select Category</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                      </button>
+
+                      <div class="custom-select-menu">
+                        {% for category in categories %}
+                        <button
+                          type="button"
+                          class="custom-option"
+                          data-value="{{ category }}"
+                        >
+                          {{ category }}
+                        </button>
+                        {% endfor %}
+                      </div>
+
+                      <input
+                        type="hidden"
+                        name="category"
+                        id="category"
+                        value=""
+                      />
+                    </div>
+
+                    <small class="field-error">Please select a category.</small>
+                  </div>
+
+                  <!-- SHELF LOCATION -->
+                  <div class="form-group">
+                    <label class="form-label">Shelf Location</label>
+                    <input type="text" name="shelf_location" required />
+                    <small class="field-error">This field is required.</small>
+                  </div>
+
+                  <!-- COPIES -->
+                  <div class="form-group">
+                    <label class="form-label">Copies Available</label>
+                    <input
+                      type="number"
+                      name="copies_available"
+                      value="1"
+                      min="1"
+                      step="1"
+                      required
+                    />
+                    <small class="field-error">This field is required.</small>
+                  </div>
+
+                  <!-- SUMMARY -->
+                  <div class="form-group full">
+                    <label class="form-label">Summary</label>
+                    <textarea name="summary" rows="4" required></textarea>
+                    <small class="field-error">This field is required.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions add-book-actions">
+              <a href="{{ url_for('admin_books') }}" class="cancel-borrow">
+                Cancel
+              </a>
+
+              <button
+                type="button"
+                class="confirm-borrow"
+                id="openAddBookModal"
+              >
+                <i class="fa-solid fa-floppy-disk"></i>
+                Save Book
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="borrow-modal" id="addBookModal">
+      <div class="borrow-modal-content">
+        <div class="modal-book-icon">
+          <i class="fa-solid fa-book-open"></i>
+        </div>
+
+        <h2>Add New Book?</h2>
+
+        <p>
+          Please confirm that all book information is correct before saving it
+          to the library catalog.
+        </p>
+
+        <div class="modal-actions">
+          <button type="button" class="cancel-borrow" id="cancelAddBook">
+            Cancel
+          </button>
+
+          <button type="button" class="confirm-borrow" id="confirmAddBook">
+            <i class="fa-solid fa-check"></i>
+
+            Add Book
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* MOBILE SIDEBAR */
+
+      const menuToggle = document.getElementById("menuToggle");
+      const sidebar = document.getElementById("sidebar");
+      const sidebarOverlay = document.getElementById("sidebarOverlay");
+      const sidebarClose = document.getElementById("sidebarClose");
+
+      if (menuToggle) {
+        menuToggle.addEventListener("click", () => {
+          sidebar.classList.add("show");
+
+          sidebarOverlay.classList.add("show");
+        });
+      }
+
+      if (sidebarClose) {
+        sidebarClose.addEventListener("click", () => {
+          sidebar.classList.remove("show");
+
+          sidebarOverlay.classList.remove("show");
+        });
+      }
+
+      if (sidebarOverlay) {
+        sidebarOverlay.addEventListener("click", () => {
+          sidebar.classList.remove("show");
+
+          sidebarOverlay.classList.remove("show");
+        });
+      }
+
+      const coverInput = document.getElementById("coverInput");
+      if (window.innerWidth <= 768) {
+        coverInput.setAttribute("accept", "image/*");
+      }
+      const coverPreview = document.getElementById("coverPreview");
+
+      coverInput.addEventListener("change", function () {
+        const file = this.files[0];
+
+        if (file) {
+          const reader = new FileReader();
+
+          reader.onload = function (e) {
+            coverPreview.innerHTML = `<img src="${e.target.result}" alt="Cover preview">`;
+          };
+
+          reader.readAsDataURL(file);
+        }
+      });
+
+      const form = document.getElementById("addBookForm");
+      const modal = document.getElementById("addBookModal");
+      const openBtn = document.getElementById("openAddBookModal");
+      const cancelBtn = document.getElementById("cancelAddBook");
+      const confirmBtn = document.getElementById("confirmAddBook");
+
+      // CUSTOM DROPDOWNS
+
+      const customSelects = document.querySelectorAll(".custom-select");
+
+      customSelects.forEach(function (select) {
+        const button = select.querySelector(".custom-select-button");
+        const text = button.querySelector("span");
+        const hiddenInput = select.querySelector('input[type="hidden"]');
+        const options = select.querySelectorAll(".custom-option");
+        button.addEventListener("click", function (e) {
+          e.stopPropagation();
+          customSelects.forEach(function (other) {
+            if (other !== select) {
+              other.classList.remove("open");
+            }
+          });
+
+          select.classList.toggle("open");
+        });
+
+        options.forEach(function (option) {
+          option.addEventListener("click", function (e) {
+            e.stopPropagation();
+
+            const value = this.dataset.value;
+
+            text.textContent = value;
+            hiddenInput.value = value;
+
+            select.classList.remove("open");
+            select.classList.remove("error");
+
+            const error = select.parentElement.querySelector(".field-error");
+
+            if (error) {
+              error.classList.remove("show");
+            }
+          });
+        });
+      });
+
+      // Close dropdown when clicking outside
+
+      document.addEventListener("click", function () {
+        customSelects.forEach(function (select) {
+          select.classList.remove("open");
+        });
+      });
+
+      // OPEN SAVE CONFIRMATION
+
+      openBtn.addEventListener("click", function () {
+        let valid = true;
+
+        // Reset errors
+
+        document.querySelectorAll("input, textarea").forEach(function (field) {
+          field.classList.remove("error");
+        });
+
+        document.querySelectorAll(".field-error").forEach(function (error) {
+          error.classList.remove("show");
+        });
+
+        document.querySelectorAll(".custom-select").forEach(function (select) {
+          select.classList.remove("error");
+        });
+
+        coverPreview.classList.remove("error");
+
+        // COVER IMAGE
+
+        if (!coverInput.files.length) {
+          coverPreview.classList.add("error");
+
+          document.getElementById("coverError").classList.add("show");
+
+          valid = false;
+        }
+
+        // NORMAL INPUTS
+
+        form
+          .querySelectorAll(
+            'input[required]:not([type="file"]), textarea[required]',
+          )
+          .forEach(function (field) {
+            if (field.value.trim() === "") {
+              field.classList.add("error");
+
+              const error = field.nextElementSibling;
+
+              if (error) {
+                error.classList.add("show");
+              }
+
+              valid = false;
+            }
+          });
+
+        // GENRE + CATEGORY
+
+        customSelects.forEach(function (select) {
+          const hiddenInput = select.querySelector('input[type="hidden"]');
+
+          const error = select.parentElement.querySelector(".field-error");
+
+          if (!hiddenInput.value.trim()) {
+            select.classList.add("error");
+
+            if (error) {
+              error.classList.add("show");
+            }
+
+            valid = false;
+          }
+        });
+
+        // SHOW CONFIRMATION MODAL
+
+        if (valid) {
+          modal.classList.add("show-borrow-modal");
+        }
+      });
+
+      cancelBtn.addEventListener("click", function () {
+        modal.classList.remove("show-borrow-modal");
+      });
+
+      // CONFIRM
+
+      confirmBtn.addEventListener("click", function () {
+        form.submit();
+      });
+
+      modal.addEventListener("click", function (e) {
+        if (e.target === modal) {
+          modal.classList.remove("show-borrow-modal");
+        }
+      });
+    </script>
+  </body>
+</html>

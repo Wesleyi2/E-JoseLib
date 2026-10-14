@@ -1,0 +1,2282 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>{{ book.title }}</title>
+
+    <!-- FONT AWESOME -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+      }
+
+      body {
+        width: 100%;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+
+        background: #ffffff;
+        color: #111111;
+
+        font-family: Arial, Helvetica, sans-serif;
+
+        overflow-x: hidden;
+      }
+
+      header,
+      .topbar,
+      .top-bar,
+      .navbar,
+      .navbar-custom,
+      .dashboard-navbar,
+      .dashboard-topbar,
+      .main-header,
+      .site-header,
+      .sidebar,
+      .sidebar-wrapper {
+        display: none !important;
+      }
+
+      .book-details-page {
+        width: 100%;
+        max-width: 1280px !important;
+
+        min-height: 100vh;
+
+        margin: 0 auto !important;
+
+        padding: 28px 24px 50px !important;
+
+        background: #ffffff;
+
+        position: relative;
+      }
+
+      /* BACK BUTTON */
+
+      .back-btn {
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        min-height: 42px;
+
+        padding: 0 20px;
+
+        margin-bottom: 18px;
+
+        border: 2px solid #19a957;
+        border-radius: 24px;
+
+        background: #ffffff;
+        color: #14994d;
+
+        text-decoration: none;
+
+        font-size: 15px;
+        font-weight: 700;
+
+        transition:
+          background 0.2s ease,
+          color 0.2s ease,
+          transform 0.2s ease;
+      }
+
+      .back-btn:hover {
+        background: #19a957;
+        color: #ffffff;
+
+        transform: translateY(-1px);
+      }
+
+      /* MAIN CONTENTFULL WIDTH */
+
+      .book-details-layout {
+        width: 100%;
+
+        display: grid;
+
+        grid-template-columns: 0.85fr 1.15fr;
+
+        gap: 30px;
+
+        align-items: stretch;
+      }
+
+      .book-info-panel {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* BOOK COVER */
+
+      .book-cover-panel {
+        width: 100%;
+        min-height: 400px;
+
+        box-sizing: border-box;
+
+        padding: 18px;
+
+        background: #ffffff;
+
+        border: none;
+
+        border-radius: 20px;
+
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.07);
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+
+        overflow: hidden;
+      }
+
+      /* BOOK INFORMATION */
+
+      .book-info-details-card {
+        width: 100%;
+        height: 400px;
+
+        box-sizing: border-box;
+
+        padding: 24px 28px;
+
+        background: #ffffff;
+
+        border: 1px solid #eeeeee;
+
+        border-radius: 18px;
+
+        box-shadow: 0 7px 25px rgba(0, 0, 0, 0.055);
+
+        overflow: hidden;
+      }
+
+      /* BOOK COVER */
+
+      .book-cover-image {
+        display: block;
+
+        width: 100%;
+        max-width: 330px;
+
+        height: 400px;
+
+        object-fit: contain;
+
+        border-radius: 10px;
+
+        background: #f7f7f7;
+
+        margin: 0 auto 15px;
+      }
+
+      /* NO COVER */
+
+      .no-book-cover {
+        width: 100%;
+        max-width: 330px;
+
+        height: 400px;
+
+        margin: 0 auto 15px;
+
+        border-radius: 10px;
+
+        background: #f5f5f5;
+
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: center;
+        justify-content: center;
+
+        gap: 10px;
+
+        color: #999999;
+
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .no-book-cover i {
+        font-size: 48px;
+      }
+
+      /* AVAILABILITY */
+
+      .detail-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 8px 15px;
+
+        margin: 0 0 14px;
+
+        border-radius: 20px;
+
+        background: #d9f9e7;
+        color: #1cc565;
+
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .detail-status-unavailable {
+        background: #9ca3af !important;
+        color: #ffffff !important;
+      }
+
+      /* COPIES */
+
+      .copies {
+        width: 100%;
+        margin-top: 18px;
+        margin-bottom: 18px;
+      }
+
+      .copies p {
+        margin: 0 0 14px;
+
+        color: #777777;
+
+        font-size: 18px;
+
+        font-weight: 700;
+      }
+
+      .copies h2 {
+        margin: 0;
+
+        color: #10a653;
+
+        font-size: 30px;
+
+        font-weight: 900;
+
+        line-height: 1.5;
+      }
+
+      /* REQUEST BUTTON */
+
+      .borrow-btn {
+        width: 100%;
+
+        min-height: 52px;
+
+        border: none;
+
+        border-radius: 10px;
+
+        padding: 0 20px;
+
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+
+        color: #ffffff;
+
+        font-size: 15px;
+
+        font-weight: 700;
+
+        cursor: pointer;
+
+        box-shadow: 0 12px 28px rgba(22, 163, 74, 0.28);
+
+        transition:
+          background 0.2s ease,
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .borrow-btn:hover {
+        background: linear-gradient(135deg, #16a34a, #15803d);
+
+        transform: translateY(-1px);
+
+        box-shadow: 0 14px 30px rgba(22, 163, 74, 0.32);
+      }
+
+      .borrow-btn:disabled {
+        background: #999999 !important;
+        color: #ffffff;
+
+        cursor: not-allowed;
+
+        transform: none;
+
+        box-shadow: none;
+      }
+
+      /* DISABLED BORROW BUTTONS */
+
+      .already-requested-btn,
+      .borrow-limit-btn,
+      .not-available-btn {
+        background: #9ca3af !important;
+        color: #ffffff !important;
+        cursor: not-allowed !important;
+        opacity: 0.85;
+        border: none;
+      }
+
+      .already-requested-btn:hover,
+      .borrow-limit-btn:hover,
+      .not-available-btn:hover {
+        background: #9ca3af !important;
+        transform: none !important;
+      }
+
+      .borrow-limit-note {
+        margin-top: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        text-align: center;
+        line-height: 1.4;
+      }
+
+        .borrow-limit-note i {
+          color: #fca5a5;
+          margin-right: 4px;
+          font-size: 12px;
+        }
+
+              /* TITLE */
+
+        .book-info-panel > h1 {
+          margin-bottom: 6px;
+
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+
+          overflow: hidden;
+
+          line-height: 1.17;
+        }
+
+
+      /* SEE MORE / SEE LESS */
+
+      .title-toggle-btn {
+        display: block;
+        align-self: flex-start;
+
+        margin: 0 0 16px;
+        padding: 0;
+
+        border: none;
+        background: transparent;
+
+        color: #16a34a;
+
+        font-size: 14px;
+        font-weight: 700;
+
+        cursor: pointer;
+        text-align: left;
+      }
+
+      .title-toggle-btn:hover {
+        color: #15803d;
+
+        text-decoration: underline;
+      }
+
+      .book-info-panel > h1.title-expanded {
+        display: block;
+
+        -webkit-line-clamp: unset;
+
+        overflow: visible;
+      }
+
+      /* AUTHOR */
+      .details-author {
+        margin: 0 0 24px;
+
+        color: #657b83;
+
+        font-size: 17px;
+
+        font-weight: 500;
+      }
+
+      /* TAGS */
+      .detail-tags {
+        width: 100%;
+
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: 10px;
+
+        margin-bottom: 24px;
+      }
+
+      .detail-tags span {
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        min-height: 34px;
+
+        padding: 7px 16px;
+
+        border-radius: 20px;
+
+        background: #d9f9e7;
+        color: #1cc565;
+
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+            
+      /* DETAILS CARDS */
+
+      .details-card {
+        width: 100%;
+
+        height: 180px;
+
+        box-sizing: border-box;
+
+        margin-bottom: 20px;
+
+        padding: 24px 28px;
+
+        background: #ffffff;
+
+        border: 1px solid #eeeeee;
+
+        border-radius: 18px;
+
+        box-shadow: 0 7px 25px rgba(0, 0, 0, 0.055);
+
+        overflow: hidden;
+      }
+
+
+      .details-card h3 {
+        margin: 0 0 13px;
+
+        color: #2f2c2c;
+
+        font-size: 21px;
+
+        font-weight: 750;
+      }
+
+      .details-card h3 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        margin: 0 0 13px;
+
+        color: #2f2c2c;
+
+        font-size: 21px;
+        font-weight: 750;
+      }
+
+      .details-card h3 > i {
+        color: #1cc565;
+        font-size: 21px;
+        flex-shrink: 0;
+      }
+      .book-info-details-card h3 {
+        display: flex;
+
+        align-items: center;
+
+        gap: 12px;
+
+        margin: 15px 0 13px;
+
+        color: #2f2c2c;
+
+        font-size: 22px;
+
+        font-weight: 790;
+      }
+
+
+
+
+
+      /* DESCRIPTION */
+
+      .details-card > p {
+        margin: 0;
+
+        color: #334b53;
+
+        font-size: 15px;
+
+        line-height: 1.7;
+
+        overflow-wrap: anywhere;
+
+        overflow-y: auto;
+
+        max-height: 105px;
+      }
+
+      /* BOOK INFORMATION GRID */
+
+      .info-grid {
+        width: 100%;
+
+        margin-top: 3px;
+        padding-left: 15px;
+        box-sizing: border-box;
+
+        display: grid;
+
+        grid-template-columns:
+          minmax(0, 1fr)
+          minmax(0, 1fr);
+
+        column-gap: 70px;
+
+        row-gap: 26px;
+      }
+
+
+      /* INFORMATION ITEM */
+
+      .info-item {
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 14px;
+
+        margin-top: 10px;
+
+        min-width: 0;
+      }
+
+
+      /* INFORMATION ICON */
+
+      .info-item > i {
+        flex-shrink: 0;
+
+        width: 26px;
+
+        margin-top: 2px;
+
+        color: #1cc565;
+
+        font-size: 23px;
+
+        text-align: center;
+      }
+
+
+      /* INFORMATION CONTENT */
+
+      .info-content {
+        min-width: 0;
+      }
+
+
+      /* LABEL */
+
+      .info-grid label {
+        display: block;
+
+        margin-bottom: 6px;
+
+        color: #8b9ca2;
+
+        font-size: 14px;
+
+        font-weight: 700;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.5px;
+      }
+
+
+      /* VALUE */
+
+      .info-grid p {
+        margin: 0;
+
+        color: #111111;
+
+        font-size: 17px;
+
+        font-weight: 800;
+
+        line-height: 1.4;
+
+        overflow-wrap: anywhere;
+      }
+
+      /* MOBILE */
+
+      @media (max-width: 768px) {
+
+        .info-grid {
+          grid-template-columns: 1fr;
+
+          column-gap: 0;
+
+          row-gap: 19px;
+        }
+
+        .info-item {
+          gap: 13px;
+        }
+
+        .info-item > i {
+          width: 24px;
+
+          font-size: 19px;
+        }
+
+      }
+
+
+      /* SMALL MOBILE */
+
+      @media (max-width: 420px) {
+
+        .info-grid {
+          row-gap: 17px;
+        }
+
+        .info-item {
+          gap: 11px;
+        }
+
+        .info-item > i {
+          width: 22px;
+
+          font-size: 18px;
+        }
+
+        .info-grid label {
+          font-size: 12px;
+        }
+
+        .info-grid p {
+          font-size: 14px;
+        }
+
+      }
+      /* MODALS */
+
+      .borrow-modal,
+      .return-modal {
+        position: fixed;
+        inset: 0;
+
+        z-index: 9999;
+
+        display: none;
+
+        align-items: center;
+        justify-content: center;
+
+        padding: 20px;
+
+        background: rgba(0, 0, 0, 0.45);
+
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+      }
+
+      /* BORROW MODAL */
+
+      .borrow-modal {
+        opacity: 0;
+        visibility: hidden;
+
+        transition:
+          opacity 0.25s ease,
+          visibility 0.25s ease;
+      }
+
+      .borrow-modal.show-borrow-modal {
+        display: flex;
+
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .borrow-modal-content {
+        width: 100%;
+        max-width: 420px;
+
+        padding: 32px;
+
+        border-radius: 24px;
+
+        background: #ffffff;
+
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+
+        text-align: center;
+
+        animation: borrowModalOpen 0.2s ease;
+      }
+
+      @keyframes borrowModalOpen {
+        from {
+          opacity: 0;
+
+          transform: translateY(15px) scale(0.97);
+        }
+
+        to {
+          opacity: 1;
+
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      /* BORROW MODAL TITLE */
+
+      .borrow-modal-content h2 {
+        margin: 0 0 12px;
+
+        color: #1f2937;
+
+        font-size: 24px;
+
+        font-weight: 800;
+      }
+
+      .borrow-modal-content p {
+        margin: 0 0 8px;
+
+        color: #6b7280;
+
+        font-size: 15px;
+
+        line-height: 1.6;
+      }
+
+      /* DUE DATE INFORMATION */
+
+      .due-text {
+        margin-top: 14px !important;
+
+        padding: 13px 14px;
+
+        color: #16a34a !important;
+
+        font-size: 14px !important;
+
+        font-weight: 600;
+
+        line-height: 1.5 !important;
+      }
+
+      /* BORROW MODAL BUTTONS */
+
+      .modal-actions {
+        display: flex;
+
+        flex-direction: row;
+
+        gap: 12px;
+
+        width: 100%;
+
+        margin-top: 24px;
+      }
+
+      .modal-actions form {
+        flex: 1;
+
+        width: 0;
+
+        min-width: 0;
+
+        margin: 0;
+      }
+
+      .confirm-borrow,
+      .cancel-borrow,
+      .confirm-btn {
+        width: 100%;
+
+        height: 48px;
+
+        min-height: 48px;
+
+        padding: 0 12px;
+
+        border: none;
+
+        border-radius: 12px;
+
+        font-size: 14px;
+
+        font-weight: 700;
+
+        cursor: pointer;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        gap: 8px;
+
+        white-space: nowrap;
+
+        word-break: keep-all;
+
+        box-sizing: border-box;
+
+        transition:
+          background 0.2s ease,
+          transform 0.2s ease;
+      }
+
+      /* CONFIRM BUTTON */
+
+      .confirm-borrow,
+      .confirm-btn {
+        background: #16a34a;
+
+        color: #ffffff;
+      }
+
+      .confirm-borrow:hover,
+      .confirm-btn:hover {
+        background: #15803d;
+
+        transform: translateY(-1px);
+      }
+
+      /* CANCEL BUTTON */
+
+      .cancel-borrow {
+        flex: 1;
+
+        background: #ef4444;
+
+        color: #fff;
+      }
+
+      .cancel-borrow:hover {
+        background: rgb(223, 35, 35);
+
+        transform: translateY(-1px);
+      }
+
+      /* RETURN MESSAGE MODAL */
+
+      .return-modal {
+        position: fixed;
+
+        inset: 0;
+
+        display: none;
+
+        align-items: center;
+        justify-content: center;
+
+        padding: 20px;
+
+        background: rgba(15, 23, 42, 0.55);
+
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+
+        z-index: 9999;
+      }
+
+      /* RETURN MESSAGE MODAL CONTENT */
+
+      .return-modal-content {
+        width: 100%;
+
+        max-width: 450px;
+
+        padding: 32px;
+
+        border-radius: 24px;
+
+        background: #ffffff;
+
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+
+        text-align: center;
+
+        animation: returnModalOpen 0.2s ease;
+      }
+
+      @keyframes returnModalOpen {
+        from {
+          opacity: 0;
+
+          transform: translateY(15px) scale(0.97);
+        }
+
+        to {
+          opacity: 1;
+
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      /* RETURN MODAL TITLE */
+
+      .return-modal-content h2 {
+        margin: 0 0 10px;
+
+        color: #1f2937;
+
+        font-size: 26px;
+
+        font-weight: 800;
+      }
+
+      .return-modal-content > p {
+        max-width: 350px;
+
+        margin: 0 auto;
+
+        color: #6b7280;
+
+        font-size: 16px;
+
+        line-height: 1.6;
+      }
+
+      .return-modal-content > p strong {
+        color: #111827;
+
+        font-weight: 700;
+      }
+
+      /* RETURN MODAL ICON */
+
+      .return-modal-icon {
+        width: 68px;
+
+        height: 68px;
+
+        margin: 0 auto 18px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 50%;
+
+        background: #dcfce7;
+
+        color: #16a34a;
+
+        font-size: 28px;
+      }
+
+      /* INFORMATION BOX */
+
+      .return-modal-content .borrow-note {
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 10px;
+
+        margin: 22px 0;
+
+        padding: 14px 16px;
+
+        border-radius: 12px;
+
+        background: #fef3c7;
+
+        color: #92400e;
+
+        font-size: 14px;
+
+        font-weight: 600;
+
+        line-height: 1.5;
+
+        text-align: left;
+      }
+
+      .return-modal-content .borrow-note i {
+        margin-top: 2px;
+
+        flex-shrink: 0;
+
+        font-size: 15px;
+      }
+
+      /* RETURN MODAL ACTIONS */
+
+      .return-modal-content .return-modal-actions {
+        display: flex;
+
+        gap: 12px;
+
+        width: 100%;
+
+        margin-top: 24px;
+      }
+
+      .return-modal-content .cancel-return-btn,
+      .return-modal-content .confirm-return-btn {
+        flex: 1;
+
+        height: 50px;
+
+        border: none;
+
+        border-radius: 12px;
+
+        font-size: 15px;
+
+        font-weight: 700;
+
+        cursor: pointer;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        gap: 8px;
+
+        transition:
+          background 0.2s ease,
+          transform 0.2s ease;
+      }
+
+      /* CANCEL RETURN */
+
+      .return-modal-content .cancel-return-btn {
+        background: #f3f4f6;
+
+        color: #374151;
+      }
+
+      .return-modal-content .cancel-return-btn:hover {
+        background: #e5e7eb;
+
+        transform: translateY(-1px);
+      }
+
+      /* CONFIRM RETURN */
+
+      .return-modal-content .confirm-return-btn {
+        background: #16a34a;
+
+        color: #ffffff;
+      }
+
+      .return-modal-content .confirm-return-btn:hover {
+        background: #15803d;
+
+        transform: translateY(-1px);
+      }
+
+      /* MESSAGE MODAL BUTTON */
+
+      .return-modal-content .confirm-btn {
+        margin-top: 24px;
+      }
+
+      /* DAMAGE RESTRICTION MODAL */
+
+      .damage-restriction-modal {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+      }
+
+      .damage-restriction-modal .return-modal-content {
+        width: min(90%, 500px);
+        padding: 35px 30px;
+        border-radius: 18px;
+        background: #ffffff;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        text-align: center;
+        animation: returnModalOpen 0.2s ease;
+      }
+
+      /* DAMAGE RESTRICTION ICON */
+
+      .damage-restriction-icon {
+          position: relative;
+          width: 82px;
+          height: 82px;
+          margin: 0 auto 22px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #22c55e, #16a34a);
+          color: #ffffff;
+          font-size: 28px;
+          box-shadow: 0 12px 28px rgba(22, 163, 74, 0.28);
+      }
+
+      .damage-restriction-icon .fa-book {
+          font-size: 42px;
+          color: #ffffff;
+      }
+
+      .damage-restriction-icon .restriction-ban {
+          position: absolute;
+          right: -5px;
+          bottom: -3px;
+          font-size: 35px;
+          color: #dc2626;
+          background: #ffffff;
+          border-radius: 50%;
+      }
+
+      /* DAMAGE RESTRICTION TITLE */
+
+      .damage-restriction-modal h2 {
+        margin: 0 0 15px;
+        color: #063b1d;
+        font-size: 28px;
+        font-weight: 700;
+      }
+
+      .damage-restriction-modal p {
+        margin: 0;
+        color: #4b5563;
+        font-size: 16px;
+        line-height: 1.6;
+      }
+
+      .return-modal-content .borrow-note i {
+        margin-top: 2px;
+        flex-shrink: 0;
+        font-size: 15px;
+      }
+
+      /* RETURN MODAL ACTIONS */
+
+      .return-modal-content .return-modal-actions {
+        display: flex;
+        gap: 12px;
+        width: 100%;
+        margin-top: 24px;
+      }
+
+      .return-modal-content .cancel-return-btn,
+      .return-modal-content .confirm-return-btn {
+        flex: 1;
+        height: 50px;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition:
+          background 0.2s ease,
+          transform 0.2s ease;
+      }
+
+      /* CANCEL RETURN */
+
+      .return-modal-content .cancel-return-btn {
+        background: #f3f4f6;
+        color: #374151;
+      }
+
+      .return-modal-content .cancel-return-btn:hover {
+        background: #e5e7eb;
+        transform: translateY(-1px);
+      }
+
+      /* CONFIRM RETURN */
+
+      .return-modal-content .confirm-return-btn {
+        background: #16a34a;
+        color: #ffffff;
+      }
+
+      .return-modal-content .confirm-return-btn:hover {
+        background: #15803d;
+        transform: translateY(-1px);
+      }
+
+      /* MESSAGE MODAL BUTTON */
+
+      .return-modal-content .confirm-btn {
+        margin-top: 24px;
+      }
+
+
+      /* LARGE DESKTOP*/
+
+      @media (min-width: 1400px) {
+        .book-details-page {
+          padding-left: 3vw !important;
+          padding-right: 3vw !important;
+        }
+
+        .book-details-layout {
+          grid-template-columns:
+            minmax(340px, 30%)
+            minmax(0, 70%);
+
+          gap: 38px;
+        }
+
+        .book-cover-panel {
+          min-height: 700px;
+
+          padding: 22px;
+        }
+
+        .book-cover-image,
+        .no-book-cover {
+          max-width: 380px;
+          height: 455px;
+        }
+
+        .details-card {
+          padding: 28px 32px;
+        }
+      }
+
+      /* TABLET */
+
+      @media (max-width: 1000px) {
+        .book-details-page {
+          padding: 24px 24px 40px !important;
+        }
+
+        .book-details-layout {
+          grid-template-columns:
+            minmax(250px, 34%)
+            minmax(0, 66%);
+
+          gap: 22px;
+        }
+
+        .book-cover-image,
+        .no-book-cover {
+          height: 350px;
+        }
+
+        .details-card {
+          padding: 22px;
+        }
+
+        .info-grid {
+          column-gap: 30px;
+        }
+      }
+
+      /* MOBILE */
+
+      @media (max-width: 768px) {
+
+        .book-details-page {
+          width: 100%;
+          padding: 18px 14px 35px !important;
+        }
+
+        .back-btn {
+          margin-bottom: 15px;
+        }
+
+        .book-details-layout {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .book-cover-panel {
+          min-height: auto;
+          padding: 16px;
+        }
+
+        .book-cover-image,
+        .no-book-cover {
+          width: 100%;
+          max-width: 280px;
+          height: 370px;
+        }
+
+        .copies {
+          margin-top: 8px;
+        }
+
+        .book-info-panel > h1 {
+          font-size: 31px;
+          line-height: 1.15;
+        }
+
+        .details-author {
+          font-size: 15px;
+        }
+
+        .detail-tags {
+          margin-bottom: 18px;
+        }
+
+        .details-card {
+          padding: 20px;
+          border-radius: 15px;
+        }
+
+        .details-card h3 {
+          font-size: 19px;
+        }
+
+        .info-grid {
+          grid-template-columns: 1fr;
+          gap: 19px;
+        }
+
+        .book-info-details-card {
+          height: auto;
+          min-height: 400px;
+          max-height: none;
+          overflow: visible;
+        }
+
+        .modal-actions {
+          display: flex;
+          flex-direction: row;
+          align-items: stretch;
+          gap: 10px;
+          width: 100%;
+          margin-top: 24px;
+          box-sizing: border-box;
+        }
+
+        .modal-actions form {
+          flex: 1 1 0;
+          width: auto;
+          min-width: 0;
+          margin: 0;
+        }
+
+        .confirm-borrow,
+        .cancel-borrow,
+        .confirm-btn {
+          width: 100%;
+          height: 48px;
+          min-height: 48px;
+
+          padding: 0 8px;
+
+          border: none;
+          border-radius: 12px;
+
+          font-size: 14px;
+          font-weight: 700;
+
+          cursor: pointer;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          gap: 6px;
+
+          white-space: nowrap;
+          word-break: keep-all;
+
+          box-sizing: border-box;
+
+          transition:
+            background 0.2s ease,
+            transform 0.2s ease;
+        }
+
+      }
+
+
+      /* SMALL MOBILE */
+
+      @media (max-width: 420px) {
+
+        .book-details-page {
+          padding: 14px 10px 30px !important;
+        }
+
+        .back-btn {
+          min-height: 38px;
+          padding: 0 16px;
+          font-size: 14px;
+        }
+
+        .book-cover-panel {
+          padding: 13px;
+          border-radius: 16px;
+        }
+
+        .book-cover-image,
+        .no-book-cover {
+          max-width: 235px;
+          height: 315px;
+        }
+
+        .book-info-panel > h1 {
+          font-size: 27px;
+        }
+
+        .detail-tags span {
+          min-height: 32px;
+          padding: 6px 12px;
+          font-size: 12px;
+        }
+
+        .details-card {
+          padding: 17px;
+        }
+
+        .details-card > p {
+          font-size: 14px;
+        }
+
+        .info-grid p {
+          font-size: 14px;
+        }
+
+        .book-info-details-card {
+          height: auto;
+          min-height: 400px;
+          max-height: none;
+          overflow: visible;
+        }
+
+        .info-grid {
+          grid-template-columns: 1fr;
+          gap: 19px;
+        }
+
+        .modal-actions {
+          display: flex;
+          flex-direction: row;
+          align-items: stretch;
+          gap: 8px;
+          width: 100%;
+        }
+
+        .modal-actions form {
+          flex: 1 1 0;
+          width: auto;
+          min-width: 0;
+        }
+
+        .confirm-borrow,
+        .cancel-borrow,
+        .confirm-btn {
+          width: 100%;
+          height: 46px;
+          min-height: 46px;
+
+          padding: 0 6px;
+
+          font-size: 13px;
+          white-space: nowrap;
+        }
+
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="book-details-page">
+      <a href="{{ url_for('catalog') }}" class="back-btn"> ← Back </a>
+
+
+        <div class="book-details-layout">
+          <!-- BOOK COVER PANEL -->
+          <div class="book-cover-panel">
+            {% if book.has_cover_image %}
+
+            <img
+              src="{{ url_for('static', filename='covers/' + book.cover_image) }}"
+              alt="Book Cover"
+              class="book-cover-image"
+            />
+
+            {% else %}
+
+            <div class="no-book-cover">
+              <i class="fa-solid fa-image"></i>
+              <span>NO IMAGE</span>
+            </div>
+
+            {% endif %}
+
+            <!-- AVAILABILITY STATUS -->
+            <span
+              id="bookAvailabilityStatus"
+              class="detail-status {% if book.display_occupied_copies >= book.total_copies %}detail-status-unavailable{% endif %}"
+            >
+              {% if book.display_occupied_copies < book.total_copies %}
+                Available
+              {% else %}
+                Not Available
+              {% endif %}
+            </span>
+
+            <!-- AVAILABLE COPIES -->
+            <div class="copies">
+              <p>Available Copies</p>
+
+              <h2 id="availableCopiesCount">
+                {{ book.display_available_copies }} / {{ book.total_copies }}
+              </h2>
+            </div>
+
+            <!-- BORROW BUTTON -->
+            {% if already_requested %}
+
+            <button
+              type="button"
+              class="borrow-btn already-requested-btn"
+              disabled
+            >
+              Already Requested
+            </button>
+
+            {% elif borrow_limit_reached %}
+
+            <button
+              type="button"
+              class="borrow-btn borrow-limit-btn"
+              disabled
+            >
+              Borrow Limit
+            </button>
+
+            <div class="borrow-limit-note">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              Note: Maximum of 3 books allowed.
+            </div>
+
+            {% elif book.display_occupied_copies < book.total_copies %}
+
+            <button
+              type="button"
+              class="borrow-btn"
+              id="openBorrowModalBtn"
+            >
+              Request Book
+            </button>
+
+            {% else %}
+
+            <button
+              type="button"
+              class="borrow-btn not-available-btn"
+              disabled
+            >
+              Not Available
+            </button>
+
+            {% endif %}
+          </div>
+
+          <!-- BOOK INFORMATION PANEL -->
+          <div class="book-info-panel">
+            <h1 id="bookTitle">
+              {{ book.title }}
+            </h1>
+
+            <button
+              type="button"
+              id="titleToggleBtn"
+              class="title-toggle-btn"
+              style="display: none;"
+            >
+              See more...
+            </button>
+
+            <p class="details-author">{{ book.author }}</p>
+
+            <!-- TAGS -->
+            <div class="detail-tags">
+              <span>{{ book.category }}</span>
+              <span>{{ book.genre }}</span>
+              <span>{{ book.shelf_location }}</span>
+            </div>
+
+            <!-- DESCRIPTION -->
+            <div class="details-card">
+              <h3>
+                <i class="fa-solid fa-book-open"></i>
+                Description
+              </h3>
+
+              <p>{{ book.summary }}</p>
+            </div>
+
+            <!-- BOOK INFORMATION -->
+            <div class="book-info-details-card">
+              <h3>Book Information</h3>
+
+              <div class="info-grid">
+                <!-- AUTHOR -->
+                <div class="info-item">
+                  <i class="fa-solid fa-user"></i>
+
+                  <div class="info-content">
+                    <label>Author</label>
+                    <p>{{ book.author or "N/A" }}</p>
+                  </div>
+                </div>
+
+                <!-- PUBLISHER -->
+                <div class="info-item">
+                  <i class="fa-solid fa-building"></i>
+
+                  <div class="info-content">
+                    <label>Publisher</label>
+                    <p>{{ book.publisher or "N/A" }}</p>
+                  </div>
+                </div>
+
+                <!-- ISBN -->
+                <div class="info-item">
+                  <i class="fa-solid fa-barcode"></i>
+
+                  <div class="info-content">
+                    <label>ISBN</label>
+                    <p>{{ book.isbn or "N/A" }}</p>
+                  </div>
+                </div>
+
+                <!-- COPYRIGHT -->
+                <div class="info-item">
+                  <i class="fa-solid fa-calendar-days"></i>
+
+                  <div class="info-content">
+                    <label>Copyright</label>
+                    <p>{{ book.copyright or "N/A" }}</p>
+                  </div>
+                </div>
+
+                <!-- SHELF LOCATION -->
+                <div class="info-item">
+                  <i class="fa-solid fa-location-dot"></i>
+
+                  <div class="info-content">
+                    <label>Shelf Location</label>
+                    <p>{{ book.shelf_location or "N/A" }}</p>
+                  </div>
+                </div>
+
+                <!-- AVAILABILITY -->
+                <div class="info-item">
+                  <i class="fa-solid fa-circle-check"></i>
+
+                  <div class="info-content">
+                    <label>Availability</label>
+
+                    <p id="bookInfoAvailability">
+                      {% if book.display_occupied_copies < book.total_copies %}
+                        Available
+                      {% else %}
+                        Not Available
+                      {% endif %}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BORROW MODAL -->
+
+    <div class="borrow-modal" id="borrowModal">
+      <div class="borrow-modal-content">
+        <h2>Request Book</h2>
+
+        <p>You are about to request "<strong>{{ book.title }}</strong>"</p>
+
+        <p class="due-text">
+          If approved, this book will be due 5 days after pickup.
+        </p>
+
+        <div class="modal-actions">
+          <form method="POST" action="{{ url_for('borrow_book') }}">
+            <input type="hidden" name="book_id" value="{{ book.book_id }}" />
+
+            <button type="submit" class="confirm-borrow">
+              Confirm Request
+            </button>
+          </form>
+
+          <button type="button" class="cancel-borrow" id="closeBorrowModal">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MESSAGE MODAL -->
+
+    <div class="return-modal" id="messageModal">
+        <div class="return-modal-content">
+            <h2 id="messageTitle"></h2>
+
+            <p id="messageText"></p>
+
+            <div class="modal-buttons">
+                <button
+                    type="button"
+                    class="confirm-btn"
+                >
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLASH DATA -->
+
+    <script id="flashData" type="application/json">
+      {{ get_flashed_messages(with_categories=true)|tojson }}
+    </script>
+
+    <!-- DAMAGE RESTRICTION -->
+
+    {% if has_damage_report %}
+
+    <div
+      class="return-modal damage-restriction-modal"
+      id="damageRestrictionModal"
+      style="display: flex"
+    >
+      <div class="return-modal-content">
+        <div class="damage-restriction-icon">
+          <i class="fa-solid fa-book"></i>
+
+          <i class="fa-solid fa-ban restriction-ban"></i>
+        </div>
+        <h2>Borrowing Restricted</h2>
+        <p>
+          You cannot borrow books because you have an active damage report.
+          Please settle the reported damage first before borrowing another book.
+        </p>
+
+        <div class="modal-buttons">
+          <a
+            href="{{ url_for('catalog') }}"
+            class="confirm-btn"
+            style="
+              text-decoration: none;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            Back to Catalog
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {% endif %}
+
+
+<!-- SOCKET.IO CLIENT -->
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* 1. BOOK TITLE TOGGLE */
+
+    const title = document.getElementById("bookTitle");
+    const toggleBtn = document.getElementById("titleToggleBtn");
+
+    if (title && toggleBtn) {
+
+        function checkTitleOverflow() {
+            const isOverflowing =
+                title.scrollHeight > title.clientHeight + 1;
+
+            toggleBtn.style.display = isOverflowing
+                ? "inline-block"
+                : "none";
+        }
+
+        toggleBtn.addEventListener("click", function () {
+
+            const isExpanded =
+                title.classList.contains("title-expanded");
+
+            if (isExpanded) {
+                title.classList.remove("title-expanded");
+                toggleBtn.textContent = "See more...";
+            } else {
+                title.classList.add("title-expanded");
+                toggleBtn.textContent = "See less";
+            }
+
+            checkTitleOverflow();
+        });
+
+        checkTitleOverflow();
+
+        window.addEventListener("resize", checkTitleOverflow);
+    }
+
+
+    /* 2. BORROW MODAL */
+
+    const borrowModal = document.getElementById("borrowModal");
+
+    const closeBorrowModalBtn =
+        document.getElementById("closeBorrowModal");
+
+    const coverPanel = document.querySelector(".book-cover-panel");
+
+    function openBorrowModal() {
+        if (!borrowModal) return;
+
+        borrowModal.classList.add("show-borrow-modal");
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeBorrowModal() {
+        if (!borrowModal) return;
+
+        borrowModal.classList.remove("show-borrow-modal");
+        document.body.style.overflow = "";
+    }
+
+
+    if (coverPanel) {
+
+        coverPanel.addEventListener("click", function (event) {
+
+            const button = event.target.closest(
+                "#openBorrowModalBtn"
+            );
+
+            if (!button || !coverPanel.contains(button)) return;
+            if (button.disabled) return;
+
+            openBorrowModal();
+        });
+    }
+
+    if (closeBorrowModalBtn) {
+        closeBorrowModalBtn.addEventListener(
+            "click",
+            closeBorrowModal
+        );
+    }
+
+    if (borrowModal) {
+
+        borrowModal.addEventListener("click", function (event) {
+
+            if (event.target === borrowModal) {
+                closeBorrowModal();
+            }
+        });
+    }
+
+
+    /* 3. REAL-TIME BOOK AVAILABILITY */
+
+    const bookId = {{ book.book_id | tojson }};
+
+    const statusElement =
+        document.getElementById("bookAvailabilityStatus");
+
+    const copiesElement =
+        document.getElementById("availableCopiesCount");
+
+    const infoAvailabilityElement =
+        document.getElementById("bookInfoAvailability");
+
+    if (typeof io === "function" && coverPanel) {
+
+        const availabilitySocket = io();
+
+        availabilitySocket.on("connect", function () {
+
+            console.log(
+                "BOOK AVAILABILITY SOCKET CONNECTED:",
+                availabilitySocket.id
+            );
+
+            availabilitySocket.emit("join_book_room", {
+                book_id: bookId
+            });
+        });
+
+        availabilitySocket.on(
+            "book_availability_updated",
+            function (data) {
+
+                if (
+                    !data ||
+                    Number(data.book_id) !== Number(bookId)
+                ) {
+                    return;
+                }
+
+                const availableCopies = Math.max(
+                    0,
+                    Number(data.available_copies) || 0
+                );
+
+                const totalCopies = Math.max(
+                    0,
+                    Number(data.total_copies) || 0
+                );
+
+                const isAvailable =
+                    data.available === true &&
+                    availableCopies > 0;
+
+                const statusText = isAvailable
+                    ? "Available"
+                    : "Not Available";
+
+                console.log(
+                    "BOOK AVAILABILITY UPDATED:",
+                    data
+                );
+
+
+                // UPDATE AVAILABILITY BADGE
+
+                if (statusElement) {
+
+                    statusElement.textContent = statusText;
+
+                    statusElement.classList.toggle(
+                        "detail-status-unavailable",
+                        !isAvailable
+                    );
+                }
+
+
+                // UPDATE AVAILABLE COPIES
+
+                if (copiesElement) {
+
+                    copiesElement.textContent =
+                        `${availableCopies} / ${totalCopies}`;
+                }
+
+
+                // UPDATE BOOK INFORMATION
+
+                if (infoAvailabilityElement) {
+
+                    infoAvailabilityElement.textContent =
+                        statusText;
+                }
+
+
+                // UPDATE REQUEST BOOK BUTTON
+
+                let button = coverPanel.querySelector(".borrow-btn");
+
+                if (!button) return;
+
+                /*
+                   Huwag baguhin ang existing restrictions ng
+                   kasalukuyang user.
+                */
+
+                if (
+                    button.classList.contains(
+                        "already-requested-btn"
+                    ) ||
+                    button.classList.contains(
+                        "borrow-limit-btn"
+                    )
+                ) {
+                    return;
+                }
+
+
+                if (!isAvailable) {
+
+                    if (
+                        button.classList.contains(
+                            "not-available-btn"
+                        )
+                    ) {
+                        return;
+                    }
+
+                    const unavailableButton =
+                        document.createElement("button");
+
+                    unavailableButton.type = "button";
+
+                    unavailableButton.className =
+                        "borrow-btn not-available-btn";
+
+                    unavailableButton.disabled = true;
+
+                    unavailableButton.textContent =
+                        "Not Available";
+
+                    button.replaceWith(unavailableButton);
+
+                    // Isara ang modal kung nawalan ng availability.
+                    closeBorrowModal();
+
+                } else {
+
+                    if (
+                        button.classList.contains(
+                            "not-available-btn"
+                        )
+                    ) {
+
+                        const requestButton =
+                            document.createElement("button");
+
+                        requestButton.type = "button";
+
+                        requestButton.className = "borrow-btn";
+
+                        requestButton.id = "openBorrowModalBtn";
+
+                        requestButton.textContent = "Request Book";
+
+                        button.replaceWith(requestButton);
+                    }
+                }
+            }
+        );
+
+        availabilitySocket.on("connect_error", function (error) {
+
+            console.error(
+                "BOOK AVAILABILITY CONNECTION ERROR:",
+                error.message
+            );
+        });
+
+    } else {
+
+        console.warn(
+            "Socket.IO client or book cover panel is unavailable."
+        );
+    }
+
+
+    /* 4. MESSAGE MODAL */
+
+    function openMessageModal(title, message) {
+
+        const messageTitle =
+            document.getElementById("messageTitle");
+
+        const messageText =
+            document.getElementById("messageText");
+
+        const messageModal =
+            document.getElementById("messageModal");
+
+        if (!messageTitle || !messageText || !messageModal) {
+
+            console.error("Message modal elements not found.");
+
+            return;
+        }
+
+        messageTitle.innerText = title;
+        messageText.innerText = message;
+
+        messageModal.style.display = "flex";
+
+        document.body.style.overflow = "hidden";
+    }
+
+
+    function closeMessageModal() {
+
+        const messageModal =
+            document.getElementById("messageModal");
+
+        if (!messageModal) return;
+
+        messageModal.style.display = "none";
+
+        document.body.style.overflow = "";
+
+        window.location.href =
+            "{{ url_for('book_details', book_id=book.book_id) }}";
+    }
+
+
+    /*
+       FIX:
+       Ikabit ang OK button sa function gamit ang event listener.
+       Hindi na kailangan ang inline onclick sa HTML.
+    */
+
+    const closeMessageModalBtn = document.querySelector(
+        "#messageModal .confirm-btn"
+    );
+
+    if (closeMessageModalBtn) {
+
+        closeMessageModalBtn.addEventListener(
+            "click",
+            closeMessageModal
+        );
+    }
+
+
+    /* 5. FLASH MESSAGES */
+
+    const flashData = document.getElementById("flashData");
+
+    let flashMessages = [];
+
+    if (flashData) {
+
+        try {
+
+            const flashJSON = flashData.textContent.trim();
+
+            flashMessages = JSON.parse(flashJSON || "[]");
+
+            console.log("FLASH DATA:", flashMessages);
+
+        } catch (error) {
+
+            console.error("Flash message error:", error);
+        }
+    }
+
+
+    window.addEventListener("load", function () {
+
+        console.log("BOOK DETAILS LOADED");
+
+        if (!flashMessages.length) {
+
+            console.log("NO FLASH MESSAGE");
+
+            return;
+        }
+
+        const category = flashMessages[0][0];
+
+        const message = flashMessages[0][1];
+
+        console.log("FLASH CATEGORY:", category);
+
+        console.log("FLASH MESSAGE:", message);
+
+
+        if (category === "borrow_limit") {
+
+            openMessageModal(
+                "Borrow Limit Reached",
+                message
+            );
+
+        } else if (category === "already_borrowed") {
+
+            openMessageModal(
+                "Already Borrowed",
+                message
+            );
+
+        } else if (category === "success") {
+
+            openMessageModal(
+                "Success",
+                message
+            );
+
+        } else if (category === "damage_restriction") {
+
+            openMessageModal(
+                "Borrowing Restricted",
+                message
+            );
+
+        } else if (category === "error") {
+
+            openMessageModal(
+                "Unable to Request Book",
+                message
+            );
+        }
+    });
+
+
+    /* 6. ESCAPE KEY */
+
+    document.addEventListener("keydown", function (event) {
+
+        if (event.key === "Escape" && borrowModal) {
+            closeBorrowModal();
+        }
+    });
+
+    });
+</script>
+</body>
+</html>

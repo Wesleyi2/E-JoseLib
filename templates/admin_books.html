@@ -1,0 +1,1487 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Manage Books - E-JoseLib</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='admin-mobile.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <!-- MOBILE TOPBAR PILL (mobile only) -->
+    <div class="mobile-topbar" id="mobileTopbar">
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <span class="mobile-topbar-title"> Manage Books </span>
+      <a href="{{ url_for('add_book') }}" class="mobile-add-book">
+        <i class="fa-solid fa-plus"></i>
+      </a>
+    </div>
+        <form
+          method="GET"
+          action="{{ url_for('admin_books') }}"
+          class="mobile-books-search"
+        >
+          <i class="fa-solid fa-magnifying-glass"></i>
+
+          <input
+            type="text"
+            name="search"
+            value="{{ search }}"
+            id="mobileBookSearch"
+            placeholder="Search books..."
+            autocomplete="off"
+          />
+
+          {% if status %}
+            <input type="hidden" name="status" value="{{ status }}" />
+          {% endif %}
+
+          {% if search %}
+            <a
+              href="{{ url_for('admin_books', status=status) }}"
+              class="search-reset"
+              title="Clear Search"
+            >
+              <i class="fa-solid fa-xmark"></i>
+            </a>
+          {% endif %}
+        </form>
+    </div>
+    <div class="mobile-book-filters-wrapper">
+<div class="mobile-book-filters">
+
+    <button
+        class="{% if not status %}active{% endif %}"
+        data-filter="all"
+    >
+        All
+    </button>
+
+    <button
+        class="{% if status == 'available' %}active{% endif %}"
+        data-filter="available"
+    >
+        Available
+    </button>
+
+    <button
+        class="{% if status == 'borrowed' %}active{% endif %}"
+        data-filter="borrowed"
+    >
+        Borrowed
+    </button>
+
+    <button
+        class="{% if status == 'archived' %}active{% endif %}"
+        data-filter="archived"
+    >
+        Archived
+    </button>
+
+</div>
+    </div>
+
+    <!-- SIDEBAR OVERLAY (mobile only) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="dashboard">
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-close" id="sidebarClose">
+          <i class="fa-solid fa-xmark"></i>
+        </div>
+
+        <div class="logo-section">
+          <img
+            src="{{ url_for('static', filename='SJC_LOGO3.png') }}"
+            class="school-logo"
+          />
+        </div>
+        <ul>
+          <a href="{{ url_for('admin_dashboard') }}">
+            <li>
+              <i class="fa-solid fa-chart-line"></i>
+              <span>Dashboard</span>
+            </li>
+          </a>
+          <a href="{{ url_for('admin_books') }}">
+            <li class="active">
+              <i class="fa-solid fa-book"></i>
+              <span>Books</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('admin_borrow_request') }}">
+            <li>
+              <i class="fa-solid fa-clipboard-check"></i>
+              <span>Approval</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('admin_attendance') }}">
+            <li>
+              <i class="fa-solid fa-clock"></i>
+              <span>Attendance</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('admin_users') }}">
+            <li>
+              <i class="fa-solid fa-users"></i>
+              <span> Users </span>
+            </li>
+          </a>
+        </ul>
+
+        <!-- MOBILE ONLY: Logout -->
+        <div class="sidebar-profile-mobile">
+          <a href="{{ url_for('logout') }}" class="sidebar-logout">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <!-- HEADER -->
+        <div class="dashboard-header">
+          <div class="header-left">
+            <h1>Manage Books</h1>
+            <p>Add, update, and manage library books</p>
+          </div>
+
+          <div class="header-right">
+
+            <form
+              method="GET"
+              action="{{ url_for('admin_books') }}"
+              class="search-box"
+            >
+              <i class="fa-solid fa-magnifying-glass"></i>
+
+              <input
+                type="text"
+                name="search"
+                value="{{ search }}"
+                id="bookSearch"
+                placeholder="Search by title, author, or category..."
+                autocomplete="off"
+              />
+
+              {% if search %}
+                <a
+                  href="{{ url_for('admin_books', status=status) }}"
+                  class="search-reset"
+                  title="Clear Search"
+                >
+                  <i class="fa-solid fa-xmark"></i>
+                </a>
+              {% endif %}
+
+              {% if status %}
+                <input type="hidden" name="status" value="{{ status }}" />
+              {% endif %}
+            </form>
+
+            <div class="book-header-actions">
+              <button
+                type="button"
+                class="excel-btn"
+                id="openImportExcel"
+              >
+                <i class="fa-solid fa-file-excel"></i>
+                <span>Import Excel</span>
+              </button>
+
+              <a href="{{ url_for('export_books_pdf', date=filter_date) }}"
+                  class="export-btn"
+              >
+                  <i class="fa-solid fa-file-pdf"></i>
+                  <span>Export PDF</span>
+              </a>
+
+              <a href="{{ url_for('add_book') }}" class="add-book-btn">
+                <i class="fa-solid fa-plus"></i>
+                <span>Add Book</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- IMPORT EXCEL MODAL -->
+
+        <div class="borrow-modal" id="importExcelModal">
+          <div class="borrow-modal-content">
+            <div class="modal-book-icon">
+              <i class="fa-solid fa-file-excel"></i>
+            </div>
+
+            <h2>Import Books from Excel</h2>
+
+            <p>Select an Excel file containing your library books.</p>
+
+            <form
+              action="{{ url_for('import_books_excel') }}"
+              method="POST"
+              enctype="multipart/form-data"
+              id="importExcelForm"
+            >
+              <div class="excel-upload-area">
+                <i class="fa-solid fa-file-arrow-up"></i>
+
+                <label for="excelFile">Choose Excel File</label>
+
+                <input
+                  type="file"
+                  id="excelFile"
+                  name="excel_file"
+                  accept=".xlsx,.xlsm"
+                  required
+                />
+
+                <span id="selectedExcelName">No file selected</span>
+              </div>
+
+              <div class="modal-actions">
+                <button
+                  type="button"
+                  class="cancel-borrow"
+                  id="cancelImportExcel"
+                >
+                  Cancel
+                </button>
+
+                <button type="submit" class="confirm-borrow">
+                  <i class="fa-solid fa-file-import"></i>
+                  Import
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- IMPORT EXCEL LOADING SCREEN -->
+        <div
+          id="excelImportLoading"
+          class="excel-import-loading"
+          aria-hidden="true"
+          role="status"
+          aria-live="polite"
+        >
+          <div class="excel-loading-card">
+            <div class="excel-loading-icon">
+              <i class="fa-solid fa-file-excel"></i>
+            </div>
+
+            <div class="excel-loading-spinner"></div>
+
+            <h2>Importing Books</h2>
+
+            <p id="excelLoadingMessage">
+              Please wait while we upload and process your Excel file...
+            </p>
+
+            <div
+              class="excel-loading-progress"
+              aria-hidden="true"
+            >
+              <div class="excel-loading-progress-bar"></div>
+            </div>
+
+            <span class="excel-loading-note">
+              Please do not close or refresh this page.
+            </span>
+          </div>
+        </div>
+
+
+        <!-- FLASH MESSAGE -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-toast-container">
+              {% for category, message in messages %}
+                <div class="flash-toast {{ category }}">
+                  {{ message }}
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <!-- Books table -->
+        <div class="admin-table-card">
+          <div class="books-total">
+            <div class="books-total-info">
+              <i class="fa-solid fa-book"></i>
+              <span>Total Books: <strong>{{ total_books }}</strong></span>
+            </div>
+
+            <div class="book-date-filter">
+
+              <input
+                type="date"
+                id="bookDateFilter"
+                value="{{ filter_date }}"
+              />
+              <button
+                type="button"
+                id="clearBookDate"
+                title="Clear Date"
+              >
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+
+          <table class="admin-table books-admin-table" id="booksTable">
+            <thead>
+              <tr>
+                <th>Cover</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Publisher</th>
+                <th>Copyright</th>
+                <th>Category</th>
+                <th>Copies</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for book in books %}
+              <tr>
+                <td>
+
+                  {% if book.has_cover_image %}
+
+                    <img
+                      src="{{ url_for(
+                          'static',
+                          filename='covers/' + book.cover_image
+                        ) }}"
+                      class="admin-book-cover"
+                      alt="{{ book.title }}"
+                    >
+
+                  {% else %}
+
+                    <div class="admin-book-no-image">
+                      <i class="fa-solid fa-image"></i>
+                      <span>NO IMAGE</span>
+                    </div>
+
+                  {% endif %}
+
+                <td>
+                  <div
+                    class="book-text book-title-text {% if book.title_truncated %}book-truncated{% endif %}"
+                    data-full="{{ book.title }}"
+                    data-short="{{ book.display_title }}"
+                  >
+                    {{ book.display_title }}
+                  </div>
+
+                  {% if book.title_truncated or book.author_truncated or book.publisher_truncated %}
+                    <button
+                      type="button"
+                      class="book-toggle"
+                      onclick="toggleAdminBookRow(this)"
+                    >
+                      See more..
+                    </button>
+                  {% endif %}
+                </td>
+
+                <td>
+                  <div
+                    class="book-text book-author-text {% if book.author_truncated %}book-truncated{% endif %}"
+                    data-full="{{ book.author }}"
+                    data-short="{{ book.display_author }}"
+                  >
+                    {{ book.display_author }}
+                  </div>
+                </td>
+
+                <td>
+                  <div
+                    class="book-text book-publisher-text {% if book.publisher_truncated %}book-truncated{% endif %}"
+                    data-full="{{ book.publisher or '' }}"
+                    data-short="{{ book.display_publisher }}"
+                  >
+                    {{ book.display_publisher }}
+                  </div>
+                </td>
+                <td>{{ book.copyright or "" }}</td>
+                <td>{{ book.category }}</td>
+                <td>{{ book.copies_available }}</td>
+                <td>
+                  {% if book.book_status == "Archived" %}
+
+                  <span class="admin-status-badge status-archived"
+                    >Archived</span
+                  >
+                  {% elif book.availability == "Borrowed" %}
+                  <span class="admin-status-badge status-borrowed"
+                    >Borrowed</span
+                  >
+                  {% else %}
+                  <span class="admin-status-badge status-available"
+                    >Available</span
+                  >
+                  {% endif %}
+                </td>
+
+                <td>
+                  <div class="admin-actions">
+                    <a
+                      href="{{ url_for('edit_book', book_id=book.book_id) }}"
+                      class="edit-btn"
+                    >
+                      Edit
+                    </a>
+                    {% if book.book_status == "Active" %}
+
+                    <form
+                      action="{{ url_for('archive_book', book_id=book.book_id) }}"
+                      method="POST"
+                      class="archiveForm"
+                      style="display: inline"
+                    >
+                      <button
+                        type="button"
+                        class="delete-btn archiveBtn"
+                        data-title="{{ book.title }}"
+                      >
+                        Archive
+                      </button>
+                    </form>
+                    {% else %}
+
+                    <form
+                      action="{{ url_for('restore_book', book_id=book.book_id) }}"
+                      method="POST"
+                      style="display: inline"
+                    >
+                      <button type="submit" class="restore-btn">Restore</button>
+                    </form>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mobile-book-list">
+          {% for book in books %}
+
+          <div
+            class="mobile-book-card"
+            data-status="{% if book.book_status == 'Archived' %}archived{% elif book.availability == 
+              'Borrowed' %}borrowed{% else %}available{% endif %}"
+          >
+            <div class="mobile-book-left">
+              <img
+                src="{{ url_for('static', filename='covers/' + book.cover_image) }}"
+                class="mobile-book-cover"
+              />
+
+              {% if book.book_status == "Archived" %}
+              <span class="admin-status-badge status-archived"> Archived </span>
+              {% elif book.availability == "Borrowed" %}
+              <span class="admin-status-badge status-borrowed"> Borrowed </span>
+              {% else %}
+              <span class="admin-status-badge status-available">
+                Available
+              </span>
+              {% endif %}
+            </div>
+
+            <div class="mobile-book-right">
+
+                <h3 class="mobile-book-text mobile-book-title"
+                    title="{{ book.title }}"
+                >
+                    {{ book.display_title }}
+                </h3>
+
+                <p class="mobile-book-text mobile-book-author"
+                    title="{{ book.author }}"
+                >
+                    {{ book.display_author }}
+                </p>
+
+                <span>{{ book.category }}</span>
+
+              <div class="mobile-book-actions">
+                <a
+                  href="{{ url_for('edit_book', book_id=book.book_id) }}"
+                  class="edit-btn"
+                  >Edit
+                </a>
+
+                {% if book.book_status == "Active" %}
+                <form
+                  action="{{ url_for('archive_book', book_id=book.book_id) }}"
+                  method="POST"
+                  class="archiveForm"
+                >
+                  <button
+                    type="button"
+                    class="delete-btn archiveBtn"
+                    data-title="{{ book.title }}"
+                  >
+                    Archive
+                  </button>
+                </form>
+                {% else %}
+
+                <form
+                  action="{{ url_for('restore_book', book_id=book.book_id) }}"
+                  method="POST"
+                >
+                  <button type="submit" class="restore-btn">Restore</button>
+                </form>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+<!-- BOOKS PAGINATION -->
+
+{% if total_books > 0 and total_pages > 1 %}
+
+<div class="global-pagination">
+
+    <!-- DESKTOP -->
+    <div class="pagination-desktop">
+
+        {% if page > 1 %}
+
+        <a
+            href="{{ url_for(
+                'admin_books',
+                page=page-1,
+                search=search,
+                status=status,
+                date=filter_date
+            ) }}"
+            class="pagination-btn"
+        >
+            <i class="fa-solid fa-chevron-left"></i>
+            Previous
+        </a>
+
+        {% else %}
+
+        <span class="pagination-btn disabled">
+            <i class="fa-solid fa-chevron-left"></i>
+            Previous
+        </span>
+
+        {% endif %}
+
+
+        <div class="pagination-numbers">
+
+            {% if page > 3 %}
+
+            <a
+                href="{{ url_for(
+                    'admin_books',
+                    page=1,
+                    search=search,
+                    status=status,
+                    date=filter_date
+                ) }}"
+                class="pagination-number"
+            >
+                1
+            </a>
+
+            <span class="pagination-dots">...</span>
+
+            {% endif %}
+
+
+            {% set start_page = [1, page - 1]|max %}
+            {% set end_page = [total_pages, page + 1]|min %}
+
+
+            {% for p in range(start_page, end_page + 1) %}
+
+                {% if p == page %}
+
+                <span class="pagination-number active">
+                    {{ p }}
+                </span>
+
+                {% else %}
+
+                <a
+                    href="{{ url_for(
+                        'admin_books',
+                        page=p,
+                        search=search,
+                        status=status,
+                        date=filter_date
+                    ) }}"
+                    class="pagination-number"
+                >
+                    {{ p }}
+                </a>
+
+                {% endif %}
+
+            {% endfor %}
+
+
+            {% if page < total_pages - 2 %}
+
+            <span class="pagination-dots">...</span>
+
+            <a
+                href="{{ url_for(
+                    'admin_books',
+                    page=total_pages,
+                    search=search,
+                    status=status,
+                    date=filter_date
+                ) }}"
+                class="pagination-number"
+            >
+                {{ total_pages }}
+            </a>
+
+            {% endif %}
+
+        </div>
+
+
+        {% if page < total_pages %}
+
+        <a
+            href="{{ url_for(
+                'admin_books',
+                page=page+1,
+                search=search,
+                status=status,
+                date=filter_date
+            ) }}"
+            class="pagination-btn"
+        >
+            Next
+            <i class="fa-solid fa-chevron-right"></i>
+        </a>
+
+        {% else %}
+
+        <span class="pagination-btn disabled">
+            Next
+            <i class="fa-solid fa-chevron-right"></i>
+        </span>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- MOBILE -->
+
+    <div class="pagination-mobile">
+
+        {% if page > 1 %}
+
+        <a
+            href="{{ url_for(
+                'admin_books',
+                page=page-1,
+                search=search,
+                status=status,
+                date=filter_date
+            ) }}"
+            class="pagination-mobile-btn"
+        >
+            <i class="fa-solid fa-chevron-left"></i>
+            Previous
+        </a>
+
+        {% else %}
+
+        <span class="pagination-mobile-btn disabled">
+            <i class="fa-solid fa-chevron-left"></i>
+            Previous
+        </span>
+
+        {% endif %}
+
+
+        <span class="pagination-page-info">
+            {{ page }} / {{ total_pages }}
+        </span>
+
+
+        {% if page < total_pages %}
+
+        <a
+            href="{{ url_for(
+                'admin_books',
+                page=page+1,
+                search=search,
+                status=status,
+                date=filter_date
+            ) }}"
+            class="pagination-mobile-btn"
+        >
+            Next
+            <i class="fa-solid fa-chevron-right"></i>
+        </a>
+
+        {% else %}
+
+        <span class="pagination-mobile-btn disabled">
+            Next
+            <i class="fa-solid fa-chevron-right"></i>
+        </span>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endif %}
+
+        <div class="mobile-empty-state" id="mobileEmptyState">
+          <i class="fa-solid fa-book-open"></i>
+          <h3>No books found</h3>
+          <p>No books match your search or selected filter.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="borrow-modal" id="archiveModal">
+      <div class="borrow-modal-content">
+        <div class="modal-book-icon">
+          <i class="fa-solid fa-box-archive"></i>
+        </div>
+        <h2 id="archiveTitle">Archive Book?</h2>
+        <p id="archiveMessage">
+          This book will no longer appear as an active book but can be restored
+          at any time.
+        </p>
+
+        <div class="modal-actions">
+          <button type="button" class="cancel-borrow" id="cancelArchive">
+            Cancel
+          </button>
+          <button type="button" class="confirm-borrow" id="confirmArchive">
+            <i class="fa-solid fa-box-archive"></i>Archive
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+/* SIDEBAR (Mobile) */
+
+const menuToggle = document.getElementById("menuToggle");
+const sidebar = document.getElementById("sidebar");
+const sidebarOverlay = document.getElementById("sidebarOverlay");
+const sidebarClose = document.getElementById("sidebarClose");
+
+if (menuToggle && sidebar && sidebarOverlay) {
+
+    menuToggle.addEventListener("click", () => {
+        sidebar.classList.toggle("show");
+        sidebarOverlay.classList.toggle("show");
+    });
+
+    sidebarOverlay.addEventListener("click", () => {
+        sidebar.classList.remove("show");
+        sidebarOverlay.classList.remove("show");
+    });
+
+    if (sidebarClose) {
+        sidebarClose.addEventListener("click", () => {
+            sidebar.classList.remove("show");
+            sidebarOverlay.classList.remove("show");
+        });
+    }
+
+    sidebar.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", () => {
+            sidebar.classList.remove("show");
+            sidebarOverlay.classList.remove("show");
+        });
+    });
+}
+
+
+function checkEmptyState() {
+
+    const cards = document.querySelectorAll(".mobile-book-card");
+    const emptyState = document.getElementById("mobileEmptyState");
+
+    if (!emptyState) {
+        return;
+    }
+
+    let visibleCards = 0;
+
+    cards.forEach((card) => {
+        if (card.style.display !== "none") {
+            visibleCards++;
+        }
+    });
+
+    if (visibleCards === 0) {
+        emptyState.style.display = "block";
+    } else {
+        emptyState.style.display = "none";
+    }
+}
+
+
+/* LIVE SEARCH + RESET */
+
+const desktopSearch = document.getElementById("bookSearch");
+const mobileSearch = document.getElementById("mobileBookSearch");
+
+let searchTimer = null;
+let searchController = null;
+
+
+function getCurrentFilters() {
+
+    const params = new URLSearchParams(
+        window.location.search
+    );
+
+    return {
+        status: params.get("status") || "",
+        date: params.get("date") || ""
+    };
+}
+
+
+function inputCurrentlyFocused() {
+
+    const activeElement = document.activeElement;
+
+    if (activeElement === desktopSearch) {
+        return desktopSearch;
+    }
+
+    if (activeElement === mobileSearch) {
+        return mobileSearch;
+    }
+
+    return null;
+}
+
+
+function setupLiveSearch(input) {
+
+    if (!input) {
+        return;
+    }
+
+    input.addEventListener("input", function () {
+
+        const searchValue = this.value;
+
+        if (input === desktopSearch && mobileSearch) {
+            mobileSearch.value = searchValue;
+        }
+
+        if (input === mobileSearch && desktopSearch) {
+            desktopSearch.value = searchValue;
+        }
+
+        clearTimeout(searchTimer);
+
+        if (searchValue.trim() === "") {
+            loadBooks("");
+            return;
+        }
+
+        searchTimer = setTimeout(() => {
+            loadBooks(searchValue.trim());
+        }, 500);
+    });
+}
+
+
+/* LOAD SEARCH RESULTS WITHOUT PAGE RELOAD */
+
+async function loadBooks(searchValue) {
+
+    if (searchController) {
+        searchController.abort();
+    }
+
+    searchController = new AbortController();
+
+
+    const currentFilters = getCurrentFilters();
+
+    const currentStatus = currentFilters.status;
+    const currentDate = currentFilters.date;
+
+
+    const url = new URL(
+        "{{ url_for('admin_books') }}",
+        window.location.origin
+    );
+
+
+    if (searchValue && searchValue.trim() !== "") {
+
+        url.searchParams.set(
+            "search",
+            searchValue.trim()
+        );
+    }
+
+
+    if (currentStatus) {
+
+        url.searchParams.set(
+            "status",
+            currentStatus
+        );
+    }
+
+
+    if (currentDate) {
+
+        url.searchParams.set(
+            "date",
+            currentDate
+        );
+    }
+
+
+    url.searchParams.set(
+        "page",
+        "1"
+    );
+
+
+    try {
+
+        const response = await fetch(
+            url.toString(),
+            {
+                method: "GET",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                signal: searchController.signal
+            }
+        );
+
+
+        if (!response.ok) {
+            throw new Error(
+                "Search request failed."
+            );
+        }
+
+
+        const html = await response.text();
+
+        const parser = new DOMParser();
+
+        const newDocument =
+            parser.parseFromString(
+                html,
+                "text/html"
+            );
+
+
+        /* DESKTOP TABLE */
+
+        const currentTableBody =
+            document.querySelector(
+                "#booksTable tbody"
+            );
+
+        const newTableBody =
+            newDocument.querySelector(
+                "#booksTable tbody"
+            );
+
+        if (
+            currentTableBody &&
+            newTableBody
+        ) {
+
+            currentTableBody.innerHTML =
+                newTableBody.innerHTML;
+        }
+
+
+        /* MOBILE BOOK CARDS */
+
+        const currentMobileList =
+            document.querySelector(
+                ".mobile-book-list"
+            );
+
+        const newMobileList =
+            newDocument.querySelector(
+                ".mobile-book-list"
+            );
+
+        if (
+            currentMobileList &&
+            newMobileList
+        ) {
+
+            currentMobileList.innerHTML =
+                newMobileList.innerHTML;
+        }
+
+
+        /* PAGINATION */
+
+        const currentPagination =
+            document.querySelector(
+                ".global-pagination"
+            );
+
+        const newPagination =
+            newDocument.querySelector(
+                ".global-pagination"
+            );
+
+
+        if (
+            currentPagination &&
+            newPagination
+        ) {
+
+            currentPagination.innerHTML =
+                newPagination.innerHTML;
+        }
+
+
+        if (
+            currentPagination &&
+            !newPagination
+        ) {
+
+            currentPagination.innerHTML = "";
+        }
+
+
+        window.history.replaceState(
+            {},
+            "",
+            url.toString()
+        );
+
+
+        checkEmptyState();
+
+
+        const activeSearch =
+            inputCurrentlyFocused();
+
+
+        if (activeSearch) {
+
+            activeSearch.focus();
+
+            activeSearch.setSelectionRange(
+                activeSearch.value.length,
+                activeSearch.value.length
+            );
+        }
+
+    } catch (error) {
+
+        if (error.name === "AbortError") {
+            return;
+        }
+
+        console.error(
+            "Live search error:",
+            error
+        );
+    }
+}
+
+
+/* ACTIVATE LIVE SEARCH */
+
+setupLiveSearch(desktopSearch);
+setupLiveSearch(mobileSearch);
+
+
+/* MOBILE BOOK FILTERS */
+
+document
+    .querySelectorAll(".mobile-book-filters button")
+    .forEach((button) => {
+
+        button.addEventListener("click", function () {
+
+            const filter =
+                this.dataset.filter;
+
+            const url =
+                new URL(window.location.href);
+
+
+            url.searchParams.set(
+                "page",
+                "1"
+            );
+
+
+            if (filter === "all") {
+
+                url.searchParams.delete(
+                    "status"
+                );
+
+            } else {
+
+                url.searchParams.set(
+                    "status",
+                    filter
+                );
+            }
+
+
+            window.location.href =
+                url.toString();
+        });
+    });
+    
+    /* Filter book date */
+
+    const bookDateFilter =
+        document.getElementById("bookDateFilter");
+
+    const clearBookDate =
+        document.getElementById("clearBookDate");
+
+
+    function applyBookDateFilter(date) {
+
+        let url = new URL(
+            window.location.href
+        );
+
+        url.searchParams.delete("page");
+
+        if (date) {
+
+            url.searchParams.set(
+                "date",
+                date
+            );
+
+        } else {
+
+            url.searchParams.delete(
+                "date"
+            );
+        }
+
+        window.location.href =
+            url.toString();
+    }
+
+
+    if (bookDateFilter) {
+
+        bookDateFilter.value =
+            "{{ filter_date }}";
+
+        bookDateFilter.addEventListener(
+            "change",
+            function () {
+
+                applyBookDateFilter(
+                    this.value
+                );
+
+            }
+        );
+    }
+
+
+    if (clearBookDate) {
+
+        clearBookDate.addEventListener(
+            "click",
+            function () {
+
+                applyBookDateFilter("");
+
+            }
+        );
+    }
+
+
+    /*DETECT CURRENT SEARCH INPUT*/
+
+    function inputCurrentlyFocused() {
+
+      if (
+        document.activeElement === desktopSearch
+      ) {
+        return desktopSearch;
+      }
+
+      if (
+        document.activeElement === mobileSearch
+      ) {
+        return mobileSearch;
+      }
+
+      return null;
+    }
+
+    setupLiveSearch(desktopSearch);
+    setupLiveSearch(mobileSearch);
+
+      /* MOBILE FILTERS */
+
+      const filterButtons = document.querySelectorAll(
+        ".mobile-book-filters button"
+      );
+
+      filterButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          filterButtons.forEach((btn) =>
+            btn.classList.remove("active")
+          );
+          button.classList.add("active");
+          const filter = button.dataset.filter;
+          document.querySelectorAll(".mobile-book-card").forEach((card) => {
+
+            if (filter === "all") {
+              card.style.display = "flex";
+              return;
+            }
+
+            card.style.display =
+              card.dataset.status === filter ? "flex" : "none";
+
+          });
+
+          checkEmptyState();
+        });
+      });
+
+      checkEmptyState();
+
+      /* FLASH TOAST */
+
+      document.querySelectorAll(".flash-toast").forEach((toast, index) => {
+
+        setTimeout(() => {
+
+          toast.style.transition = "opacity .8s ease";
+          toast.style.opacity = "0";
+
+          setTimeout(() => {
+            toast.remove();
+          }, 800);
+
+        }, 3000 + (index * 300));
+
+      });
+      
+      /* ARCHIVE MODAL */
+
+      const archiveModal = document.getElementById("archiveModal");
+      const archiveButtons = document.querySelectorAll(".archiveBtn");
+      const cancelArchive = document.getElementById("cancelArchive");
+      const confirmArchive = document.getElementById("confirmArchive");
+      const archiveTitle = document.getElementById("archiveTitle");
+      const archiveMessage = document.getElementById("archiveMessage");
+
+      let selectedArchiveForm = null;
+
+      archiveButtons.forEach((button) => {
+        button.addEventListener("click", function () {
+          selectedArchiveForm = this.closest("form");
+          const title = this.dataset.title;
+          archiveTitle.textContent = `Archive "${title}"?`;
+          archiveMessage.innerHTML = `Are you sure you want to archive <strong>"${title}"</strong>?<br><br>
+                This book will no longer appear as an active book but can be restored at any time.`;
+          archiveModal.classList.add("show-borrow-modal");
+        });
+      });
+      if (cancelArchive) {
+        cancelArchive.addEventListener("click", () => {
+          archiveModal.classList.remove("show-borrow-modal");
+        });
+      }
+      if (confirmArchive) {
+        confirmArchive.addEventListener("click", () => {
+          if (selectedArchiveForm) {
+            selectedArchiveForm.submit();
+          }
+        });
+      }
+      if (archiveModal) {
+        archiveModal.addEventListener("click", function (e) {
+          if (e.target === archiveModal) {
+            archiveModal.classList.remove("show-borrow-modal");
+          }
+        });
+      }
+
+      /* IMPORT EXCEL MODAL */
+
+      const importExcelModal = document.getElementById("importExcelModal");
+      const openImportExcel = document.getElementById("openImportExcel");
+      const cancelImportExcel = document.getElementById("cancelImportExcel");
+      const excelFile = document.getElementById("excelFile");
+      const selectedExcelName = document.getElementById("selectedExcelName");
+
+      if (openImportExcel && importExcelModal) {
+        openImportExcel.addEventListener("click", () => {
+          importExcelModal.classList.add("show-borrow-modal");
+        });
+      }
+
+      if (cancelImportExcel && importExcelModal) {
+        cancelImportExcel.addEventListener("click", () => {
+          importExcelModal.classList.remove("show-borrow-modal");
+        });
+      }
+
+      if (importExcelModal) {
+        importExcelModal.addEventListener("click", (e) => {
+          if (e.target === importExcelModal) {
+            importExcelModal.classList.remove("show-borrow-modal");
+          }
+        });
+      }
+
+      if (excelFile && selectedExcelName) {
+        excelFile.addEventListener("change", function () {
+          if (this.files.length > 0) {
+            selectedExcelName.textContent = this.files[0].name;
+          } else {
+            selectedExcelName.textContent = "No file selected";
+          }
+        });
+      }
+      
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("importExcelForm");
+    const fileInput = document.getElementById("excelFile");
+    const loadingScreen = document.getElementById("excelImportLoading");
+    const loadingMessage = document.getElementById("excelLoadingMessage");
+    const importButton = form?.querySelector('button[type="submit"]');
+    const cancelButton = document.getElementById("cancelImportExcel");
+
+    if (!form || !fileInput || !loadingScreen || !importButton) {
+        return;
+    }
+
+    let isImporting = false;
+
+    form.addEventListener("submit", function (event) {
+        if (isImporting) {
+            event.preventDefault();
+            return;
+        }
+
+        if (!fileInput.files || !fileInput.files.length) {
+            return;
+        }
+
+        isImporting = true;
+
+        loadingMessage.textContent =
+            "Please wait while we upload and process your Excel file...";
+
+        loadingScreen.classList.add("active");
+
+        importButton.disabled = true;
+
+        if (cancelButton) {
+            cancelButton.disabled = true;
+        }
+    });
+
+    // I-update ang loading message habang nagsusumite.
+    fileInput.addEventListener("change", function () {
+        if (fileInput.files.length && loadingMessage) {
+            loadingMessage.textContent =
+                "Preparing " + fileInput.files[0].name + " for import...";
+        }
+    });
+});
+
+
+function toggleAdminBookRow(button) {
+    const row = button.closest("tr");
+
+    if (!row) {
+        return;
+    }
+
+    const textElements = row.querySelectorAll(
+        ".book-title-text, .book-author-text, .book-publisher-text"
+    );
+
+    const expanded = button.dataset.expanded === "true";
+
+    textElements.forEach(function(element) {
+
+        const fullText = element.dataset.full || "";
+        const shortText = element.dataset.short || "";
+
+        if (!expanded) {
+            element.textContent = fullText;
+            element.classList.add("book-expanded");
+        } else {
+            element.textContent = shortText;
+            element.classList.remove("book-expanded");
+        }
+
+    });
+
+    button.dataset.expanded = expanded ? "false" : "true";
+    button.textContent = expanded ? "See more.." : "See less";
+}
+</script>
+  </body>
+</html>

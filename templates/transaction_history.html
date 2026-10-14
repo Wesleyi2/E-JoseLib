@@ -1,0 +1,4013 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Transaction - E-JoseLib</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard.css') }}"/>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard-mobile.css') }}"/>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+      
+  </head>
+
+  <body>
+    <div class="mobile-topbar">
+      <div class="mobile-topbar-left">
+        <img src="{{ url_for('static', filename='SJC_LOGO3.png') }}"
+          class="mobile-logo" alt="Logo"/>
+
+        <span class="mobile-topbar-title"> Transaction History </span>
+      </div>
+      <button class="mobile-notification-btn" id="mobileNotificationBtn">
+
+          <i class="fa-regular fa-bell"></i>
+          <span
+              class="notification-badge"
+              id="mobileNotificationBadge"
+              {% if unread_count == 0 %}style="display:none;"{% endif %}>
+              {{ unread_count }}
+          </span>
+      </button>
+    </div>
+
+    <!-- MOBILE NOTIFICATION PANEL -->
+    <div class="mobile-notification-panel" id="mobileNotificationPanel">
+      <div class="mobile-notification-header">
+        <h3>Notifications</h3>
+        <i class="fa-solid fa-xmark" id="closeMobileNotifications"></i>
+      </div>
+
+      {% if notifications %} {% for n in notifications %}
+      <div class="notification-item {{ n.type }}">
+        <div class="notification-title">{{ n.title }}</div>
+        <div class="notification-message">{{ n.message }}</div>
+        <div class="notification-time">
+          {{ n.created_at.strftime("%b %d, %Y %I:%M %p") }}
+        </div>
+      </div>
+
+      {% endfor %} {% else %}
+
+      <div class="notification-empty">
+        <i class="fa-regular fa-bell-slash"></i>
+        <h4>No notifications yet</h4>
+        <p>You're all caught up.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <div
+      class="mobile-notification-overlay"
+      id="mobileNotificationOverlay">
+    </div>
+
+    <div class="dashboard">
+      <div class="sidebar" id="sidebar">
+        <div class="logo-section">
+          <img src="{{ url_for('static', filename='SJC_LOGO3.png') }}"
+            class="school-logo"/>
+        </div>
+
+        <ul>
+          <a href="{{ url_for('dashboard') }}">
+            <li>
+              <i class="fa-solid fa-house"></i>
+              <span>Dashboard</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('catalog') }}">
+            <li>
+              <i class="fa-solid fa-book-open"></i>
+              <span>Catalog</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('transaction_history') }}">
+            <li class="active">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <span>Transaction History</span>
+            </li>
+          </a>
+        
+            <a href="{{ url_for('qr_code') }}">
+                <li>
+                    <i class="fa-solid fa-qrcode"></i>
+                    <span>QR Code</span>
+                </li>
+            </a>
+        </ul>
+      </div>
+
+      <div class="main-content">
+        <div class="topbar">
+          <div>
+            <h1>Borrowing History</h1>
+            <p>Track all your borrowed books and returns</p>
+          </div>
+
+          <div class="topbar-right">
+            <!-- Notification -->
+
+            <div class="notification-area">
+              <div class="notification-btn" id="notificationBtn">
+                <i class="fa-regular fa-bell"></i>
+
+                <span
+                    class="notification-badge"
+                    id="notificationBadge"
+                    {% if unread_count == 0 %}style="display:none;"{% endif %}>
+
+                  {{ unread_count }}
+                </span>
+              </div>
+
+              <div class="notification-menu" id="notificationMenu">
+                <div class="notification-header">
+                  <h3>Notifications</h3>
+                </div>
+
+                {% if notifications %} {% for n in notifications %}
+
+                <div class="notification-item {{ n.type }}">
+                  <div class="notification-title">{{ n.title }}</div>
+                  <div class="notification-message">{{ n.message }}</div>
+                  <div class="notification-time">
+                    {{ n.created_at.strftime("%b %d, %Y %I:%M %p") }}
+                  </div>
+                </div>
+
+                {% endfor %} {% else %}
+
+                <div class="notification-empty">
+                  <i class="fa-regular fa-bell-slash"></i>
+                  <h4>No notifications yet</h4>
+                  <p>You're all caught up.</p>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Profile -->
+
+            <div class="profile-area">
+              <div class="profile-btn" id="profileBtn">
+                <div class="profile-avatar">{{ student_name[0] }}</div>
+
+                <span>{{ student_name }}</span>
+
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+
+              <div class="profile-menu" id="profileMenu">
+                <a href="{{ url_for('profile') }}">
+                  <i class="fa-solid fa-user"></i>My Profile</a>
+
+                <a href="{{ url_for('logout') }}" class="logout">
+                  <i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <div class="history-stats">
+
+        <div class="history-stat-card">
+          <h4>My Books</h4>
+          <h2>{{ my_books_count }}</h2>
+          <p>Borrow requests and books</p>
+          <i class="fa-solid fa-book"></i>
+        </div>
+
+        <div class="history-stat-card overdue">
+          <h4>Overdue</h4>
+          <h2>{{ overdue_count }}</h2>
+          <p>Needs attention</p>
+          <i class="fa-solid fa-circle-exclamation"></i>
+        </div>
+
+        <div class="history-stat-card completed">
+          <h4>Completed</h4>
+          <h2>{{ completed_count }}</h2>
+          <p>Successfully returned</p>
+          <i class="fa-regular fa-circle-check"></i>
+        </div>
+
+      </div>
+
+        <div class="history-card">
+          <div class="history-card-header">
+
+            <div class="history-header-title">
+                <div class="history-header-icon">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+
+                <div>
+            <h2>Transaction History</h2>
+            <p>View and manage your borrowing records</p>
+          </div>
+        </div>
+    </div>
+
+    <div class="history-tabs-wrapper">
+
+    <div class="history-tabs">
+
+        <button class="tab-btn active" data-tab="all">
+        All ({{ my_books_count }})
+        </button>
+        <button class="tab-btn" data-tab="pending">
+        Pending ({{ pending_count }})
+        </button>
+        <button class="tab-btn" data-tab="completed">
+        Completed ({{ completed_count }})
+        </button>
+        <button class="tab-btn" data-tab="overdue">
+        Overdue ({{ overdue_count }})
+        </button>
+        </div>
+    </div>
+
+    <!-- ALL / MY BOOKS -->
+
+    <div id="allTab" class="history-content">
+    <h3 class="history-section-title">
+        My Books
+    </h3>
+
+    {% if my_books %}
+
+        {% for row in my_books %}
+
+        <div class="history-row my-book-row">
+
+            <!-- BOOK COVER -->
+
+            <img
+            src="{{ url_for('static', filename='covers/' + row.cover_image) }}"
+            alt="Book Cover"
+            />
+
+            <div class="history-book-info">
+
+                <div
+                    class="history-book-preview"
+                    data-title="{{ row.title }}"
+                    data-author="{{ row.author or '' }}"
+                >
+
+                    <h3 class="history-book-title">
+                        {{ row.display_title }}
+                    </h3>
+
+                    {% if row.author %}
+                        <p class="history-book-author">
+                            {{ row.display_author }}
+                        </p>
+                    {% endif %}
+
+                </div>
+
+                {% if row.title_truncated or row.author_truncated %}
+                    <button
+                        type="button"
+                        class="history-book-toggle"
+                        onclick="toggleHistoryBook(this)"
+                    >
+                        See more..
+                    </button>
+                {% endif %}
+
+            <div class="history-dates">
+                <span>
+                <i class="fa-regular fa-calendar"></i>
+                Date Request:
+                {{ row.request_date_display or '-' }}
+                </span>
+            </div>
+
+
+            <!-- CURRENT STATUS MESSAGE -->
+
+            <div
+                id="myBookStatus{{ row.request_id }}"
+                class="my-book-status"
+            >
+                <p class="my-book-status-message">
+                Waiting for librarian approval.
+                </p>
+            </div>
+
+            <div class="book-action-buttons">
+
+            <!-- TRACK BUTTON -->
+
+            <button
+                type="button"
+                class="track-book-btn"
+                onclick="openTrackBookModal('{{ row.request_id }}')"
+            >
+                <i class="fa-solid fa-route"></i>
+                Track Book
+            </button>
+
+
+            <!-- RETURN BUTTON -->
+
+            {% if row.transaction_status|lower == "borrowed" %}
+
+                <button
+                type="button"
+                class="return-btn"
+                onclick="openReturnModal(
+                    '{{ row.transaction_id }}',
+                    '{{ row.book_id }}',
+                    '{{ row.title|e }}'
+                )"
+                >
+                <i class="fa-solid fa-rotate-left"></i>
+                Return Book
+                </button>
+            {% endif %}
+            </div>
+
+            <!-- HIDDEN TRACK DATA -->
+
+            <div
+                id="trackBookData{{ row.request_id }}"
+                class="track-book-data"
+                data-request-id="{{ row.request_id }}"
+                data-title="{{ row.title|e }}"
+                data-author="{{ row.author|e }}"
+                data-request-date="{{ row.request_date_display|e }}"
+                data-request-status="{{ row.request_status|default('', true)|lower|e }}"
+                data-request-reject-note="{{ row.request_reject_note|default('', true)|e }}"
+                data-request-cancel-note="{{ row.request_cancel_note|default('', true)|e }}"
+                data-cancelled-at="{{ row.cancelled_at|default('', true)|e }}"
+                data-cancelled-by="{{ row.cancelled_by|default('', true)|e }}"
+                data-approved-at="{{
+                row.approved_at.strftime('%b %d, %Y %I:%M %p')
+                if row.approved_at
+                else ''
+                }}"
+                data-transaction-id="{{ row.transaction_id or '' }}"
+                data-transaction-status="{{ row.transaction_status or '' }}"
+                data-borrow-date="{{
+                row.borrow_date.strftime('%b %d, %Y')
+                if row.borrow_date
+                else ''
+                }}"
+                data-due-date="{{
+                row.due_date.strftime('%b %d, %Y')
+                if row.due_date
+                else ''
+                }}"
+                data-return-date="{{
+                row.return_date.strftime('%b %d, %Y')
+                if row.return_date
+                else ''
+                }}"
+                data-return-rejected="{{
+                row.return_rejected or 0
+                }}"
+                data-return-reject-note="{{
+                row.return_reject_note|default('', true)|e
+                }}"
+                data-overdue="{{
+                '1' if row.is_overdue else '0'
+                }}"
+                data-has-damage="{{
+                '1' if row.has_damage else '0'
+                }}"
+                data-damage-active="{{
+                '1' if row.damage_active else '0'
+                }}"
+                data-damage-resolved="{{
+                '1' if row.damage_resolved else '0'
+                }}"
+                data-damage-type="{{
+                row.damage_type|default('', true)|e
+                }}"
+                data-damage-description="{{
+                row.description|default('', true)|e
+                }}"
+                data-damage-status="{{
+                row.damage_status|default('', true)|e
+                }}"
+                data-penalty="{{
+                row.penalty_amount or 0
+                }}"
+                data-replacement="{{
+                'Required'
+                if row.replacement_required
+                else 'Not Required'
+                }}"
+            ></div>
+            </div>
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="empty-mini">
+        <i class="fa-solid fa-book-open"></i>
+        <p>
+            You don't have any book requests yet.
+        </p>
+        </div>
+    {% endif %}
+    </div>
+
+    <!-- PENDING RETURNS -->
+
+    <div id="pendingTab"
+        class="history-content"
+        style="display: none">
+
+    <h3 class="history-section-title">
+        Pending Returns
+    </h3>
+
+    {% if pending_books %}
+
+        {% for row in pending_books %}
+
+        <div class="history-row">
+
+            <img
+            src="{{ url_for('static', filename='covers/' + row.cover_image) }}"
+            alt="Book Cover"
+            />
+
+            <div class="history-book-info">
+
+                <div
+                    class="history-book-preview"
+                    data-title="{{ row.title }}"
+                    data-author="{{ row.author or '' }}"
+                >
+
+                    <h3 class="history-book-title">
+                        {{ row.display_title }}
+                    </h3>
+
+                    {% if row.author %}
+                        <p class="history-book-author">
+                            {{ row.display_author }}
+                        </p>
+                    {% endif %}
+
+                </div>
+
+                {% if row.title_truncated or row.author_truncated %}
+                    <button
+                        type="button"
+                        class="history-book-toggle"
+                        onclick="toggleHistoryBook(this)"
+                    >
+                        See more..
+                    </button>
+                {% endif %}
+
+                <div class="history-dates">
+
+                <span>
+                <i class="fa-regular fa-calendar"></i>
+                Requested:
+
+                {{ row.borrow_date.strftime('%Y-%m-%d')
+                    if row.borrow_date
+                    else '-' }}
+                </span>
+
+                <span>
+                <i class="fa-regular fa-clock"></i>
+                Due:
+
+                {{ row.due_date.strftime('%Y-%m-%d')
+                    if row.due_date and row.due_date.strftime is defined
+                    else row.due_date or '-' }}
+                </span>
+
+            </div>
+
+
+            <!-- DAMAGE INFORMATION -->
+
+            {% if row.damage_id %}
+
+                <div
+                id="damageData{{ row.transaction_id }}"
+                class="damage-data"
+                data-title="{{ row.title|e }}"
+                data-author="{{ row.author|e }}"
+                data-student="{{ student_name|e }}"
+                data-borrowed="{{
+                    row.borrow_date.strftime('%b %d, %Y')
+                    if row.borrow_date
+                    else '-'
+                }}"
+                data-due="{{
+                    row.due_date.strftime('%b %d, %Y')
+                    if row.due_date and row.due_date.strftime is defined
+                    else row.due_date or '-'
+                }}"
+                data-damage-type="{{
+                    row.damage_type|e
+                    if row.damage_type
+                    else '-'
+                }}"
+                data-description="{{
+                    row.description|e
+                    if row.description
+                    else '-'
+                }}"
+                data-image="{{
+                    row.image_proof_base64
+                    if row.image_proof_base64
+                    else ''
+                }}"
+                data-mime-type="{{
+                    row.image_mime_type|e
+                    if row.image_mime_type
+                    else 'image/jpeg'
+                }}"
+                data-penalty="{{
+                    row.penalty_amount
+                    if row.penalty_amount
+                    else '0'
+                }}"
+                data-replacement="{{
+                    'Required'
+                    if row.replacement_required
+                    else 'Not Required'
+                }}"
+                data-status="{{
+                    row.damage_status|e
+                    if row.damage_status
+                    else 'Reported'
+                }}"
+                ></div>
+
+                <!-- DAMAGE INFORMATION -->
+
+                <div class="damage-info">
+                <button
+                    type="button"
+                    class="damage-view-details-btn"
+                    onclick="openDamageModal('{{ row.transaction_id }}')"
+                >
+                    View Damage
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <p>
+                    <i class="fa-solid fa-circle-info"></i>
+                    Note: Please settle the book based on the requirements.
+                </p>
+                </div>
+
+            {% endif %}
+
+            {% if not row.damage_id %}
+
+                <span class="pending-waiting-text">
+                Waiting for Librarian Approval
+                </span>
+
+            {% endif %}
+
+            </div>
+
+            <!-- PENDING BADGE -->
+
+            <span class="pending-badge">
+            Pending
+            </span>
+
+        </div>
+
+        {% endfor %}
+
+
+    {% else %}
+
+        <div class="empty-mini">
+        <p>No pending returns.</p>
+        </div>
+
+    {% endif %}
+
+    </div>
+                    
+        <!-- COMPLETED -->
+
+        <div id="completedTab"
+            class="history-content"
+            style="display: none">
+
+        <h3 class="history-section-title">Completed Returns</h3>
+        
+        {% if completed_books %} {% for row in completed_books %}
+
+            <div class="history-row">
+
+                <img src="{{ url_for('static', filename='covers/' + row.cover_image) }}"
+                alt="Book Cover"/>
+
+                <div class="history-book-info">
+
+                    <div
+                        class="history-book-preview"
+                        data-title="{{ row.title }}"
+                        data-author="{{ row.author or '' }}"
+                    >
+
+                        <h3 class="history-book-title">
+                            {{ row.display_title }}
+                        </h3>
+
+                        {% if row.author %}
+                            <p class="history-book-author">
+                                {{ row.display_author }}
+                            </p>
+                        {% endif %}
+
+                    </div>
+
+                    {% if row.title_truncated or row.author_truncated %}
+                        <button
+                            type="button"
+                            class="history-book-toggle"
+                            onclick="toggleHistoryBook(this)"
+                        >
+                            See more..
+                        </button>
+                    {% endif %}
+
+                    <div class="history-dates">
+                    <span>
+                    <i class="fa-regular fa-circle-check"></i>Returned:
+                    {{ row.return_date }}
+                    </span>
+                </div>
+
+                {% if row.damage_id %}
+                    <div class="damage-resolved-box">
+                    <strong>
+                        <i class="fa-solid fa-circle-check"></i>Damage Resolved
+                    </strong>
+                    <p>The damage report has been resolved.</p>
+                    </div>
+                {% endif %}
+                </div>
+
+                <span class="returned-badge">Returned </span>
+            </div>
+            {% endfor %} {% else %}
+
+            <div class="empty-mini">
+            <p>No returned books yet.</p>
+            </div>
+        {% endif %}
+        </div>
+
+        <!-- OVERDUE -->
+
+        <div id="overdueTab" 
+            class="history-content" 
+            style="display: none">
+
+          <h3 class="history-section-title">
+            Overdue Books
+          </h3>
+
+          {% if overdue_books %} 
+
+            {% for row in overdue_books %}
+
+              <div class="history-row">
+
+                <img 
+                  src="{{ url_for('static', filename='covers/' + row.cover_image) }}"
+                  alt="Book Cover"
+                />
+
+                <div class="history-book-info">
+
+                    <div
+                        class="history-book-preview"
+                        data-title="{{ row.title }}"
+                        data-author="{{ row.author or '' }}"
+                    >
+
+                        <h3 class="history-book-title">
+                            {{ row.display_title }}
+                        </h3>
+
+                        {% if row.author %}
+                            <p class="history-book-author">
+                                {{ row.display_author }}
+                            </p>
+                        {% endif %}
+
+                    </div>
+
+                    {% if row.title_truncated or row.author_truncated %}
+                        <button
+                            type="button"
+                            class="history-book-toggle"
+                            onclick="toggleHistoryBook(this)"
+                        >
+                            See more..
+                        </button>
+                    {% endif %}
+
+                    <div class="history-dates">
+
+                    <span>
+                      <i class="fa-regular fa-calendar"></i>
+                      Borrowed:
+                      {{ row.borrow_date.strftime('%Y-%m-%d') }}
+                    </span>
+
+                    <span>
+                      <i class="fa-regular fa-clock"></i>
+                      Due:
+                      {{ row.due_date }}
+                    </span>
+
+                  </div>
+
+                  <!-- RETURN BOOK -->
+
+                  <button 
+                    type="button"
+                    class="return-btn"
+                    onclick="openReturnModal(
+                      '{{ row.transaction_id }}',
+                      '{{ row.book_id }}',
+                      '{{ row.title|e }}'
+                    )"
+                  >
+                    <i class="fa-solid fa-rotate-left"></i>
+                    Return Book
+                  </button>
+
+                  {% if row.rejected %}
+
+                    <div class="return-rejected-note">
+
+                      <strong>
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        Return Request Rejected
+                      </strong>
+
+                      <p>
+                        {{ row.reject_note or
+                          "Your return request was rejected by the librarian. Please bring the physical book to the library before requesting again."
+                        }}
+                      </p>
+
+                    </div>
+
+                  {% endif %}
+
+                </div>
+
+                <!-- OVERDUE BADGE -->
+
+                <span class="overdue-badge">
+                  Overdue
+                </span>
+
+              </div>
+
+            {% endfor %}
+
+          {% else %}
+
+            <div class="empty-mini">
+              <p>No overdue books.</p>
+            </div>
+
+          {% endif %}
+
+        </div>
+
+        <!-- TRANSACTION PAGINATION -->
+
+        {% if total_pages > 1 %}
+
+        <div class="transaction-page-navigation">
+
+        {% if page > 1 %}
+
+        <a
+            href="{{ url_for(
+            'transaction_history',
+            tab=active_tab,
+            page=page - 1
+            ) }}"
+            class="transaction-page-control"
+        >
+            <i class="fa-solid fa-chevron-left"></i>
+            <span>Previous</span>
+        </a>
+
+        {% else %}
+
+        <span class="transaction-page-control transaction-page-disabled">
+            <i class="fa-solid fa-chevron-left"></i>
+            <span>Previous</span>
+        </span>
+
+        {% endif %}
+
+        <div class="transaction-page-numbers">
+
+            {% if page > 3 %}
+
+            <a
+            href="{{ url_for(
+                'transaction_history',
+                tab=active_tab,
+                page=1
+            ) }}"
+            class="transaction-page-number"
+            >
+            1
+            </a>
+
+            {% if page > 4 %}
+            <span class="transaction-page-dots">...</span>
+            {% endif %}
+
+            {% endif %}
+
+
+            {% set start_page = [1, page - 2]|max %}
+            {% set end_page = [total_pages, page + 2]|min %}
+
+            {% for page_number in range(start_page, end_page + 1) %}
+
+            <a
+            href="{{ url_for(
+                'transaction_history',
+                tab=active_tab,
+                page=page_number
+            ) }}"
+            class="transaction-page-number
+            {% if page_number == page %}transaction-page-current{% endif %}"
+            >
+            {{ page_number }}
+            </a>
+
+            {% endfor %}
+
+
+            {% if page < total_pages - 2 %}
+
+            {% if page < total_pages - 3 %}
+            <span class="transaction-page-dots">...</span>
+            {% endif %}
+
+            <a
+            href="{{ url_for(
+                'transaction_history',
+                tab=active_tab,
+                page=total_pages
+            ) }}"
+            class="transaction-page-number"
+            >
+            {{ total_pages }}
+            </a>
+
+            {% endif %}
+
+        </div>
+
+
+        {% if page < total_pages %}
+
+        <a
+            href="{{ url_for(
+            'transaction_history',
+            tab=active_tab,
+            page=page + 1
+            ) }}"
+            class="transaction-page-control"
+        >
+            <span>Next</span>
+            <i class="fa-solid fa-chevron-right"></i>
+        </a>
+
+        {% else %}
+
+        <span class="transaction-page-control transaction-page-disabled">
+            <span>Next</span>
+            <i class="fa-solid fa-chevron-right"></i>
+        </span>
+
+        {% endif %}
+
+        </div>
+
+        {% endif %}
+            
+        <!-- RETURN BOOK MODAL -->
+        <div class="return-modal" id="returnModal">
+        <div class="return-modal-content">
+            <div class="return-modal-icon">
+            <i class="fa-solid fa-book"></i>
+            </div>
+            <h2>Return Book?</h2>
+            <p>Are you sure you want to return <strong id="returnBookTitle">Book Title</strong>?</p>
+
+            <div class="borrow-note">
+            <i class="fa-solid fa-circle-info"></i>
+            <span> Your return request will be sent to the librarian for approval.</span>
+            </div>
+
+            <form action="{{ url_for('return_book') }}" method="POST">
+
+            <input type="hidden"
+                    name="transaction_id"
+                    id="returnTransactionId"
+            />
+
+            <input type="hidden"
+                    name="book_id"
+                    id="returnBookId"
+            />
+
+            <!-- ACTIONS -->
+            <div class="return-modal-actions">
+
+                <button type="button"
+                        class="cancel-return-btn"
+                        onclick="closeReturnModal()">
+                <i class="fa-solid fa-xmark"></i>Cancel
+                </button>
+
+                <button type="submit"
+                        class="confirm-return-btn"
+                >
+                <i class="fa-solid fa-check"></i>Confirm Return
+                </button>
+            </div>
+            </form>
+        </div>
+        </div>
+
+    <!--  TRACK BOOK MODAL -->
+
+    <div class="track-book-modal" id="trackBookModal">
+        <div class="track-book-modal-content">
+
+            <div class="track-book-modal-header">
+                <div class="track-book-modal-header-left">
+                    <div class="track-book-modal-icon">
+                        <i class="fa-solid fa-route"></i>
+                    </div>
+
+                    <div>
+                        <h3>Track Book</h3>
+                        <p id="trackBookAuthor">Author</p>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- MODAL BODY -->
+            <div class="track-book-modal-body">
+
+                <!-- BOOK INFORMATION -->
+                <div class="track-book-info">
+                    <span class="track-book-modal-label">
+                        Book
+                    </span>
+
+                    <h2 id="trackBookTitle">
+                        Book Title
+                    </h2>
+                </div>
+
+
+                <!-- CURRENT STATUS -->
+                <div
+                    class="track-book-current-status"
+                    id="trackBookCurrentStatusBox"
+                >
+                    <span>Current Status</span>
+
+                    <strong id="trackBookCurrentStatus">
+                        Pending
+                    </strong>
+                </div>
+
+
+                <!-- TIMELINE -->
+                <div
+                    class="track-book-timeline"
+                    id="trackBookTimeline"
+                ></div>
+
+            </div>
+
+
+            <!-- FOOTER -->
+            <div class="track-book-modal-actions">
+                <button
+                    type="button"
+                    class="track-book-close-btn"
+                    onclick="closeTrackBookModal()"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                    Close
+                </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="damage-modal" id="damageModal">
+            <div class="damage-modal-box">
+
+                <div class="damage-modal-header">
+                    <div class="damage-modal-header-left">
+
+                        <div class="damage-modal-icon">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div>
+                            <h3>Damage Report Details</h3>
+                        </div>
+                    </div>
+
+                <button
+                    type="button"
+                    class="damage-modal-close"
+                    onclick="closeDamageModal()"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+
+        <!-- BODY -->
+        <div class="damage-modal-body">
+            <div class="damage-info-message">
+                <i class="fa-solid fa-circle-info"></i>
+
+                <div>
+                    <strong>Reported Book Damage</strong>
+                    <p>
+                        The following damage was reported for this borrowed book.
+                    </p>
+                </div>
+            </div>
+
+            <!-- BOOK TITLE -->
+            <div class="damage-book-title">
+                <span class="damage-book-label">
+                    Book Title:
+                </span>
+
+                <span
+                    class="damage-book-name"
+                    id="damageBookTitle"
+                >
+                    -
+                </span>
+            </div>
+
+
+            <!-- DETAILS -->
+            <div class="damage-details-grid">
+                <div class="damage-detail">
+
+                    <span class="damage-detail-label">
+                        Author
+                    </span>
+                    <span
+                        class="damage-detail-value"
+                        id="damageAuthor"
+                    >
+                        -
+                    </span>
+
+                </div>
+
+                <div class="damage-detail">
+                    <span class="damage-detail-label">
+                        Borrowed
+                    </span>
+                    <span
+                        class="damage-detail-value"
+                        id="damageBorrowed"
+                    >
+                        -
+                    </span>
+                </div>
+
+                <div class="damage-detail">
+                    <span class="damage-detail-label">
+                        Due Date
+                    </span>
+                    <span
+                        class="damage-detail-value"
+                        id="damageDue"
+                    >
+                        -
+                    </span>
+                </div>
+
+                <div class="damage-detail">
+                    <span class="damage-detail-label">
+                        Damage Type
+                    </span>
+                    <span
+                        class="damage-detail-value"
+                        id="damageType"
+                    >
+                        -
+                    </span>
+                </div>
+
+                <div class="damage-detail">
+                    <span class="damage-detail-label">
+                        Penalty
+                    </span>
+                    <span
+                        class="damage-detail-value damage-penalty"
+                        id="damagePenalty"
+                    >
+                        ₱0.00
+                    </span>
+                </div>
+
+                <div class="damage-detail">
+                    <span class="damage-detail-label">
+                        Replacement
+                    </span>
+
+                    <span
+                        class="damage-detail-value"
+                        id="damageReplacement"
+                    >
+                        Not Required
+                    </span>
+                </div>
+
+                <div class="damage-detail">
+
+                    <span class="damage-detail-label">
+                        Status
+                    </span>
+
+                    <span
+                        class="damage-detail-value"
+                        id="damageStatus"
+                    >
+                        Reported
+                    </span>
+                </div>
+
+                <!-- DESCRIPTION -->
+
+                <div class="damage-detail damage-description">
+
+                    <span
+                        id="damageDescription"
+                        class="damage-detail-value damage-description"
+                    >
+                        —
+                    </span>
+                </div>
+            </div>
+
+            <!-- DAMAGE PROOF -->
+            <div class="damage-proof-section">
+
+                <span class="damage-detail-label">
+                    Damage Proof
+                </span>
+
+                <div
+                    id="damageProof"
+                    class="damage-proof-container"
+                >
+
+                    <div class="damage-no-proof">
+
+                        <i class="fa-regular fa-image"></i>
+                        No image proof available.
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- FOOTER -->
+            <div class="damage-modal-footer">
+
+                <button
+                    type="button"
+                    class="damage-close-btn"
+                    onclick="closeDamageModal()"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                    Close
+                </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="mobile-bottom-nav">
+    <a href="{{ url_for('dashboard') }}">
+        <i class="fa-solid fa-house"></i>
+        <span>Dashboard</span>
+    </a>
+
+    <a href="{{ url_for('catalog') }}">
+        <i class="fa-solid fa-book-open"></i>
+        <span>Catalog</span>
+    </a>
+
+    <a href="{{ url_for('transaction_history') }}" class="active">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        <span>History</span>
+    </a>
+
+    <a href="{{ url_for('profile') }}">
+        <i class="fa-solid fa-user"></i>
+        <span>Profile</span>
+    </a>
+    </nav>
+
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    <script>
+        const socket = io();
+
+        socket.on("connect", function () {
+            console.log("E-JoseLib Socket Connected:", socket.id);
+        });
+
+        socket.on("disconnect", function () {
+            console.log("E-JoseLib Socket Disconnected");
+        });
+
+    // REALTIME BORROW REQUEST UPDATE
+
+    socket.on("borrow_request_updated", function (data) {
+
+            console.log(
+                "BORROW REQUEST UPDATED:",
+                data
+            );
+
+            if (
+                data &&
+                (
+                    data.action === "approved" ||
+                    data.action === "rejected" ||
+                    data.action === "pickup_confirmed" ||
+                    data.action === "cancelled"
+                )
+            ) {
+
+                refreshTransactionHistory();
+            }
+        }
+    );
+
+    // REFRESH TRANSACTION HISTORY WITHOUT PAGE RELOAD
+
+    async function refreshTransactionHistory() {
+        console.log(
+            "REFRESHING TRANSACTION HISTORY..."
+        );
+
+        try {
+
+        const response = await fetch(
+            window.location.href,
+            {
+                method: "GET",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Cache-Control": "no-cache"
+                },
+                cache: "no-store"
+            }
+        );
+
+        console.log(
+            "TRANSACTION HISTORY RESPONSE:",
+            response.status
+        );
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to refresh transaction history."
+            );
+        }
+
+        const html =
+            await response.text();
+
+        const parser =
+            new DOMParser();
+
+        const newDocument =
+            parser.parseFromString(
+                html,
+                "text/html"
+            );
+
+        // HISTORY STATS
+
+        const currentStats =
+            document.querySelector(
+                ".history-stats"
+            );
+
+        const newStats =
+            newDocument.querySelector(
+                ".history-stats"
+            );
+
+        if (
+            currentStats &&
+            newStats
+        ) {
+
+            currentStats.replaceWith(
+                newStats
+            );
+        }
+
+        // TAB BUTTONS / WRAPPER
+
+        const currentTabsWrapper =
+            document.querySelector(
+                ".history-tabs-wrapper"
+            );
+
+        const newTabsWrapper =
+            newDocument.querySelector(
+                ".history-tabs-wrapper"
+            );
+
+        if (
+            currentTabsWrapper &&
+            newTabsWrapper
+        ) {
+
+            currentTabsWrapper.replaceWith(
+                newTabsWrapper
+            );
+        }
+
+
+        // ALL TAB
+
+        const currentAllTab =
+            document.getElementById(
+                "allTab"
+            );
+
+        const newAllTab =
+            newDocument.getElementById(
+                "allTab"
+            );
+
+        if (
+            currentAllTab &&
+            newAllTab
+        ) {
+
+            currentAllTab.replaceWith(
+                newAllTab
+            );
+        }
+
+        // PENDING TAB
+
+        const currentPendingTab =
+            document.getElementById(
+                "pendingTab"
+            );
+
+        const newPendingTab =
+            newDocument.getElementById(
+                "pendingTab"
+            );
+
+        if (
+            currentPendingTab &&
+            newPendingTab
+        ) {
+
+            currentPendingTab.replaceWith(
+                newPendingTab
+            );
+        }
+
+        // COMPLETED TAB
+
+        const currentCompletedTab =
+            document.getElementById(
+                "completedTab"
+            );
+
+        const newCompletedTab =
+            newDocument.getElementById(
+                "completedTab"
+            );
+
+        if (
+            currentCompletedTab &&
+            newCompletedTab
+        ) {
+
+            currentCompletedTab.replaceWith(
+                newCompletedTab
+            );
+        }
+
+
+        // OVERDUE TAB
+
+        const currentOverdueTab =
+            document.getElementById(
+                "overdueTab"
+            );
+
+        const newOverdueTab =
+            newDocument.getElementById(
+                "overdueTab"
+            );
+
+        if (
+            currentOverdueTab &&
+            newOverdueTab
+        ) {
+
+            currentOverdueTab.replaceWith(
+                newOverdueTab
+            );
+        }
+
+
+        // REINITIALIZE TABS
+
+        initializeTransactionTabs();
+
+
+        console.log(
+            "TRANSACTION HISTORY UPDATED WITHOUT PAGE RELOAD"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "TRANSACTION HISTORY AJAX ERROR:",
+            error
+        );
+        }
+    }
+
+    // DAMAGE REPORT MODAL
+
+    function openDamageModal(transactionId) {
+
+        const data = document.getElementById(
+            "damageData" + transactionId
+        );
+
+        if (!data) {
+            console.error(
+                "Damage data not found:",
+                "damageData" + transactionId
+            );
+            return;
+        }
+
+      document.getElementById(
+          "damageBookTitle"
+      ).textContent =
+          data.dataset.title || "-";
+
+      document.getElementById(
+          "damageAuthor"
+      ).textContent =
+          data.dataset.author || "-";
+
+      document.getElementById(
+          "damageBorrowed"
+      ).textContent =
+          data.dataset.borrowed || "-";
+
+      document.getElementById(
+          "damageDue"
+      ).textContent =
+          data.dataset.due || "-";
+
+      document.getElementById(
+          "damageType"
+      ).textContent =
+          data.dataset.damageType || "-";
+
+      document.getElementById(
+          "damageDescription"
+      ).textContent =
+          data.dataset.description || "-";
+
+      const penalty = parseFloat(
+          data.dataset.penalty || "0"
+      );
+
+      document.getElementById(
+          "damagePenalty"
+      ).textContent =
+          "₱" +
+          penalty.toLocaleString("en-PH", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+          });
+
+      document.getElementById(
+          "damageReplacement"
+      ).textContent =
+          data.dataset.replacement ||
+          "Not Required";
+
+      document.getElementById(
+          "damageStatus"
+      ).textContent =
+          data.dataset.status ||
+          "Reported";
+
+      const proofContainer =
+          document.getElementById(
+              "damageProof"
+          );
+
+      const image =
+          data.dataset.image || "";
+
+      const mimeType =
+          data.dataset.mimeType ||
+          "image/jpeg";
+
+      if (image) {
+
+          proofContainer.innerHTML = `
+
+              <img
+                  src="data:${mimeType};base64,${image}"
+                  alt="Damage Proof"
+                  class="damage-proof-image"
+                  onclick="window.open(this.src, '_blank')"
+              />
+          `;
+
+      } else {
+
+          proofContainer.innerHTML = `
+
+              <div class="no-damage-proof">
+
+                  <i class="fa-regular fa-image"></i>
+
+                  <span>
+                      No image proof available.
+                  </span>
+
+              </div>
+          `;
+      }
+
+      const modal =
+          document.getElementById(
+              "damageModal"
+          );
+
+      if (!modal) {
+          console.error(
+              "damageModal element not found."
+          );
+          return;
+      }
+
+      modal.classList.add("show");
+    }
+
+    function closeDamageModal() {
+
+        const modal =
+            document.getElementById(
+                "damageModal"
+            );
+
+        if (modal) {
+            modal.classList.remove("show");
+        }
+    }
+
+    document.addEventListener(
+        "click",
+        function(event) {
+
+            const modal =
+                document.getElementById(
+                    "damageModal"
+                );
+
+            if (
+                modal &&
+                event.target === modal
+            ) {
+                closeDamageModal();
+            }
+        }
+    );
+
+    document.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Escape") {
+                closeDamageModal();
+            }
+        }
+    );
+
+    // RETURN MODAL
+
+    function openReturnModal(
+        transactionId,
+        bookId,
+        title
+    ) {
+
+        document.getElementById(
+            "returnTransactionId"
+        ).value = transactionId;
+
+        document.getElementById(
+            "returnBookId"
+        ).value = bookId;
+
+        document.getElementById(
+            "returnBookTitle"
+        ).innerText = title;
+
+        document
+            .getElementById("returnModal")
+            .classList.add("show");
+    }
+
+    function closeReturnModal() {
+
+        const modal =
+            document.getElementById(
+                "returnModal"
+            );
+
+        if (modal) {
+            modal.classList.remove("show");
+        }
+    }
+
+    // TAB SWITCHING
+    
+    function initializeTransactionTabs() {
+
+        const buttons =
+            document.querySelectorAll(".tab-btn");
+
+        const tabs = {
+
+            all:
+
+                document.getElementById("allTab"),
+            pending:
+                document.getElementById("pendingTab"),
+
+            completed:
+                document.getElementById("completedTab"),
+
+            overdue:
+                document.getElementById("overdueTab")
+
+        };
+
+
+        console.log(
+            "Transaction tabs initialized:",
+            buttons.length
+        );
+
+        console.log(
+            "Tab elements:",
+            tabs
+        );
+
+
+        function showTab(tabName) {
+
+            console.log(
+                "Showing tab:",
+                tabName
+            );
+
+        Object.values(tabs).forEach(
+            function(tab) {
+
+                if (tab) {
+
+                    tab.classList.remove(
+                        "tab-visible"
+                    );
+
+                    tab.style.display =
+                        "none";
+
+                }
+            }
+        );
+
+        buttons.forEach(
+            function(button) {
+
+                button.classList.remove(
+                    "active"
+                );
+            }
+        );
+
+        if (tabs[tabName]) {
+
+            tabs[tabName].classList.add(
+                "tab-visible"
+            );
+
+            tabs[tabName].style.display =
+                "block";
+
+        } else {
+
+            console.warn(
+                "Tab not found:",
+                tabName
+            );
+
+        }
+
+        const selectedButton =
+            document.querySelector(
+                '.tab-btn[data-tab="' +
+                tabName +
+                '"]'
+            );
+
+        if (selectedButton) {
+
+            selectedButton.classList.add(
+                "active"
+            );
+            }
+        }
+
+    // TAB BUTTON CLICK
+    
+    buttons.forEach(
+        function(button) {
+
+            button.addEventListener(
+                "click",
+                function() {
+
+                    const tabName =
+                        button.dataset.tab;
+
+                    console.log(
+                        "Tab clicked:",
+                        tabName
+                    );
+
+
+                    window.location.href =
+                        "{{ url_for('transaction_history') }}" +
+                        "?tab=" +
+                        encodeURIComponent(
+                            tabName
+                        ) +
+                        "&page=1";
+                    }
+                );
+            }
+        );
+
+
+      
+      // GET ACTIVE TAB FROM FLASK
+      
+
+      let currentTab =
+          "{{ active_tab|default('all') }}";
+
+      console.log(
+          "Flask active_tab:",
+          currentTab
+      );
+
+      // Safety fallback
+      if (!tabs[currentTab]) {
+
+          console.warn(
+              "Invalid active tab. Falling back to all."
+          );
+
+          currentTab = "all";
+      }
+
+      showTab(currentTab);
+
+      if (
+          typeof updateMyBookStatuses ===
+          "function"
+      ) {
+
+          updateMyBookStatuses();
+        }
+    }
+
+      
+      // INITIALIZE AFTER DOM IS READY
+
+      if (
+          document.readyState === "loading"
+      ) {
+
+          document.addEventListener(
+              "DOMContentLoaded",
+              initializeTransactionTabs
+          );
+
+      } else {
+
+          initializeTransactionTabs();
+
+      }
+
+    // TRACK BOOK MODAL
+
+    function getCurrentTrackStatus(data) {
+
+        const requestStatus =
+            (
+                data.dataset.requestStatus ||
+                ""
+            ).toLowerCase();
+
+        const transactionStatus =
+            (
+                data.dataset.transactionStatus ||
+                ""
+            ).toLowerCase();
+
+        const borrowDate =
+            data.dataset.borrowDate || "";
+
+        const overdue =
+            data.dataset.overdue === "1";
+
+        const damageActive =
+            data.dataset.damageActive === "1";
+
+        const damageResolved =
+            data.dataset.damageResolved === "1";
+
+        const returnRejected =
+            data.dataset.returnRejected === "1";
+
+
+        // REQUEST REJECTED
+
+        if (
+            requestStatus === "rejected"
+        ) {
+
+            return {
+                key: "rejected",
+                title: "Request Rejected",
+                message:
+                    data.dataset.requestRejectNote ||
+                    "Your borrow request was rejected by the librarian.",
+                icon: "fa-xmark",
+                className: "rejected"
+
+            };
+
+        }
+
+      // CANCELLED
+
+      if (
+          requestStatus === "cancelled"
+      ) {
+
+          return {
+              key: "rejected",
+              title: "Cancelled",
+              message:
+                  data.dataset.requestCancelNote ||
+                  "The approved borrow request was cancelled by the library.",
+              icon: "fa-ban",
+              className: "rejected"
+          };
+      }
+
+      // ACTIVE DAMAGE
+
+      if (damageActive) {
+          return {
+              key: "warning",
+              title: "Damage Reported",
+              message:
+                  "A damage report has been submitted and is waiting for librarian resolution.",
+              icon:
+                  "fa-triangle-exclamation",
+              className: "warning"
+
+          };
+
+      }
+
+
+      // RETURN REQUEST REJECTED
+
+      if (returnRejected) {
+          return {
+              key: "rejected",
+              title:
+                  "Return Request Rejected",
+              message:
+                  data.dataset.returnRejectNote ||
+                  "Please bring the physical book to the library before requesting again.",
+              icon:
+                  "fa-circle-exclamation",
+              className: "rejected"
+          };
+      }
+
+      // RETURN REQUEST PENDING
+
+      if (
+          transactionStatus === "pending"
+      ) {
+
+          return {
+
+              key: "pending",
+              title: "Return Pending",
+              message:
+                  "Your return request is waiting for librarian approval.",
+              icon: "fa-clock",
+              className: "pending"
+          };
+      }
+
+
+      // COMPLETED
+
+      if (
+          transactionStatus === "returned"
+      ) {
+
+          return {
+              key: "completed",
+              title: "Completed",
+              message:
+                  "The book was successfully returned to the library.",
+              icon:
+                  "fa-circle-check",
+              className: "completed"
+
+          };
+
+      }
+
+
+      // OVERDUE
+
+      if (overdue) {
+
+          return {
+              key: "warning",
+              title: "Overdue",
+              message:
+                  "The due date has passed. Please return the book to the library.",
+              icon:
+                  "fa-triangle-exclamation",
+              className: "warning"
+          };
+      }
+
+
+      // BOOK BORROWED
+
+      if (
+          transactionStatus === "borrowed" &&
+          borrowDate
+      ) {
+
+          return {
+              key: "completed",
+              title: "Book Borrowed",
+              message:
+                  "The book is currently with you.",
+              icon: "fa-book",
+              className: "completed"
+          };
+      }
+
+
+      // APPROVED / WAITING FOR PICKUP
+
+      if (
+          requestStatus === "approved"
+      ) {
+
+          return {
+              key: "pending",
+              title: "Book Pickup",
+              message:
+                  "Please visit the school library to pick up your book.",
+              icon:
+                  "fa-location-dot",
+              className: "pending"
+          };
+      }
+
+
+      // DEFAULT
+
+      return {
+          key: "pending",
+          title: "Pending Approval",
+          message:
+              "Waiting for librarian approval.",
+          icon: "fa-clock",
+          className: "pending"
+      };
+     }
+
+
+  function updateMyBookStatuses() {
+
+      document
+          .querySelectorAll(
+              ".track-book-data"
+          )
+          .forEach(
+              function(data) {
+
+                  const requestId =
+                      data.dataset.requestId;
+
+                  const status =
+                      getCurrentTrackStatus(
+                          data
+                      );
+
+                  const container =
+                      document.getElementById(
+                          "myBookStatus" +
+                          requestId
+                      );
+
+                  if (!container) {
+                      return;
+                  }
+
+                  container.innerHTML = `
+
+                      <p class="my-book-status-message">
+
+                          ${escapeTrackText(
+                              status.message
+                          )}
+                      </p>
+                  `;
+              }
+          );
+
+        }
+
+
+    function openTrackBookModal(requestId) {
+
+        const data =
+            document.getElementById(
+                `trackBookData${requestId}`
+            );
+
+      if (!data) {
+
+          console.error(
+              "Track book data not found:",
+              requestId
+          );
+
+          return;
+      }
+
+      const title =
+          data.dataset.title ||
+          "Book";
+
+      const author =
+          data.dataset.author ||
+          "Unknown Author";
+
+
+      const requestDate =
+          data.dataset.requestDate ||
+          "";
+
+      const requestStatus =
+          (
+              data.dataset.requestStatus ||
+              ""
+          ).toLowerCase();
+
+      const requestRejectNote =
+          data.dataset.requestRejectNote ||
+          "";
+
+      const requestCancelNote =
+          data.dataset.requestCancelNote ||
+          "";
+
+      const cancelledAt =
+          data.dataset.cancelledAt ||
+          "";
+
+      const cancelledBy =
+          data.dataset.cancelledBy ||
+          "";
+
+      const approvedAt =
+          data.dataset.approvedAt ||
+          "";
+
+      const transactionStatus =
+          (
+              data.dataset.transactionStatus ||
+              ""
+          ).toLowerCase();
+
+      const borrowDate =
+          data.dataset.borrowDate ||
+          "";
+
+      const dueDate =
+          data.dataset.dueDate ||
+          "";
+
+      const returnDate =
+          data.dataset.returnDate ||
+          "";
+
+      const returnRejected =
+          data.dataset.returnRejected ===
+          "1";
+
+      const returnRejectNote =
+          data.dataset.returnRejectNote ||
+          "";
+
+      const overdue =
+          data.dataset.overdue === "1";
+
+      const damageActive =
+          data.dataset.damageActive ===
+          "1";
+
+      const damageResolved =
+          data.dataset.damageResolved ===
+          "1";
+
+      const damageType =
+          data.dataset.damageType ||
+          "";
+
+      const damageDescription =
+          data.dataset.damageDescription ||
+          "";
+
+      const damageStatus =
+          data.dataset.damageStatus ||
+          "";
+
+      const penalty =
+          data.dataset.penalty ||
+          "0";
+
+      const replacement =
+          data.dataset.replacement ||
+          "Not Required";
+
+      const currentStatus =
+          getCurrentTrackStatus(
+              data
+          );
+
+      const titleElement =
+          document.getElementById(
+              "trackBookTitle"
+          );
+
+      const authorElement =
+          document.getElementById(
+              "trackBookAuthor"
+          );
+
+      const statusElement =
+          document.getElementById(
+              "trackBookCurrentStatus"
+          );
+
+      const timelineElement =
+          document.getElementById(
+              "trackBookTimeline"
+          );
+
+      const modal =
+          document.getElementById(
+              "trackBookModal"
+          );
+
+      if (titleElement) {
+
+          titleElement.textContent =
+              title;
+
+      }
+
+      if (authorElement) {
+
+          authorElement.textContent =
+              author;
+
+      }
+      
+      if (statusElement) {
+
+          statusElement.textContent =
+              currentStatus.title;
+
+          const statusContainer =
+              statusElement.closest(
+                  ".track-book-current-status"
+              );
+
+          if (statusContainer) {
+
+              statusContainer.className =
+                  `track-book-current-status ${currentStatus.key}`;
+          }
+      }
+
+
+      if (!timelineElement) {
+
+          console.error(
+              "trackBookTimeline element not found."
+          );
+
+          return;
+      }
+
+
+      let timeline = "";
+
+      // BORROW REQUEST
+
+      timeline += `
+          <div class="track-step completed">
+              <div class="track-step-date">
+
+                  ${
+                      requestDate
+                      ? `
+                          <span class="track-date">
+                              ${escapeTrackText(
+                                  requestDate
+                              )}
+                          </span>
+                      `
+                      : ""
+                  }
+              </div>
+
+              <div class="track-step-icon">
+                  <i class="fa-solid fa-paper-plane"></i>
+              </div>
+
+              <div class="track-step-content">
+                  <h4 class="track-step-title">
+                      Borrow Request
+                      <span class="track-step-badge completed">
+                          Submitted
+                      </span>
+                  </h4>
+
+                  <p class="track-step-description">
+                      Your request to borrow this book was submitted successfully.
+                  </p>
+              </div>
+          </div>
+
+      `;
+
+
+      // REJECTED REQUEST
+
+      if (
+          requestStatus === "rejected"
+      ) {
+
+          timeline += `
+              <div class="track-step rejected">
+                  <div class="track-step-date">
+                      <span class="track-date">
+                          Request
+                      </span>
+                  </div>
+
+                  <div class="track-step-icon">
+                      <i class="fa-solid fa-xmark"></i>
+                  </div>
+
+                  <div class="track-step-content">
+                      <h4 class="track-step-title">
+                          Request Rejected
+                          <span class="track-step-badge rejected">
+                              Rejected
+                          </span>
+                      </h4>
+
+                      <p class="track-step-description">
+                          The librarian rejected your borrow request.
+                      </p>
+
+
+                      ${
+                          requestRejectNote
+                          ? `
+                              <div class="track-return-rejection">
+                                  <strong>
+                                      Reason
+                                  </strong>
+                                  <p>
+                                      ${escapeTrackText(
+                                          requestRejectNote
+                                      )}
+                                  </p>
+                              </div>
+                          `
+                          : ""
+                      }
+                  </div>
+              </div>
+
+
+              <div class="track-step completed">
+                  <div class="track-step-date">
+                      <span class="track-date">
+                          Complete
+                      </span>
+
+                  </div>
+
+                  <div class="track-step-icon">
+                      <i class="fa-solid fa-circle-check"></i>
+                  </div>
+
+                  <div class="track-step-content">
+                      <h4 class="track-step-title">
+                          Completed
+                      </h4>
+                      <p class="track-step-description">
+                          This borrow request has been closed.
+                      </p>
+                  </div>
+              </div>
+
+          `;
+
+      }
+
+
+      // CANCELLED REQUEST
+
+      else if (
+          requestStatus === "cancelled"
+      ) {
+
+          timeline += `
+              <div class="track-step completed">
+                  <div class="track-step-date">
+                      ${
+                          approvedAt
+                          ? `
+                              <span class="track-date">
+                                  ${escapeTrackText(
+                                      approvedAt
+                                  )}
+                              </span>
+                          `
+                          : ""
+                      }
+                  </div>
+
+                  <div class="track-step-icon">
+                      <i class="fa-solid fa-check"></i>
+                  </div>
+
+                  <div class="track-step-content">
+                      <h4 class="track-step-title">
+                          Request Approved
+                          <span class="track-step-badge completed">
+                              Approved
+                          </span>
+                      </h4>
+
+                      <p class="track-step-description">
+                          Your borrow request was approved by the librarian.
+                      </p>
+                  </div>
+              </div>
+
+              <div class="track-step rejected">
+                  <div class="track-step-date">
+                      ${
+                          cancelledAt
+                          ? `
+                              <span class="track-date">
+                                  ${escapeTrackText(
+                                      cancelledAt
+                                  )}
+                              </span>
+                          `
+                          : ""
+                      }
+                  </div>
+
+                  <div class="track-step-icon">
+                      <i class="fa-solid fa-ban"></i>
+                  </div>
+
+                  <div class="track-step-content">
+                      <h4 class="track-step-title">
+                          Cancelled
+                          <span class="track-step-badge rejected">
+                              Cancelled
+                          </span>
+                      </h4>
+
+                      <p class="track-step-description">
+                          The approved borrow request was cancelled by the library.
+                      </p>
+
+                      ${
+                          requestCancelNote
+                          ? `
+                              <div class="track-return-rejection">
+                                  <strong>
+                                      Cancellation Reason
+                                  </strong>
+
+                                  <p>
+                                      ${escapeTrackText(
+                                          requestCancelNote
+                                      )}
+                                  </p>
+
+                                  ${
+                                      cancelledBy
+                                      ? `
+                                          <p>
+                                              Cancelled by:
+                                              ${escapeTrackText(
+                                                  cancelledBy
+                                              )}
+                                          </p>
+                                      `
+                                      : ""
+                                  }
+                              </div>
+                          `
+                          : ""
+                      }
+                  </div>
+              </div>
+          `;
+      }
+
+
+      // PENDING REQUEST
+
+      else if (
+          requestStatus === "pending"
+      ) {
+
+          timeline += `
+
+              <div class="track-step active">
+                  <div class="track-step-date">
+
+                      ${
+                          requestDate
+                          ? `
+                              <span class="track-date">
+                                  ${escapeTrackText(
+                                      requestDate
+                                  )}
+                              </span>
+                          `
+                          : ""
+                      }
+                  </div>
+
+                  <div class="track-step-icon">
+                      <i class="fa-solid fa-clock"></i>
+                  </div>
+
+                  <div class="track-step-content">
+                      <h4 class="track-step-title">
+                          Pending Approval
+                          <span class="track-step-badge pending">
+                              Pending
+                          </span>
+                      </h4>
+
+                      <p class="track-step-description">
+                          Your request is waiting for librarian approval.
+                      </p>
+                  </div>
+              </div>
+
+              <div class="track-step">
+                  <div class="track-step-date">
+                      <span class="track-date">
+                          Next
+                      </span>
+                  </div>
+
+                  <div class="track-step-icon">
+                      <i class="fa-solid fa-check"></i>
+                  </div>
+
+                  <div class="track-step-content">
+
+                      <h4 class="track-step-title">
+                          Request Approved
+                      </h4>
+
+                      <p class="track-step-description">
+
+                          The librarian will review your request.
+                      </p>
+                  </div>
+              </div>
+
+              <div class="track-step">
+
+                  <div class="track-step-date">
+
+                      <span class="track-date">
+                          Next
+                      </span>
+
+                  </div>
+
+                  <div class="track-step-icon">
+                      <i class="fa-solid fa-location-dot"></i>
+                  </div>
+
+                  <div class="track-step-content">
+
+                      <h4 class="track-step-title">
+                          Book Pickup
+                      </h4>
+
+                      <p class="track-step-description">
+                          Pick up the approved book at the school library.
+                      </p>
+                  </div>
+              </div>
+
+              <div class="track-step">
+                  <div class="track-step-date">
+                      <span class="track-date">
+                          Next
+                      </span>
+                  </div>
+
+                  <div class="track-step-icon">
+
+                      <i class="fa-solid fa-book"></i>
+                  </div>
+                  <div class="track-step-content">
+
+                      <h4 class="track-step-title">
+                          Book Borrowed
+                      </h4>
+
+                      <p class="track-step-description">
+                          The borrowing period starts after physical pickup.
+                      </p>
+                  </div>
+              </div>
+          `;
+
+      }
+
+         // APPROVED / BORROWING PROCESS
+
+      else if (
+          requestStatus === "approved" ||
+          borrowDate ||
+          transactionStatus ||
+          damageActive ||
+          damageResolved
+      ) {
+
+          // REQUEST APPROVED
+
+          timeline += `
+
+              <div class="track-step completed">
+                  <div class="track-step-date">
+
+                      ${
+                          approvedAt
+                          ? `
+                              <span class="track-date">
+                                  ${escapeTrackText(
+                                      approvedAt
+                                  )}
+                              </span>
+                          `
+                          : ""
+                      }
+
+                  </div>
+
+                  <div class="track-step-icon">
+                      <i class="fa-solid fa-check"></i>
+                  </div>
+
+                  <div class="track-step-content">
+                      <h4 class="track-step-title">
+                          Request Approved
+                          <span class="track-step-badge completed">
+                              Approved
+                          </span>
+                      </h4>
+
+                      <p class="track-step-description">
+                          Your borrow request was approved by the librarian.
+                      </p>
+                  </div>
+              </div>
+
+          `;
+
+
+          // BOOK PICKUP
+
+          if (
+              !borrowDate &&
+              !transactionStatus
+          ) {
+
+              timeline += `
+
+                  <div class="track-step active">
+                      <div class="track-step-date">
+                          <span class="track-date">
+                              Current
+                          </span>
+                      </div>
+
+                      <div class="track-step-icon">
+                          <i class="fa-solid fa-location-dot"></i>
+                      </div>
+
+                      <div class="track-step-content">
+                          <h4 class="track-step-title">
+                              Book Pickup
+                              <span class="track-step-badge pending">
+                                  Current
+                              </span>
+
+                          </h4>
+
+                          <p class="track-step-description">
+                              Your book is ready for pickup at the school library.
+                          </p>
+                      </div>
+                  </div>
+
+                  <div class="track-step">
+                      <div class="track-step-date">
+                          <span class="track-date">
+                              Next
+                          </span>
+                      </div>
+
+                      <div class="track-step-icon">
+                          <i class="fa-solid fa-book"></i>
+                      </div>
+
+                      <div class="track-step-content">
+                          <h4 class="track-step-title">
+                              Book Borrowed
+                          </h4>
+
+                          <p class="track-step-description">
+                              The book will be recorded as borrowed after pickup.
+                          </p>
+                      </div>
+                  </div>
+
+
+                  <div class="track-step">
+                      <div class="track-step-date">
+                          <span class="track-date">
+                              Next
+                          </span>
+                      </div>
+
+                      <div class="track-step-icon">
+                          <i class="fa-solid fa-rotate-left"></i>
+                      </div>
+
+                      <div class="track-step-content">
+                          <h4 class="track-step-title">
+                              Book Returned
+                          </h4>
+
+                          <p class="track-step-description">
+                              Return the book to the library on or before the due date.
+                          </p>
+                      </div>
+                  </div>
+
+
+                  <div class="track-step">
+                      <div class="track-step-date">
+                          <span class="track-date">
+                              Final
+                          </span>
+                      </div>
+
+                      <div class="track-step-icon">
+                          <i class="fa-solid fa-circle-check"></i>
+                      </div>
+
+                      <div class="track-step-content">
+                          <h4 class="track-step-title">
+                              Completed
+                          </h4>
+
+                          <p class="track-step-description">
+                              The borrowing transaction will be completed after the book is returned.
+                          </p>
+                      </div>
+                  </div>
+              `;
+          }
+
+          // BOOK BORROWED
+
+          if (
+              borrowDate
+          ) {
+
+              timeline += `
+
+                  <div class="track-step completed">
+                      <div class="track-step-date">
+                          <span class="track-date">
+                              ${escapeTrackText(
+                                  borrowDate
+                              )}
+                          </span>
+                      </div>
+
+                      <div class="track-step-icon">
+                          <i class="fa-solid fa-book"></i>
+                      </div>
+
+                      <div class="track-step-content">
+                          <h4 class="track-step-title">
+                              Book Borrowed
+                              <span class="track-step-badge completed">
+                                  Borrowed
+                              </span>
+                          </h4>
+
+                          <p class="track-step-description">
+                              The book was successfully released to you.
+                          </p>
+                      </div>
+                  </div>
+              `;
+
+              // Overdue
+              
+                if (
+                    overdue &&
+                    transactionStatus !== "returned" &&
+                    transactionStatus !== "pending"
+                ) {
+
+                    timeline += `
+                        <div class="track-step active warning">
+
+                            <div class="track-step-date">
+                                <span class="track-date">
+                                    Current
+                                </span>
+                            </div>
+
+                            <div class="track-step-icon">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+
+                            <div class="track-step-content">
+
+                                <h4 class="track-step-title">
+                                    Overdue
+
+                                    <span class="track-step-badge warning">
+                                        Current
+                                    </span>
+                                </h4>
+
+                                <p class="track-step-description">
+                                    The due date has passed. Please return the book to the library.
+                                </p>
+
+                            </div>
+                        </div>
+                    `;
+                }
+
+              // DAMAGE REPORT
+
+              if (
+                  damageActive ||
+                  damageResolved
+              ) {
+
+                  timeline += `
+
+                      <div class="track-step ${
+                          damageResolved
+                          ? "completed"
+                          : "active"
+                      }">
+
+                          <div class="track-step-date">
+                              <span class="track-date">
+                                  ${
+                                      damageResolved
+                                      ? "Reported"
+                                      : "Current"
+                                  }
+                              </span>
+                          </div>
+
+                          <div class="track-step-icon">
+                              <i class="fa-solid fa-triangle-exclamation"></i>
+                          </div>
+
+                          <div class="track-step-content">
+                              <h4 class="track-step-title">
+                                  Damage Reported
+                                  <span class="track-step-badge ${
+                                      damageResolved
+                                      ? "completed"
+                                      : "warning"
+                                  }">
+
+                                      ${
+                                          damageResolved
+                                          ? "Reported"
+                                          : "Current"
+                                      }
+                                  </span>
+                              </h4>
+
+                              <p class="track-step-description">
+                                  A damage report was submitted for this book.
+                              </p>
+                          </div>
+                      </div>
+                  `;
+              }
+
+              // DAMAGE RESOLVED
+
+              if (
+                  damageResolved
+              ) {
+
+                  timeline += `
+
+                      <div class="track-step completed">
+                          <div class="track-step-date">
+                              <span class="track-date">
+                                  Resolved
+                              </span>
+                          </div>
+
+                          <div class="track-step-icon">
+                              <i class="fa-solid fa-circle-check"></i>
+                          </div>
+
+                          <div class="track-step-content">
+                              <h4 class="track-step-title">
+                                  Damage Resolved
+                                  <span class="track-step-badge completed">
+                                      Resolved
+                                  </span>
+                              </h4>
+
+                              <p class="track-step-description">
+                                  The reported damage was resolved by the library.
+                              </p>
+                          </div>
+                      </div>
+                  `;
+
+              }
+
+
+              // RETURN REQUEST PENDING
+
+              if (
+                  transactionStatus === "pending"
+              ) {
+
+                  timeline += `
+
+                      <div class="track-step active">
+                          <div class="track-step-date">
+                              <span class="track-date">
+                                  Current
+                              </span>
+                          </div>
+
+                          <div class="track-step-icon">
+                              <i class="fa-solid fa-clock"></i>
+                          </div>
+
+                          <div class="track-step-content">
+                              <h4 class="track-step-title">
+                                  Return Pending
+                                  <span class="track-step-badge pending">
+                                      Current
+                                  </span>
+                              </h4>
+
+                              <p class="track-step-description">
+                                  Your return request is waiting for librarian approval.
+                              </p>
+                          </div>
+                      </div>
+
+
+                      <div class="track-step">
+                          <div class="track-step-date">
+                              <span class="track-date">
+                                  Next
+                              </span>
+                          </div>
+
+                          <div class="track-step-icon">
+                              <i class="fa-solid fa-rotate-left"></i>
+                          </div>
+
+                          <div class="track-step-content">
+                              <h4 class="track-step-title">
+                                  Book Returned
+                              </h4>
+
+                              <p class="track-step-description">
+                                  The librarian will process your returned book.
+                              </p>
+                          </div>
+                      </div>
+
+                      <div class="track-step">
+                          <div class="track-step-date">
+                              <span class="track-date">
+                                  Final
+                              </span>
+                          </div>
+
+                          <div class="track-step-icon">
+                              <i class="fa-solid fa-circle-check"></i>
+                          </div>
+
+                          <div class="track-step-content">
+                              <h4 class="track-step-title">
+                                  Completed
+                              </h4>
+
+                              <p class="track-step-description">
+                                  The borrowing transaction will be completed after the return is approved.
+                              </p>
+                          </div>
+                      </div>
+                  `;
+              }
+
+
+              // RETURN REJECTED
+
+              else if (
+                  returnRejected &&
+                  transactionStatus !== "returned"
+              ) {
+
+                  timeline += `
+                      <div class="track-step rejected">
+                          <div class="track-step-date">
+                              <span class="track-date">
+                                  Rejected
+                              </span>
+                          </div>
+
+                          <div class="track-step-icon">
+                              <i class="fa-solid fa-circle-exclamation"></i>
+                          </div>
+
+                          <div class="track-step-content">
+                              <h4 class="track-step-title">
+                                  Return Request Rejected
+                                  <span class="track-step-badge rejected">
+                                      Rejected
+                                  </span>
+                              </h4>
+
+                              <p class="track-step-description">
+                                  ${
+                                      escapeTrackText(
+                                          returnRejectNote ||
+                                          "The return request was rejected. Please bring the physical book to the library."
+                                      )
+                                  }
+                              </p>
+                          </div>
+                      </div>
+
+                      <div class="track-step active">
+                          <div class="track-step-date">
+                              <span class="track-date">
+                                  Current
+                              </span>
+                          </div>
+
+                          <div class="track-step-icon">
+                              <i class="fa-solid fa-rotate-left"></i>
+                          </div>
+
+                          <div class="track-step-content">
+                              <h4 class="track-step-title">
+                                  Book Returned
+                                  <span class="track-step-badge pending">
+                                      Next
+                                  </span>
+                              </h4>
+
+                              <p class="track-step-description">
+                                  Bring the physical book to the library and request its return again.
+                              </p>
+                          </div>
+                      </div>
+
+                      <div class="track-step">
+                          <div class="track-step-date">
+                              <span class="track-date">
+                                  Final
+                              </span>
+                          </div>
+
+                          <div class="track-step-icon">
+                              <i class="fa-solid fa-circle-check"></i>
+                          </div>
+
+                          <div class="track-step-content">
+                              <h4 class="track-step-title">
+                                  Completed
+                              </h4>
+
+                              <p class="track-step-description">
+                                  The transaction will be completed after the book is successfully returned.
+                              </p>
+                          </div>
+                      </div>
+                  `;
+              }
+
+
+              // OVERDUE
+
+              else if (
+                  overdue &&
+                  transactionStatus !== "returned"
+              ) {
+
+                  timeline += `
+                      <div class="track-step active warning">
+                          <div class="track-step-date">
+                              <span class="track-date">
+                                  Current
+                              </span>
+                          </div>
+
+                          <div class="track-step-icon">
+                              <i class="fa-solid fa-triangle-exclamation"></i>
+                          </div>
+
+                          <div class="track-step-content">
+                              <h4 class="track-step-title">
+                                  Overdue
+                                  <span class="track-step-badge warning">
+                                      Current
+                                  </span>
+                              </h4>
+
+                              <p class="track-step-description">
+                                  The due date has passed. Please return the book to the library.
+                              </p>
+                          </div>
+                      </div>
+
+                      <div class="track-step">
+                          <div class="track-step-date">
+                              <span class="track-date">
+                                  Next
+                              </span>
+                          </div>
+
+                          <div class="track-step-icon">
+                              <i class="fa-solid fa-rotate-left"></i>
+
+                          </div>
+
+                          <div class="track-step-content">
+                              <h4 class="track-step-title">
+                                  Book Returned
+                              </h4>
+
+                              <p class="track-step-description">
+                                  Return the overdue book to the library.
+                              </p>
+                          </div>
+                      </div>
+
+                      <div class="track-step">
+                          <div class="track-step-date">
+                              <span class="track-date">
+                                  Final
+                              </span>
+                          </div>
+
+                          <div class="track-step-icon">
+                              <i class="fa-solid fa-circle-check"></i>
+                          </div>
+
+                          <div class="track-step-content">
+                              <h4 class="track-step-title">
+                                  Completed
+                              </h4>
+
+                              <p class="track-step-description">
+                                  The transaction will be completed after the book is returned and processed.
+                              </p>
+                          </div>
+                      </div>
+
+                  `;
+
+              }
+
+
+              // CURRENTLY BORROWED
+
+              else if (
+                  transactionStatus === "borrowed"
+              ) {
+
+                  timeline += `
+
+                      <div class="track-step active">
+                          <div class="track-step-date">
+
+                              ${
+                                  dueDate
+                                  ? `
+                                      <span class="track-date">
+                                          Due ${escapeTrackText(
+                                              dueDate
+                                          )}
+                                      </span>
+                                  `
+                                  : `
+                                      <span class="track-date">
+                                          Current
+                                      </span>
+                                  `
+                              }
+
+                          </div>
+
+                          <div class="track-step-icon">
+                              <i class="fa-solid fa-rotate-left"></i>
+                          </div>
+
+                          <div class="track-step-content">
+                              <h4 class="track-step-title">
+                                  Book Returned
+                                  <span class="track-step-badge pending">
+                                      Next
+                                  </span>
+                              </h4>
+
+                              <p class="track-step-description">
+                                  Return the book to the library on or before the due date.
+                              </p>
+                          </div>
+                      </div>
+
+
+                      <div class="track-step">
+                          <div class="track-step-date">
+                              <span class="track-date">
+                                  Final
+                              </span>
+                          </div>
+
+
+                          <div class="track-step-icon">
+                              <i class="fa-solid fa-circle-check"></i>
+                          </div>
+
+                          <div class="track-step-content">
+                              <h4 class="track-step-title">
+                                  Completed
+                              </h4>
+
+                              <p class="track-step-description">
+                                  The borrowing transaction will be completed after the book is returned.
+                              </p>
+                          </div>
+                      </div>
+                  `;
+              }
+
+
+              // RETURNED / COMPLETED
+
+              else if (
+                  transactionStatus === "returned"
+              ) {
+
+                  timeline += `
+                      <div class="track-step completed">
+                          <div class="track-step-date">
+                              ${
+                                  returnDate
+                                  ? `
+                                      <span class="track-date">
+                                          ${escapeTrackText(
+                                              returnDate
+                                          )}
+                                      </span>
+                                  `
+                                  : ""
+                              }
+                          </div>
+
+                          <div class="track-step-icon">
+                              <i class="fa-solid fa-rotate-left"></i>
+                          </div>
+
+                          <div class="track-step-content">
+
+                              <h4 class="track-step-title">
+                                  Book Returned
+                                  <span class="track-step-badge completed">
+                                      Returned
+                                  </span>
+                              </h4>
+
+                              <p class="track-step-description">
+                                  The book was successfully returned to the library.
+                              </p>
+                          </div>
+                      </div>
+
+
+                      <div class="track-step completed">
+                          <div class="track-step-date">
+                              <span class="track-date">
+                                  Complete
+                              </span>
+
+                          </div>
+
+                          <div class="track-step-icon">
+                              <i class="fa-solid fa-circle-check"></i>
+                          </div>
+
+                          <div class="track-step-content">
+                              <h4 class="track-step-title">
+                                  Completed
+                                  <span class="track-step-badge completed">
+                                      Completed
+                                  </span>
+                              </h4>
+
+                              <p class="track-step-description">
+                                  This borrowing transaction has been completed successfully.
+                              </p>
+                          </div>
+                      </div>
+                  `;
+
+              }
+
+          }
+
+      }
+
+
+          timelineElement.innerHTML =
+              timeline;
+
+
+          if (modal) {
+
+              modal.classList.add(
+                  "active"
+              );
+
+              document.body.classList.add(
+                  "modal-open"
+              );
+
+          }
+
+      }
+
+
+      function closeTrackBookModal() {
+
+          const modal =
+              document.getElementById(
+                  "trackBookModal"
+              );
+
+          if (modal) {
+
+              modal.classList.remove(
+                  "active"
+              );
+
+          }
+
+          document.body.classList.remove(
+              "modal-open"
+          );
+
+      }
+
+
+      function escapeTrackText(value) {
+
+          const div =
+              document.createElement(
+                  "div"
+              );
+
+          div.textContent =
+              value == null
+              ? ""
+              : String(value);
+
+          return div.innerHTML;
+
+      }
+
+
+      // TRACK BOOK MODAL OUTSIDE CLICK
+
+      document.addEventListener(
+          "click",
+          function(event) {
+
+              const modal =
+                  document.getElementById(
+                      "trackBookModal"
+                  );
+
+              if (
+                  modal &&
+                  event.target === modal
+              ) {
+
+                  closeTrackBookModal();
+
+              }
+
+          }
+      );
+
+
+      // TRACK BOOK MODAL ESCAPE
+
+      document.addEventListener(
+          "keydown",
+          function(event) {
+
+              if (
+                  event.key === "Escape"
+              ) {
+
+                  closeTrackBookModal();
+
+              }
+
+          }
+      );
+
+
+          // NOTIFICATIONS
+
+          const notificationBtn =
+              document.getElementById(
+                  "notificationBtn"
+              );
+
+          const notificationMenu =
+              document.getElementById(
+                  "notificationMenu"
+              );
+
+          const notificationBadge =
+              document.getElementById(
+                  "notificationBadge"
+              );
+
+          const profileBtn =
+              document.getElementById(
+                  "profileBtn"
+              );
+
+          const profileMenu =
+              document.getElementById(
+                  "profileMenu"
+              );
+
+          let unreadNotifications =
+              Number(
+                  "{{ unread_count|default(0) }}"
+              );
+
+
+          if (
+              notificationBadge &&
+              unreadNotifications > 0
+          ) {
+
+              notificationBadge.innerText =
+                  unreadNotifications;
+
+          }
+
+
+          if (
+              notificationBtn &&
+              notificationMenu
+          ) {
+
+          notificationBtn.addEventListener(
+              "click",
+              function(e) {
+
+                  e.stopPropagation();
+
+
+                  if (profileMenu) {
+
+                      profileMenu.classList.remove(
+                          "show"
+                      );
+
+                  }
+
+
+                  notificationMenu.classList.toggle(
+                      "show"
+                  );
+
+
+                  if (
+                      notificationMenu.classList.contains(
+                          "show"
+                      ) &&
+                      unreadNotifications > 0
+                  ) {
+
+                      fetch(
+                          "/mark_notifications_read",
+                          {
+                              method: "POST"
+                          }
+                      )
+                      .then(
+                          function(response) {
+
+                              if (
+                                  response.ok
+                              ) {
+
+                                  if (
+                                      notificationBadge
+                                  ) {
+
+                                      notificationBadge.style.display =
+                                          "none";
+
+                                  }
+
+                                  unreadNotifications =
+                                      0;
+
+                              }
+
+                          }
+                      )
+                      .catch(
+                          function(error) {
+
+                              console.error(
+                                  "Failed to mark notifications as read:",
+                                  error
+                              );
+                          }
+                      );
+                  }
+              }
+          );
+
+      }
+
+
+      if (
+          profileBtn &&
+          profileMenu
+      ) {
+
+          profileBtn.addEventListener(
+              "click",
+              function(e) {
+
+                  e.stopPropagation();
+
+
+                  if (
+                      notificationMenu
+                  ) {
+
+                      notificationMenu.classList.remove(
+                          "show"
+                      );
+
+                  }
+
+
+                  profileMenu.classList.toggle(
+                      "show"
+                  );
+
+              }
+          );
+
+      }
+
+
+      document.addEventListener(
+          "click",
+          function() {
+
+              if (
+                  notificationMenu
+              ) {
+
+                  notificationMenu.classList.remove(
+                      "show"
+                  );
+
+              }
+
+
+              if (
+                  profileMenu
+              ) {
+
+                  profileMenu.classList.remove(
+                      "show"
+                  );
+              }
+          }
+      );
+
+
+      // MOBILE NOTIFICATIONS
+
+      const mobileNotificationBtn =
+          document.getElementById(
+              "mobileNotificationBtn"
+          );
+
+      const mobileNotificationPanel =
+          document.getElementById(
+              "mobileNotificationPanel"
+          );
+
+      const mobileNotificationOverlay =
+          document.getElementById(
+              "mobileNotificationOverlay"
+          );
+
+      const mobileNotificationBadge =
+          document.getElementById(
+              "mobileNotificationBadge"
+          );
+
+      const closeMobileNotifications =
+          document.getElementById(
+              "closeMobileNotifications"
+          );
+
+        socket.on("new_overdue_notification", function (data) {
+            console.log("REALTIME OVERDUE NOTIFICATION:", data);
+
+            unreadNotifications++;
+
+            if (notificationBadge) {
+                notificationBadge.innerText = unreadNotifications;
+                notificationBadge.style.display = "flex";
+            }
+
+            if (mobileNotificationBadge) {
+                mobileNotificationBadge.innerText = unreadNotifications;
+                mobileNotificationBadge.style.display = "flex";
+            }
+
+            const notificationHTML = `
+                <div class="notification-item ${data.type || "warning"}">
+                    <div class="notification-title">
+                        ${data.title || "Overdue Book"}
+                    </div>
+
+                    <div class="notification-message">
+                        ${data.message || "You have an overdue book."}
+                    </div>
+
+                    <div class="notification-time">
+                        ${data.created_at || "Just now"}
+                    </div>
+                </div>
+            `;
+
+            if (notificationMenu) {
+                const emptyState =
+                    notificationMenu.querySelector(
+                        ".notification-empty"
+                    );
+
+                if (emptyState) {
+                    emptyState.remove();
+                }
+
+                notificationMenu.insertAdjacentHTML(
+                    "afterbegin",
+                    notificationHTML
+                );
+            }
+
+            if (mobileNotificationPanel) {
+                const emptyState =
+                    mobileNotificationPanel.querySelector(
+                        ".notification-empty"
+                    );
+
+                if (emptyState) {
+                    emptyState.remove();
+                }
+
+                mobileNotificationPanel.insertAdjacentHTML(
+                    "afterbegin",
+                    notificationHTML
+                );
+            }
+        });
+
+      function openMobileNotifications() {
+
+          if (
+              mobileNotificationPanel
+          ) {
+
+              mobileNotificationPanel.classList.add(
+                  "show"
+              );
+
+          }
+
+
+          if (
+              mobileNotificationOverlay
+          ) {
+
+              mobileNotificationOverlay.classList.add(
+                  "show"
+              );
+
+          }
+
+          if (
+              unreadNotifications > 0
+          ) {
+
+              fetch(
+                  "/mark_notifications_read",
+                  {
+                      method: "POST"
+                  }
+              )
+              .then(
+                  function(response) {
+
+                      if (
+                          response.ok
+                      ) {
+
+                          unreadNotifications =
+                              0;
+
+
+                          if (
+                              notificationBadge
+                          ) {
+
+                              notificationBadge.style.display =
+                                  "none";
+
+                              notificationBadge.innerHTML =
+                                  "";
+                          }
+
+                          if (
+                              mobileNotificationBadge
+                          ) {
+
+                              mobileNotificationBadge.style.display =
+                                  "none";
+
+                              mobileNotificationBadge.innerHTML =
+                                  "";
+                          }
+                      }
+                  }
+              )
+              .catch(
+                  function(error) {
+
+                      console.error(
+                          "Failed to mark mobile notifications as read:",
+                          error
+                      );
+                  }
+              );
+          }
+      }
+
+
+      function closeMobileNotificationsPanel() {
+
+          if (
+              mobileNotificationPanel
+          ) {
+
+              mobileNotificationPanel.classList.remove(
+                  "show"
+              );
+
+          }
+
+
+          if (
+              mobileNotificationOverlay
+          ) {
+
+              mobileNotificationOverlay.classList.remove(
+                  "show"
+              );
+
+          }
+
+      }
+
+
+      if (
+          mobileNotificationBtn
+      ) {
+
+          mobileNotificationBtn.addEventListener(
+              "click",
+              function(e) {
+
+                  e.stopPropagation();
+
+
+                  if (
+                      mobileNotificationPanel &&
+                      mobileNotificationPanel.classList.contains(
+                          "show"
+                      )
+                  ) {
+
+                      closeMobileNotificationsPanel();
+
+                  } else {
+
+                      openMobileNotifications();
+                  }
+              }
+          );
+      }
+
+      if (
+          closeMobileNotifications
+      ) {
+
+          closeMobileNotifications.addEventListener(
+              "click",
+              closeMobileNotificationsPanel
+          );
+      }
+
+      if (
+          mobileNotificationOverlay
+      ) {
+
+          mobileNotificationOverlay.addEventListener(
+              "click",
+              closeMobileNotificationsPanel
+          );
+
+      }
+
+      if (
+          mobileNotificationPanel
+      ) {
+
+          mobileNotificationPanel.addEventListener(
+              "click",
+              function(e) {
+
+                  e.stopPropagation();
+
+              }
+          );
+      }
+
+
+    function toggleHistoryBook(button) {
+        const preview = button.previousElementSibling;
+
+        if (!preview) {
+            return;
+        }
+
+        const title = preview.dataset.title || "";
+        const author = preview.dataset.author || "";
+
+        const titleElement = preview.querySelector(".history-book-title");
+        const authorElement = preview.querySelector(".history-book-author");
+
+        const expanded = preview.classList.toggle("is-expanded");
+
+        if (expanded) {
+            titleElement.textContent = title;
+
+            if (authorElement) {
+                authorElement.textContent = author;
+            }
+
+            button.textContent = "See less";
+        } else {
+            titleElement.textContent = truncateHistoryText(
+                title,
+                30
+            );
+
+            if (authorElement) {
+                authorElement.textContent = truncateHistoryText(
+                    author,
+                    22
+                );
+            }
+
+            button.textContent = "See more..";
+        }
+    }
+
+    function truncateHistoryText(text, maxLength) {
+        if (!text) {
+            return "";
+        }
+
+        if (text.length <= maxLength) {
+            return text;
+        }
+
+        return text.substring(0, maxLength).trimEnd() + "...";
+    }
+
+        (function () {
+
+            if ("scrollRestoration" in history) {
+                history.scrollRestoration = "manual";
+            }
+
+            window.addEventListener("load", function () {
+
+                const savedScrollPosition =
+                    sessionStorage.getItem(
+                        "transactionScrollPosition"
+                    );
+
+                if (savedScrollPosition !== null) {
+
+                    window.scrollTo({
+                        top: parseInt(savedScrollPosition, 10),
+                        left: 0,
+                        behavior: "instant"
+                    });
+
+                    sessionStorage.removeItem(
+                        "transactionScrollPosition"
+                    );
+                }
+
+            });
+
+            window.addEventListener("beforeunload", function () {
+
+                sessionStorage.setItem(
+                    "transactionScrollPosition",
+                    window.scrollY
+                );
+
+            });
+
+        })();
+    </script>
+  </body>
+</html>

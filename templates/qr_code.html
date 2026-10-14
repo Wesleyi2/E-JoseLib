@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>QR Code - E-JoseLib</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='dashboard.css') }}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='dashboard-mobile.css') }}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='qrcode.css') }}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    >
+
+</head>
+
+<body>
+
+    <!-- MOBILE HEADER -->
+    <div class="mobile-topbar" id="mobileTopbar">
+
+        <div class="mobile-topbar-left">
+
+            <img
+                src="{{ url_for('static', filename='SJC_LOGO3.png') }}"
+                class="mobile-logo"
+                alt="SJC Logo"
+            >
+
+            <span class="mobile-topbar-title">
+                QR Code
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="dashboard">
+
+        <!-- SIDEBAR -->
+        <div class="sidebar" id="sidebar">
+
+            <div class="logo-section">
+
+                <img
+                    src="{{ url_for('static', filename='SJC_LOGO3.png') }}"
+                    class="school-logo"
+                    alt="SJC Logo"
+                >
+
+            </div>
+
+            <ul>
+
+                <a href="{{ url_for('dashboard') }}">
+                    <li>
+                        <i class="fa-solid fa-house"></i>
+                        <span>Dashboard</span>
+                    </li>
+                </a>
+
+                <a href="{{ url_for('catalog') }}">
+                    <li>
+                        <i class="fa-solid fa-book-open"></i>
+                        <span>Catalog</span>
+                    </li>
+                </a>
+
+                <a href="{{ url_for('transaction_history') }}">
+                    <li>
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>Transaction History</span>
+                    </li>
+                </a>
+
+                <a href="{{ url_for('qr_code') }}">
+                    <li class="active">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <span>QR Code</span>
+                    </li>
+                </a>
+
+            </ul>
+
+
+            <!-- MOBILE SIDEBAR PROFILE -->
+
+            <div class="sidebar-profile-mobile">
+
+                <a href="{{ url_for('profile') }}">
+                    <i class="fa-solid fa-user"></i>
+                    <span>My Profile</span>
+                </a>
+
+                <a
+                    href="{{ url_for('logout') }}"
+                    class="sidebar-logout"
+                >
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- MAIN CONTENT -->
+
+        <div class="main-content">
+
+            <!-- DESKTOP TOPBAR -->
+
+            <div class="topbar qr-topbar">
+
+                <div class="qr-topbar-title">
+
+                    <h1>
+                        My QR Code
+                    </h1>
+
+                    <p>
+                        Use this QR code for library attendance.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- QR CONTENT -->
+
+            <div class="qr-page-content">
+
+                <div class="qr-card">
+
+                    <div class="qr-card-header">
+
+                        <h2>
+                            Library QR Code
+                        </h2>
+
+                        <p class="qr-description">
+                            Present this QR code when logging your
+                            library visit.
+                        </p>
+
+                    </div>
+
+
+                    <!-- QR IMAGE -->
+
+                    <div class="qr-image-wrapper">
+
+                        <img
+                            src="data:image/png;base64,{{ qr_code_data }}"
+                            alt="Student QR Code"
+                            class="student-qr"
+                        >
+
+                    </div>
+
+
+                    <!-- STUDENT CODE -->
+
+                    <div class="student-code-section">
+
+                        <span>
+                            Student Code
+                        </span>
+
+                        <strong>
+                            {{ student_code }}
+                        </strong>
+
+                    </div>
+
+
+                    <!-- SAVE BUTTON -->
+
+                    <button
+                        type="button"
+                        class="save-qr-btn"
+                        onclick="saveQRCode()"
+                    >
+
+                        <i class="fa-solid fa-download"></i>
+
+                        <span>
+                            Save QR Code
+                        </span>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- MOBILE BOTTOM NAVIGATION -->
+
+    <nav class="mobile-bottom-nav">
+
+        <a href="{{ url_for('dashboard') }}">
+
+            <i class="fa-solid fa-house"></i>
+
+            <span>
+                Dashboard
+            </span>
+
+        </a>
+
+
+        <a href="{{ url_for('catalog') }}">
+
+            <i class="fa-solid fa-book-open"></i>
+
+            <span>
+                Catalog
+            </span>
+
+        </a>
+
+
+        <a href="{{ url_for('transaction_history') }}">
+
+            <i class="fa-solid fa-clock-rotate-left"></i>
+
+            <span>
+                History
+            </span>
+
+        </a>
+
+        <a href="{{ url_for('profile') }}">
+
+            <i class="fa-solid fa-user"></i>
+
+            <span>
+                Profile
+            </span>
+
+        </a>
+
+    </nav>
+
+
+    <!-- SAVE QR CODE -->
+
+    <script>
+
+        function saveQRCode() {
+
+            const qrImage =
+                document.querySelector(".student-qr");
+
+            if (!qrImage) {
+
+                alert("QR Code is not available.");
+
+                return;
+            }
+
+
+            const link =
+                document.createElement("a");
+
+            link.href =
+                qrImage.src;
+
+            link.download =
+                "E-JoseLib-QR-{{ student_code }}.png";
+
+
+            document.body.appendChild(link);
+
+            link.click();
+
+            document.body.removeChild(link);
+
+        }
+
+    </script>
+
+</body>
+
+</html>

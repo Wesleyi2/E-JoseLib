@@ -1,0 +1,932 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Catalog - E-JoseLib</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='catalog-mobile.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard-mobile.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <!--  MOBILE TOP BAR -->
+
+    <div class="mobile-topbar">
+
+      <div class="mobile-topbar-left">
+
+        <img
+          src="{{ url_for('static', filename='SJC_LOGO3.png') }}"
+          class="mobile-logo"
+          alt="Logo"
+        />
+
+        <span class="mobile-topbar-title">
+          Library Catalog
+        </span>
+
+      </div>
+
+      <button
+        class="mobile-notification-btn"
+        id="mobileNotificationBtn"
+      >
+
+        <i class="fa-regular fa-bell"></i>
+
+        <span
+          class="notification-badge"
+          id="mobileNotificationBadge"
+          {% if unread_count == 0 %}
+            style="display:none;"
+          {% endif %}
+        >
+          {{ unread_count }}
+        </span>
+
+      </button>
+
+    </div>
+
+    <div class="mobile-notification-panel" id="mobileNotificationPanel">
+      <div class="mobile-notification-header">
+        <h3>Notifications</h3>
+
+        <i class="fa-solid fa-xmark" id="closeMobileNotifications"></i>
+      </div>
+
+      {% if notifications %} {% for n in notifications %}
+
+      <div class="notification-item {{ n.type }}">
+        <div class="notification-title">{{ n.title }}</div>
+
+        <div class="notification-message">{{ n.message }}</div>
+
+        <div class="notification-time">
+          {{ n.created_at.strftime("%b %d, %Y %I:%M %p") }}
+        </div>
+      </div>
+
+      {% endfor %} {% else %}
+
+      <div class="notification-empty">
+        <i class="fa-regular fa-bell-slash"></i>
+
+        <h4>No notifications yet</h4>
+
+        <p>You're all caught up.</p>
+      </div>
+
+      {% endif %}
+    </div>
+
+    <!-- MOBILE NOTIFICATION OVERLAY -->
+
+    <div
+      class="mobile-notification-overlay"
+      id="mobileNotificationOverlay"
+    ></div>
+
+    <!-- DASHBOARD -->
+
+    <div class="dashboard">
+
+      <div class="sidebar" id="sidebar">
+        <div class="logo-section">
+          <img
+            src="{{ url_for('static', filename='SJC_LOGO3.png') }}"
+            class="school-logo"
+            alt="SJC Logo"
+          />
+        </div>
+
+        <ul>
+
+          <a href="{{ url_for('dashboard') }}">
+            <li>
+              <i class="fa-solid fa-house"></i>
+
+              <span> Dashboard </span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('catalog') }}">
+            <li class="active">
+              <i class="fa-solid fa-book-open"></i>
+
+              <span> Catalog </span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('transaction_history') }}">
+            <li>
+              <i class="fa-solid fa-clock-rotate-left"></i>
+
+              <span> Transaction History </span>
+            </li>
+          </a>
+
+            <a href="{{ url_for('qr_code') }}">
+                <li>
+                    <i class="fa-solid fa-qrcode"></i>
+                    <span>QR Code</span>
+                </li>
+            </a>
+        </ul>
+      </div>
+
+      <!-- MAIN CONTENT-->
+
+      <div class="main-content">
+
+        <div class="catalog-header">
+          <div>
+            <h1>Library Catalog</h1>
+
+            <p>Browse, search, and filter available books.</p>
+          </div>
+
+          <div class="catalog-top">
+
+            <form method="GET" class="catalog-search">
+              <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+                <input
+                  type="text"
+                  name="search"
+                  value="{{ search }}"
+                  placeholder="Search title, author, genre..."
+                  onkeydown="
+                    if (event.key === 'Enter') {
+                      this.form.submit();
+                    }
+                  "
+                />
+              </div>
+            </form>
+
+            <!-- CATEGORY FILTER-->
+
+            <div class="category-dropdown">
+              <button type="button" class="dropdown-btn" id="dropdownBtn">
+                {{ selected_category if selected_category else "All Categories"
+                }}
+
+                <i class="fa-solid fa-chevron-down"></i>
+              </button>
+
+              <div class="dropdown-menu" id="dropdownMenu">
+                <!-- ALL CATEGORIES -->
+
+                <a href="{{ url_for('catalog') }}"> All Categories </a>
+
+                <!-- CATEGORY OPTIONS -->
+
+                {% for cat in categories %}
+
+                <a
+                  href="{{ url_for(
+                      'catalog',
+                      category=cat.category
+                    ) }}"
+                >
+                  {{ cat.category }}
+                </a>
+
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TRENDING / MOST BORROWED BOOKS -->
+
+        {% if trending_books %}
+
+        <div class="trending-section">
+
+
+          <div class="trending-header">
+            <div>
+              <h2>
+                <i class="fa-solid fa-fire"></i>
+
+                Trending Books
+              </h2>
+
+              <p>Most borrowed books in the library</p>
+            </div>
+          </div>
+
+          <!-- TRENDING GRID -->
+
+          <div class="trending-grid">
+            {% for book in trending_books %}
+
+            <a
+              href="{{ url_for(
+                    'book_details',
+                    book_id=book.book_id
+                  ) }}"
+              class="trending-book-link"
+            >
+              <div class="trending-book-card">
+
+                <div class="trending-rank">#{{ loop.index }}</div>
+
+                <img
+                  src="{{ url_for(
+                        'static',
+                        filename='covers/' + book.cover_image
+                      ) }}"
+                  class="trending-book-image"
+                  alt="{{ book.title }}"
+                />
+
+              <div class="trending-book-content">
+
+                <h4
+                  class="trending-book-text trending-book-title"
+                  title="{{ book.title }}"
+                >
+                  {{ book.display_title }}
+                </h4>
+
+
+                <!-- AUTHOR -->
+                <p
+                  class="trending-book-text trending-book-author"
+                  title="{{ book.author }}"
+                >
+                  {{ book.display_author }}
+                </p>
+
+
+                <!-- BORROW COUNT -->
+                <span class="trending-borrow-count">
+
+                  <i class="fa-solid fa-book"></i>
+
+                  {{ book.borrow_count }}
+                  borrow{{ 's' if book.borrow_count != 1 else '' }}
+
+                </span>
+
+              </div>
+
+            </div>
+
+          </a>
+
+          {% endfor %}
+
+        </div>
+
+      </div>
+
+      {% endif %}
+
+
+    <!-- CATEGORY BOOKS -->
+
+    {% if books_by_category %}
+
+      {% for category, books in books_by_category.items() %}
+
+      <div class="category-section">
+        <div class="category-section-header">
+
+          <div>
+
+            <h2>{{ category }}</h2>
+
+            {% if category_book_counts.get(category, 0) > 10 %}
+
+            <p class="category-book-count">
+              {{ category_book_counts.get(category, 0) }}
+              books available in this category
+            </p>
+
+            {% endif %}
+
+          </div>
+
+          <!-- VIEW ALL -->
+
+          {% if category_book_counts.get(category, 0) > 10
+                and not view_category
+                and not selected_category %}
+
+          <a
+            href="{{ url_for(
+                'catalog',
+                view_category=category
+              ) }}"
+            class="category-action-btn view-all-btn"
+          >
+            <span>View All</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </a>
+
+          {% endif %}
+
+          <!-- VIEW LESS -->
+
+          {% if view_category %}
+
+          <a
+            href="{{ url_for('catalog') }}"
+            class="category-action-btn view-less-btn"
+          >
+            <span>View Less</span>
+            <i class="fa-solid fa-arrow-up"></i>
+          </a>
+
+          {% endif %}
+
+          </div>
+
+        <!-- BOOK GRID -->
+<div class="books-grid">
+
+    {% for book in books %}
+
+    <a
+        href="{{ url_for('book_details', book_id=book.book_id) }}"
+        class="book-link"
+    >
+
+        <div class="catalog-book-card">
+
+            {% if book.has_cover_image %}
+
+                <img
+                    src="{{ url_for('static', filename='covers/' + book.cover_image) }}"
+                    class="catalog-book-image"
+                    alt="{{ book.title }}"
+                >
+
+            {% else %}
+
+                <div class="catalog-book-no-image">
+                    <i class="fa-solid fa-image"></i>
+                    <span>NO IMAGE</span>
+                </div>
+
+            {% endif %}
+
+            <div class="catalog-book-content">
+
+                <div class="catalog-text-hover">
+
+                    <h4>{{ book.title }}</h4>
+
+                    <div class="catalog-hover-card">
+                        <strong>{{ book.title }}</strong>
+
+                        {% if book.author %}
+                            <span>{{ book.author }}</span>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+
+            <div class="catalog-text-hover">
+
+                <p class="catalog-author">
+                    {{ book.author }}
+                </p>
+
+                <div class="catalog-hover-card">
+                    <strong>{{ book.author }}</strong>
+                </div>
+            </div>
+
+            <span
+                class="catalog-status {{ 'available' if book.catalog_status == 'Available' else 'borrowed' }}"
+                data-book-id="{{ book.book_id }}"
+            >
+                {{ book.catalog_status }}
+            </span>
+            </div>
+        </div>
+    </a>
+
+    {% endfor %}
+
+</div>
+
+</div>
+
+{% endfor %}
+
+{% else %}
+
+<div class="no-books">
+
+    <h3>No books found.</h3>
+
+    <p>Try another keyword or category.</p>
+
+</div>
+
+{% endif %}
+
+    <!-- PAGINATION -->
+
+    {% if total_pages > 1 %}
+
+    <div class="catalog-pagination">
+
+      <!-- PREVIOUS -->
+
+      {% if page > 1 %}
+
+      <a
+        href="{{ url_for(
+            'catalog',
+            page=page - 1,
+            search=search,
+            category=selected_category,
+            view_category=view_category
+          ) }}"
+        class="pagination-btn"
+      >
+        Previous
+      </a>
+
+      {% else %}
+
+      <span class="pagination-btn disabled">
+        Previous
+      </span>
+
+      {% endif %}
+
+
+      <!-- PAGE 1 -->
+
+      {% if page == 1 %}
+
+      <span class="pagination-number active">1</span>
+
+      {% else %}
+
+      <a
+        href="{{ url_for(
+            'catalog',
+            page=page_number,
+            search=search,
+            category=selected_category,
+            view_category=view_category
+          ) }}"
+        class="pagination-number"
+      >
+      {{ page_number }}
+    </a>
+
+      {% endif %}
+
+
+      <!-- LEFT ELLIPSIS -->
+
+      {% if page > 4 %}
+
+      <span class="pagination-ellipsis">
+        ...
+      </span>
+
+      {% endif %}
+
+
+      <!-- MIDDLE PAGES -->
+
+      {% for page_number in range(
+          [2, page - 1]|max,
+          [total_pages - 1, page + 1]|min + 1
+        )
+      %}
+
+        {% if page_number > 1 and page_number < total_pages %}
+
+          {% if page_number == page %}
+
+          <span class="pagination-number active">
+            {{ page_number }}
+          </span>
+
+          {% else %}
+
+        <a
+          href="{{ url_for(
+              'catalog',
+              page=page_number,
+              search=search,
+              category=selected_category,
+              view_category=view_category
+            ) }}"
+          class="pagination-number"
+        >
+          {{ page_number }}
+        </a>
+
+          {% endif %}
+
+        {% endif %}
+
+      {% endfor %}
+
+
+      <!-- RIGHT ELLIPSIS -->
+
+      {% if page < total_pages - 3 %}
+
+      <span class="pagination-ellipsis">
+        ...
+      </span>
+
+      {% endif %}
+
+
+      <!-- LAST PAGE -->
+
+      {% if total_pages > 1 %}
+
+        {% if page == total_pages %}
+
+        <span class="pagination-number active">
+          {{ total_pages }}
+        </span>
+
+        {% else %}
+
+        <a
+          href="{{ url_for(
+              'catalog',
+              page=total_pages,
+              search=search,
+              category=selected_category,
+              view_category=view_category
+            ) }}"
+          class="pagination-number"
+        >
+          {{ total_pages }}
+        </a>
+
+        {% endif %}
+
+      {% endif %}
+
+
+      <!-- NEXT -->
+
+      {% if page < total_pages %}
+
+      <a
+        href="{{ url_for(
+            'catalog',
+            page=page + 1,
+            search=search,
+            category=selected_category,
+            view_category=view_category
+          ) }}"
+        class="pagination-btn"
+      >
+          Next
+        </a>
+
+      {% else %}
+
+      <span class="pagination-btn disabled">
+        Next
+      </span>
+
+      {% endif %}
+
+    </div>
+
+    {% endif %}
+    <!--MOBILE BOTTOM NAV-->
+
+    <nav class="mobile-bottom-nav">
+
+      <a href="{{ url_for('dashboard') }}">
+        <i class="fa-solid fa-house"></i>
+
+        <span> Dashboard </span>
+      </a>
+
+      <a href="{{ url_for('catalog') }}" class="active">
+        <i class="fa-solid fa-book-open"></i>
+
+        <span> Catalog </span>
+      </a>
+
+      <a href="{{ url_for('transaction_history') }}">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+
+        <span> History </span>
+      </a>
+
+      <a href="{{ url_for('profile') }}">
+        <i class="fa-solid fa-user"></i>
+
+        <span> Profile </span>
+      </a>
+    </nav>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+    const dropdownBtn = document.getElementById("dropdownBtn");
+    const dropdownMenu = document.getElementById("dropdownMenu");
+
+    /* =========================================
+       DROPDOWN MENU
+    ========================================= */
+
+    if (dropdownBtn && dropdownMenu) {
+        dropdownBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle("show");
+        });
+
+        document.addEventListener("click", function () {
+            dropdownMenu.classList.remove("show");
+        });
+    }
+
+    /* =========================================
+       MOBILE NOTIFICATIONS
+    ========================================= */
+
+    const mobileNotificationBtn = document.getElementById(
+        "mobileNotificationBtn"
+    );
+
+    const mobileNotificationPanel = document.getElementById(
+        "mobileNotificationPanel"
+    );
+
+    const mobileNotificationOverlay = document.getElementById(
+        "mobileNotificationOverlay"
+    );
+
+    const mobileNotificationBadge = document.getElementById(
+        "mobileNotificationBadge"
+    );
+
+    const closeMobileNotifications = document.getElementById(
+        "closeMobileNotifications"
+    );
+
+    /* =========================================
+       UNREAD NOTIFICATIONS
+    ========================================= */
+
+    let unreadNotifications = Number(
+        "{{ unread_count|default(0) }}"
+    );
+
+    function openMobileNotifications() {
+        if (!mobileNotificationPanel) {
+            return;
+        }
+
+        mobileNotificationPanel.classList.add("show");
+
+        if (mobileNotificationOverlay) {
+            mobileNotificationOverlay.classList.add("show");
+        }
+
+        /* MARK NOTIFICATIONS AS READ */
+
+        if (unreadNotifications > 0) {
+            fetch("/mark_notifications_read", {
+                method: "POST"
+            })
+                .then(function (response) {
+                    if (response.ok) {
+                        unreadNotifications = 0;
+
+                        if (mobileNotificationBadge) {
+                            mobileNotificationBadge.style.display = "none";
+                            mobileNotificationBadge.textContent = "";
+                        }
+                    }
+                })
+                .catch(function (error) {
+                    console.error(
+                        "Notification error:",
+                        error
+                    );
+                });
+        }
+    }
+
+    /* =========================================
+       CLOSE MOBILE NOTIFICATIONS
+    ========================================= */
+
+    function closeMobileNotificationsPanel() {
+        if (mobileNotificationPanel) {
+            mobileNotificationPanel.classList.remove("show");
+        }
+
+        if (mobileNotificationOverlay) {
+            mobileNotificationOverlay.classList.remove("show");
+        }
+    }
+
+    /* =========================================
+       NOTIFICATION BUTTON
+    ========================================= */
+
+    if (mobileNotificationBtn) {
+        mobileNotificationBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+
+            if (
+                mobileNotificationPanel &&
+                mobileNotificationPanel.classList.contains("show")
+            ) {
+                closeMobileNotificationsPanel();
+            } else {
+                openMobileNotifications();
+            }
+        });
+    }
+
+    if (closeMobileNotifications) {
+        closeMobileNotifications.addEventListener(
+            "click",
+            closeMobileNotificationsPanel
+        );
+    }
+
+    if (mobileNotificationOverlay) {
+        mobileNotificationOverlay.addEventListener(
+            "click",
+            closeMobileNotificationsPanel
+        );
+    }
+
+    if (mobileNotificationPanel) {
+        mobileNotificationPanel.addEventListener("click", function (e) {
+            e.stopPropagation();
+        });
+    }
+
+    /* =========================================
+       REAL-TIME CATALOG BOOK AVAILABILITY
+    ========================================= */
+
+    if (typeof io === "function") {
+        const catalogSocket = io();
+
+        /* JOIN ROOMS FOR CATALOG BOOKS */
+
+        function joinCatalogBookRooms() {
+            const statusElements = document.querySelectorAll(
+                ".catalog-status[data-book-id]"
+            );
+
+            statusElements.forEach(function (element) {
+                const bookId = element.dataset.bookId;
+
+                if (!bookId) {
+                    return;
+                }
+
+                catalogSocket.emit("join_book_room", {
+                    book_id: bookId
+                });
+
+                console.log(
+                    "Catalog: requesting room join for book_" + bookId
+                );
+            });
+        }
+
+        /* SOCKET CONNECTED */
+
+        catalogSocket.on("connect", function () {
+            console.log(
+                "Catalog Socket.IO connected:",
+                catalogSocket.id
+            );
+
+            joinCatalogBookRooms();
+        });
+
+        /* AVAILABILITY UPDATED BY BACKEND */
+
+        catalogSocket.on(
+            "book_availability_updated",
+            function (data) {
+                console.log(
+                    "Catalog received availability event:",
+                    data
+                );
+
+                if (!data || data.book_id == null) {
+                    return;
+                }
+
+                const bookId = String(data.book_id);
+
+                const statusElements = document.querySelectorAll(
+                    ".catalog-status[data-book-id]"
+                );
+
+                statusElements.forEach(function (element) {
+                    if (String(element.dataset.bookId) !== bookId) {
+                        return;
+                    }
+
+                    const availableCopies = Math.max(
+                        0,
+                        Number(data.available_copies) || 0
+                    );
+
+                    const isAvailable =
+                        data.status === "Available" &&
+                        data.available === true &&
+                        availableCopies > 0;
+
+                    /* UPDATE STATUS TEXT */
+
+                    element.textContent = isAvailable
+                        ? "Available"
+                        : "Not Available";
+
+                    /* UPDATE STATUS CSS */
+
+                    element.classList.toggle(
+                        "available",
+                        isAvailable
+                    );
+
+                    element.classList.toggle(
+                        "borrowed",
+                        !isAvailable
+                    );
+
+                    console.log(
+                        "Catalog status updated:",
+                        {
+                            book_id: bookId,
+                            available_copies: availableCopies,
+                            status: element.textContent
+                        }
+                    );
+                });
+            }
+        );
+
+        /* SOCKET CONNECTION ERROR */
+
+        catalogSocket.on("connect_error", function (error) {
+            console.error(
+                "Catalog Socket.IO connection error:",
+                error.message
+            );
+        });
+
+        /* SOCKET DISCONNECTED */
+
+        catalogSocket.on("disconnect", function (reason) {
+            console.warn(
+                "Catalog Socket.IO disconnected:",
+                reason
+            );
+        });
+
+    } else {
+        console.error(
+            "Socket.IO client is not loaded. " +
+            "Check that the Socket.IO script loads before this script."
+        );
+    }
+</script>
+</body>
+</html>

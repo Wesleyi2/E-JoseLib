@@ -1,0 +1,404 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Verify OTP - E-JoseLib</title>
+
+  <!-- MAIN LOGIN CSS -->
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='style.css') }}"
+  >
+
+  <!-- MOBILE CSS -->
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='style-mobile.css') }}"
+  >
+
+  <!-- FONT AWESOME -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  >
+  
+</head>
+
+<body>
+
+  <!-- LOGIN CARD -->
+  <div class="login-card">
+
+    <div class="login-logo">
+      <img
+        src="{{ url_for('static', filename='SJC_LOGO.png') }}"
+        alt="School Logo"
+      >
+    </div>
+
+    <h2>Verify OTP</h2>
+
+    <p class="subtitle">
+      Enter the 6-digit verification code
+      sent to your registered email.
+    </p>
+
+    <!-- OTP FORM -->
+    <form
+      method="POST"
+      id="otpForm"
+      autocomplete="off"
+    >
+
+      <div class="input-group">
+
+        <!-- SERVER ERROR: ABOVE OTP LABEL -->
+        {% if error %}
+          <p class="error" role="alert">
+            {{ error }}
+          </p>
+        {% endif %}
+
+        <label class="otp-label">
+          Verification Code
+        </label>
+
+        <div class="otp-wrapper">
+
+          <div class="otp-input-area">
+
+            <i
+              class="fa-solid fa-shield-halved otp-icon"
+              aria-hidden="true"
+            ></i>
+
+            <!-- OTP BOXES -->
+            <div class="otp-inputs-container">
+
+              <div
+                class="otp-inputs"
+                id="otpInputs"
+              >
+
+                <input
+                  class="otp-input"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="1"
+                  pattern="[0-9]"
+                  aria-label="OTP digit 1"
+                  autocomplete="one-time-code"
+                  required
+                >
+
+                <input
+                  class="otp-input"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="1"
+                  pattern="[0-9]"
+                  aria-label="OTP digit 2"
+                  required
+                >
+
+                <input
+                  class="otp-input"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="1"
+                  pattern="[0-9]"
+                  aria-label="OTP digit 3"
+                  required
+                >
+
+                <input
+                  class="otp-input"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="1"
+                  pattern="[0-9]"
+                  aria-label="OTP digit 4"
+                  required
+                >
+
+                <input
+                  class="otp-input"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="1"
+                  pattern="[0-9]"
+                  aria-label="OTP digit 5"
+                  required
+                >
+
+                <input
+                  class="otp-input"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="1"
+                  pattern="[0-9]"
+                  aria-label="OTP digit 6"
+                  required
+                >
+
+              </div>
+            </div>
+          </div>
+
+          <!-- CLIENT-SIDE VALIDATION ERROR -->
+          <div
+            class="otp-error"
+            id="otpError"
+            role="alert"
+          >
+            Please enter all 6 digits of the OTP.
+          </div>
+
+        </div>
+
+        <!-- COMBINED OTP VALUE SENT TO FLASK -->
+        <input
+          type="hidden"
+          name="otp"
+          id="otpValue"
+        >
+
+      </div>
+
+      <!-- VERIFY BUTTON -->
+      <button
+        type="submit"
+        id="verifyButton"
+      >
+        <span
+          class="otp-spinner"
+          id="verifySpinner"
+          aria-hidden="true"
+        ></span>
+
+        <span id="verifyButtonText">
+          Verify OTP
+        </span>
+      </button>
+
+    </form>
+
+    <!-- REQUEST NEW OTP -->
+    <div class="forgot-password">
+      <a href="{{ url_for('forgot_password') }}">
+        <i
+          class="fa-solid fa-rotate-right"
+          aria-hidden="true"
+        ></i>
+        Request a New OTP
+      </a>
+    </div>
+
+  </div>
+
+  <!-- OTP JAVASCRIPT -->
+  <script>
+    const otpInputs =
+      document.querySelectorAll(".otp-input");
+
+    const otpForm =
+      document.getElementById("otpForm");
+
+    const otpValue =
+      document.getElementById("otpValue");
+
+    const otpError =
+      document.getElementById("otpError");
+
+    const verifyButton =
+      document.getElementById("verifyButton");
+
+    const verifySpinner =
+      document.getElementById("verifySpinner");
+
+    const verifyButtonText =
+      document.getElementById("verifyButtonText");
+
+    let isSubmitting = false;
+
+    /* UPDATE COMBINED OTP */
+    function updateOTP() {
+      let otp = "";
+
+      otpInputs.forEach(function(input) {
+        otp += input.value;
+      });
+
+      otpValue.value = otp;
+    }
+
+    /* CLEAR CLIENT-SIDE ERROR */
+    function clearOTPError() {
+      otpError.classList.remove("show");
+
+      otpInputs.forEach(function(input) {
+        input.classList.remove("invalid");
+      });
+    }
+
+    /* INPUT HANDLING */
+    otpInputs.forEach(function(input, index) {
+
+      input.addEventListener("input", function() {
+
+        this.value = this.value
+          .replace(/\D/g, "")
+          .slice(0, 1);
+
+        clearOTPError();
+
+        if (
+          this.value !== "" &&
+          index < otpInputs.length - 1
+        ) {
+          otpInputs[index + 1].focus();
+        }
+
+        updateOTP();
+      });
+
+      /* BACKSPACE AND KEYBOARD NAVIGATION */
+      input.addEventListener("keydown", function(event) {
+
+        if (
+          event.key === "Backspace" &&
+          this.value === "" &&
+          index > 0
+        ) {
+          otpInputs[index - 1].focus();
+          return;
+        }
+
+        const allowedKeys = [
+          "Backspace",
+          "Delete",
+          "ArrowLeft",
+          "ArrowRight",
+          "Tab",
+          "Home",
+          "End"
+        ];
+
+        if (allowedKeys.includes(event.key)) {
+          return;
+        }
+
+        /* Allow keyboard shortcuts such as Ctrl+V */
+        if (event.ctrlKey || event.metaKey) {
+          return;
+        }
+
+        if (!/^[0-9]$/.test(event.key)) {
+          event.preventDefault();
+        }
+      });
+
+      /* PASTE OTP */
+      input.addEventListener("paste", function(event) {
+
+        event.preventDefault();
+
+        const pastedText = (
+          event.clipboardData ||
+          window.clipboardData
+        )
+          .getData("text")
+          .replace(/\D/g, "")
+          .slice(0, 6);
+
+        if (!pastedText) {
+          return;
+        }
+
+        otpInputs.forEach(function(otpInput, i) {
+          otpInput.value = pastedText[i] || "";
+        });
+
+        clearOTPError();
+        updateOTP();
+
+        const focusIndex = Math.min(
+          pastedText.length,
+          otpInputs.length - 1
+        );
+
+        otpInputs[focusIndex].focus();
+      });
+    });
+
+    /* FORM VALIDATION AND LOADING */
+    otpForm.addEventListener("submit", function(event) {
+
+      updateOTP();
+
+      const otp = otpValue.value;
+
+      if (!/^\d{6}$/.test(otp)) {
+
+        event.preventDefault();
+
+        otpError.textContent =
+          "Please enter all 6 digits of the OTP.";
+
+        otpError.classList.add("show");
+
+        otpInputs.forEach(function(input) {
+          if (!input.value) {
+            input.classList.add("invalid");
+          }
+        });
+
+        for (let i = 0; i < otpInputs.length; i++) {
+          if (!otpInputs[i].value) {
+            otpInputs[i].focus();
+            break;
+          }
+        }
+
+        return;
+      }
+
+      /* Prevent duplicate submissions */
+      if (isSubmitting) {
+        event.preventDefault();
+        return;
+      }
+
+      isSubmitting = true;
+
+      /* Show loading state */
+      verifyButton.disabled = true;
+      verifySpinner.classList.add("show");
+      verifyButtonText.textContent = "Verifying...";
+      otpError.classList.remove("show");
+    });
+
+    /* INITIAL FOCUS */
+    if (otpInputs.length > 0) {
+      otpInputs[0].focus();
+    }
+
+    /* RESET BUTTON IF PAGE IS RESTORED FROM BROWSER CACHE */
+    window.addEventListener("pageshow", function() {
+      isSubmitting = false;
+      verifyButton.disabled = false;
+      verifySpinner.classList.remove("show");
+      verifyButtonText.textContent = "Verify OTP";
+    });
+  </script>
+
+</body>
+</html>

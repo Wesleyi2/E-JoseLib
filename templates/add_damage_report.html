@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Damage Report - E-JoseLib</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin-mobile.css') }}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  </head>
+  <body>
+
+    <!-- MOBILE TOPBAR -->
+    <div class="mobile-topbar">
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <span class="mobile-topbar-title"> Add Damage Report </span>
+      <a href="{{ url_for('admin_borrow_request') }}" class="mobile-add-book">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="dashboard">
+      
+      <!-- SIDEBAR -->
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-close" id="sidebarClose">
+          <i class="fa-solid fa-xmark"></i>
+        </div>
+
+        <div class="logo-section">
+          <img
+            src="{{ url_for('static', filename='SJC_LOGO3.png') }}"
+            class="school-logo"
+          />
+        </div>
+
+        <ul>
+          <a href="{{ url_for('admin_dashboard') }}">
+            <li>
+              <i class="fa-solid fa-chart-line"></i>
+              <span>Dashboard</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('admin_books') }}">
+            <li>
+              <i class="fa-solid fa-book"></i>
+              <span>Books</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('admin_borrow_request') }}">
+            <li>
+              <i class="fa-solid fa-clipboard-check"></i>
+              <span>Approval</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('admin_attendance') }}">
+            <li>
+              <i class="fa-solid fa-clock"></i>
+              <span>Attendance</span>
+            </li>
+          </a>
+      
+          <a href="{{ url_for('admin_users') }}">
+            <li>
+              <i class="fa-solid fa-users"></i>
+              <span> Users </span>
+            </li>
+          </a>
+        </ul>
+
+        <div class="sidebar-profile-mobile">
+          <a href="{{ url_for('logout') }}" class="sidebar-logout">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div class="main-content">
+        <div class="dashboard-header">
+          <div>
+            <h1>Add Damage Report</h1>
+            <p>Record the damage information for the returned book.</p>
+          </div>
+
+          <a href="{{ url_for('admin_pending_returns') }}" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i>
+            Back to Pending Returns
+          </a>
+        </div>
+
+        <!-- DAMAGE REPORT FORM -->
+        <div class="admin-table-card add-book-card">
+          <form method="POST"
+                action="{{ url_for('report_damage') }}"
+                id="damageReportForm"
+                enctype="multipart/form-data"
+          >
+            <!-- HIDDEN TRANSACTION ID -->
+            <input type="hidden"
+                   name="transaction_id"
+                   value="{{ transaction_id }}"
+            />
+
+            <div class="book-fields-panel">
+              <div class="section-label-row">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                <span>Damage Report Information</span>
+              </div>
+
+              <div class="field-grid">
+                <!-- STUDENT NAME -->
+                <div class="form-group">
+                  <label class="form-label"> Student Name </label>
+                  <input type="text" value="{{ student }}" readonly />
+                </div>
+
+                <!-- BOOK TITLE -->
+                <div class="form-group">
+                  <label class="form-label"> Book Title </label>
+                  <input type="text" value="{{ book }}" readonly />
+                </div>
+
+                <!-- DAMAGE TYPE -->
+                <div class="form-group">
+                  <label class="form-label"> Damage Type </label>
+                  <select name="damage_type" required>
+                    <option value="" selected disabled>Select damage type
+                    </option>
+                    <option value="Minor Damage">Minor Damage</option>
+                    <option value="Major Damage">Major Damage</option>
+                    <option value="Torn Pages">Torn Pages</option>
+                    <option value="Missing Pages">Missing Pages</option>
+                    <option value="Water Damage">Water Damage</option>
+                    <option value="Cover Damage">Cover Damage</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <!-- PENALTY AMOUNT -->
+                <div class="form-group">
+                  <label class="form-label"> Penalty Amount </label>
+                  <input type="number"
+                         name="penalty_amount"
+                         value="0"
+                         min="0"
+                         step="0.01"
+                         placeholder="0.00"
+                         required
+                  />
+                </div>
+
+                <!-- DESCRIPTION -->
+                <div class="form-group full">
+                  <label class="form-label"> Description </label>
+                  <textarea name="description"
+                            rows="5"
+                            placeholder="Describe the damage..."
+                            required
+                  ></textarea>
+                </div>
+
+                <!-- IMAGE PROOF -->
+                <div class="form-group full">
+                  <label class="form-label"> Image Proof </label>
+                  <input type="file"
+                         name="image_proof"
+                         id="imageProof"
+                         accept=".jpg,.jpeg,.png"
+                         required
+                  />
+                  <small id="imageProofError"
+                         style="display: none; color: #dc2626; margin-top: 6px"
+                  ></small>
+
+                  <small
+                    style="display: block; margin-top: 6px; color: #6b7280"
+                  > Upload a clear image showing the damaged book. JPG, JPEG, or
+                    PNG only. Maximum size: 5 MB.
+                  </small>
+
+                  <!-- IMAGE PREVIEW -->
+                  <div id="imagePreviewContainer"
+                       style="display: none; margin-top: 15px"
+                  >
+                    <img id="imagePreview"
+                         src=""
+                         alt="Damage Proof Preview"
+                         style="
+                        max-width: 300px;
+                        max-height: 250px;
+                        border-radius: 8px;
+                        object-fit: contain;
+                        border: 1px solid #ddd;
+                      "
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label"> Replacement Required </label>
+                  <select name="replacement_required" required>
+                    <option value="No" selected>No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions add-book-actions">
+              <a href="{{ url_for('admin_borrow_request') }}"
+                 class="cancel-borrow">Cancel
+              </a>
+              <button type="submit" class="confirm-borrow">
+                <i class="fa-solid fa-paper-plane"></i>Submit Report
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+
+      /* MOBILE SIDEBAR */
+
+      const menuToggle = document.getElementById("menuToggle");
+      const sidebar = document.getElementById("sidebar");
+      const sidebarOverlay = document.getElementById("sidebarOverlay");
+      const sidebarClose = document.getElementById("sidebarClose");
+
+      if (menuToggle) {
+        menuToggle.addEventListener("click", () => {
+          sidebar.classList.add("show");
+          sidebarOverlay.classList.add("show");
+        });
+      }
+      if (sidebarClose) {
+        sidebarClose.addEventListener("click", () => {
+          sidebar.classList.remove("show");
+          sidebarOverlay.classList.remove("show");
+        });
+      }
+      if (sidebarOverlay) {
+        sidebarOverlay.addEventListener("click", () => {
+          sidebar.classList.remove("show");
+          sidebarOverlay.classList.remove("show");
+        });
+      }
+      sidebar.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", () => {
+          sidebar.classList.remove("show");
+          sidebarOverlay.classList.remove("show");
+        });
+      });
+
+      /* IMAGE PROOF VALIDATION */
+
+      const damageForm = document.getElementById("damageReportForm");
+      const imageProof = document.getElementById("imageProof");
+      const imageProofError = document.getElementById("imageProofError");
+      const imagePreviewContainer = document.getElementById(
+        "imagePreviewContainer",
+      );
+
+      const imagePreview = document.getElementById("imagePreview");
+      const allowedImageTypes = ["image/jpeg", "image/png"];
+      const maxImageSize = 5 * 1024 * 1024; // 5 MB
+      imageProof.addEventListener("change", function () {
+        const file = this.files[0];
+        imageProofError.style.display = "none";
+        imageProofError.textContent = "";
+        imagePreviewContainer.style.display = "none";
+        imagePreview.src = "";
+
+        if (!file) {
+          return;
+        }
+
+        if (!allowedImageTypes.includes(file.type)) {
+          imageProofError.textContent =
+            "Invalid image format. Please upload JPG, JPEG, or PNG only.";
+          imageProofError.style.display = "block";
+          this.value = "";
+
+          return;
+        }
+        /* CHECK FILE SIZE */
+
+        if (file.size > maxImageSize) {
+          imageProofError.textContent =
+            "Image is too large. Maximum file size is 5 MB.";
+          imageProofError.style.display = "block";
+          this.value = "";
+          return;
+        }
+
+        /* IMAGE PREVIEW */
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          imagePreview.src = e.target.result;
+          imagePreviewContainer.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      });
+
+      /* FORM VALIDATION */
+
+      damageForm.addEventListener("submit", function (e) {
+        const file = imageProof.files[0];
+        if (!file) {
+          e.preventDefault();
+          imageProofError.textContent =
+            "Please upload an image proof of the damage.";
+          imageProofError.style.display = "block";
+          imageProof.focus();
+          return;
+        }
+        if (!allowedImageTypes.includes(file.type)) {
+          e.preventDefault();
+          imageProofError.textContent =
+            "Invalid image format. Please upload JPG, JPEG, or PNG only.";
+          imageProofError.style.display = "block";
+          imageProof.value = "";
+          return;
+        }
+        if (file.size > maxImageSize) {
+          e.preventDefault();
+          imageProofError.textContent =
+            "Image is too large. Maximum file size is 5 MB.";
+          imageProofError.style.display = "block";
+          imageProof.value = "";
+          return;
+        }
+      });
+    </script>
+  </body>
+</html>

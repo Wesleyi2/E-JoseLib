@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Edit Book - E-JoseLib</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='admin-mobile.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <!-- MOBILE TOPBAR -->
+    <div class="mobile-topbar">
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <span class="mobile-topbar-title"> Edit Book </span>
+
+      <a href="{{ url_for('admin_books') }}" class="mobile-add-book">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="dashboard">
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-close" id="sidebarClose">
+          <i class="fa-solid fa-xmark"></i>
+        </div>
+
+        <div class="logo-section">
+          <img
+            src="{{ url_for('static', filename='SJC_LOGO3.png') }}"
+            class="school-logo"
+          />
+        </div>
+
+        <ul>
+          <a href="{{ url_for('admin_dashboard') }}">
+            <li>
+              <i class="fa-solid fa-chart-line"></i>
+              <span>Dashboard</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('admin_books') }}">
+            <li class="active">
+              <i class="fa-solid fa-book"></i>
+              <span>Books</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('admin_borrow_request') }}">
+            <li>
+              <i class="fa-solid fa-rotate-left"></i>
+              <span>Approval</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('admin_attendance') }}">
+            <li>
+              <i class="fa-solid fa-clock"></i>
+              <span>Attendance</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('admin_users') }}">
+            <li>
+              <i class="fa-solid fa-users"></i>
+              <span> Users </span>
+            </li>
+          </a>
+        </ul>
+
+        <div class="sidebar-profile-mobile">
+          <a href="{{ url_for('logout') }}" class="sidebar-logout">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <div class="dashboard-header">
+          <div>
+            <h1>Edit Book</h1>
+            <p>Edit and update the information of this book.</p>
+          </div>
+
+          <a href="{{ url_for('admin_books') }}" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i>Back to Books
+          </a>
+        </div>
+
+        <div class="admin-table-card add-book-card">
+          <form
+            id="editBookForm"
+            method="POST"
+            enctype="multipart/form-data"
+            action="{{ url_for('update_book', book_id=book.book_id) }}"
+          >
+            <div class="add-book-layout">
+              <!-- Cover Upload Panel -->
+              <div class="cover-upload-panel">
+                <label class="section-label">Cover Image</label>
+
+                <div class="cover-preview" id="coverPreview">
+                  <img
+                    src="{{ url_for('static', filename='covers/' + book.cover_image) }}"
+                    alt="{{ book.title }}"
+                  />
+                </div>
+
+                <input
+                  type="file"
+                  name="cover_image"
+                  id="coverInput"
+                  accept=".jpg,.jpeg,.png"
+                  hidden
+                />
+
+                <label for="coverInput" class="upload-btn">
+                  <i class="fa-solid fa-upload"></i>Change Image
+                </label>
+
+                <p class="upload-hint">
+                  Leave empty to keep the current cover.
+                </p>
+              </div>
+
+              <!-- Book Fields -->
+              <div class="book-fields-panel">
+                <div class="section-label-row">
+                  <i class="fa-solid fa-book-open"></i>
+
+                  <span>Book Information</span>
+                </div>
+
+                <div class="field-grid">
+                  <div class="form-group full">
+                    <label class="form-label">Title</label>
+
+                    <input
+                      type="text"
+                      name="title"
+                      value="{{ book.title }}"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Author</label>
+
+                    <input
+                      type="text"
+                      name="author"
+                      value="{{ book.author }}"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Publisher</label>
+
+                    <input
+                      type="text"
+                      name="publisher"
+                      value="{{ book.publisher or '' }}"
+                      required
+                    />
+
+                    <small class="field-error"> Publisher is required. </small>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">ISBN</label>
+
+                    <input
+                      type="text"
+                      name="isbn"
+                      value="{{ book.isbn or '' }}"
+                      required
+                    />
+
+                    <small class="field-error"> ISBN is required. </small>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Copyright</label>
+
+                    <input
+                      type="text"
+                      name="copyright"
+                      value="{{ book.copyright or '' }}"
+                      required
+                    />
+
+                    <small class="field-error"> Copyright is required. </small>
+                  </div>
+
+                  <!-- GENRE -->
+                  <div class="form-group">
+                    <label class="form-label">Genre</label>
+
+                    <div class="custom-select" data-name="genre">
+                      <button type="button" class="custom-select-button">
+                        <span>
+                          {{ book.genre if book.genre else 'Select Genre' }}
+                        </span>
+
+                        <i class="fa-solid fa-chevron-down"></i>
+                      </button>
+
+                      <div class="custom-select-menu">
+                        {% for genre in genres %}
+
+                        <button
+                          type="button"
+                          class="custom-option"
+                          data-value="{{ genre }}"
+                        >
+                          {{ genre }}
+                        </button>
+
+                        {% endfor %}
+                      </div>
+
+                      <input
+                        type="hidden"
+                        name="genre"
+                        value="{{ book.genre or '' }}"
+                        required
+                      />
+                    </div>
+
+                    <small class="field-error"> Please select a genre. </small>
+                  </div>
+
+                  <!-- CATEGORY -->
+                  <div class="form-group">
+                    <label class="form-label">Category</label>
+
+                    <div class="custom-select" data-name="category">
+                      <button type="button" class="custom-select-button">
+                        <span>
+                          {{ book.category if book.category else 'Select
+                          Category' }}
+                        </span>
+
+                        <i class="fa-solid fa-chevron-down"></i>
+                      </button>
+
+                      <div class="custom-select-menu">
+                        {% for category in categories %}
+
+                        <button
+                          type="button"
+                          class="custom-option"
+                          data-value="{{ category }}"
+                        >
+                          {{ category }}
+                        </button>
+
+                        {% endfor %}
+                      </div>
+
+                      <input
+                        type="hidden"
+                        name="category"
+                        value="{{ book.category or '' }}"
+                        required
+                      />
+                    </div>
+
+                    <small class="field-error">
+                      Please select a category.
+                    </small>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Shelf Location</label>
+
+                    <input
+                      type="text"
+                      name="shelf_location"
+                      value="{{ book.shelf_location or '' }}"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Copies Available</label>
+
+                    <input
+                      type="number"
+                      name="copies_available"
+                      value="{{ book.copies_available }}"
+                      min="1"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group full">
+                    <label class="form-label">Summary</label>
+
+                    <textarea name="summary" rows="4" required>
+{{ book.summary or '' }}</textarea
+                    >
+
+                    <small class="field-error"> Summary is required. </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- FORM BUTTONS -->
+            <div class="form-actions add-book-actions">
+              <a href="{{ url_for('admin_books') }}" class="cancel-borrow"
+                >Cancel
+              </a>
+
+              <button
+                type="button"
+                class="confirm-borrow"
+                id="openEditBookModal"
+              >
+                <i class="fa-solid fa-floppy-disk"></i>Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="borrow-modal" id="editBookModal">
+      <div class="borrow-modal-content">
+        <div class="modal-book-icon">
+          <i class="fa-solid fa-book-open"></i>
+        </div>
+        <h2>Save Changes?</h2>
+        <p>
+          Please confirm that you want to save the changes made to this book.
+        </p>
+
+        <div class="modal-actions">
+          <button type="button" class="cancel-borrow" id="cancelEditBook">
+            Cancel
+          </button>
+
+          <button type="button" class="confirm-borrow" id="confirmEditBook">
+            <i class="fa-solid fa-check"></i>Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Mobile sidebar
+      const menuToggle = document.getElementById("menuToggle");
+      const sidebar = document.getElementById("sidebar");
+      const sidebarOverlay = document.getElementById("sidebarOverlay");
+      const sidebarClose = document.getElementById("sidebarClose");
+
+      if (menuToggle) {
+        menuToggle.addEventListener("click", () => {
+          sidebar.classList.add("show");
+          sidebarOverlay.classList.add("show");
+        });
+      }
+
+      if (sidebarClose) {
+        sidebarClose.addEventListener("click", () => {
+          sidebar.classList.remove("show");
+          sidebarOverlay.classList.remove("show");
+        });
+      }
+
+      if (sidebarOverlay) {
+        sidebarOverlay.addEventListener("click", () => {
+          sidebar.classList.remove("show");
+          sidebarOverlay.classList.remove("show");
+        });
+      }
+
+      // Edit book form
+      const editForm = document.getElementById("editBookForm");
+      const editModal = document.getElementById("editBookModal");
+      const openEditBtn = document.getElementById("openEditBookModal");
+      const cancelEditBtn = document.getElementById("cancelEditBook");
+      const confirmEditBtn = document.getElementById("confirmEditBook");
+
+      // Open save confirmation
+      openEditBtn.addEventListener("click", function () {
+        let valid = editForm.checkValidity();
+
+        document.querySelectorAll(".custom-select").forEach(function (select) {
+          const hiddenInput = select.querySelector('input[type="hidden"]');
+          const error = select.parentElement.querySelector(".field-error");
+
+          if (!hiddenInput || !hiddenInput.value.trim()) {
+            valid = false;
+            select.classList.add("error");
+
+            if (error) {
+              error.classList.add("show");
+            }
+          } else {
+            select.classList.remove("error");
+
+            if (error) {
+              error.classList.remove("show");
+            }
+          }
+        });
+
+        if (valid) {
+          editModal.classList.add("show-borrow-modal");
+        } else {
+          editForm.reportValidity();
+        }
+      });
+
+      // Cancel save
+      cancelEditBtn.addEventListener("click", function () {
+        editModal.classList.remove("show-borrow-modal");
+      });
+
+      // Confirm save
+      confirmEditBtn.addEventListener("click", function () {
+        editForm.requestSubmit();
+      });
+
+      // Close modal when clicking outside
+      editModal.addEventListener("click", function (e) {
+        if (e.target === editModal) {
+          editModal.classList.remove("show-borrow-modal");
+        }
+      });
+
+      // Cover image preview
+      const coverInput = document.getElementById("coverInput");
+      const coverPreview = document.getElementById("coverPreview");
+
+      if (coverInput) {
+        coverInput.addEventListener("change", function () {
+          const file = this.files[0];
+
+          if (file) {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+              coverPreview.innerHTML = `
+                <img src="${e.target.result}" alt="Cover Preview">
+              `;
+            };
+
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+
+      // Custom dropdowns
+      document.addEventListener("DOMContentLoaded", function () {
+        const customSelects = document.querySelectorAll(".custom-select");
+
+        customSelects.forEach(function (select) {
+          const button = select.querySelector(".custom-select-button");
+          const text = button.querySelector("span");
+          const hiddenInput = select.querySelector('input[type="hidden"]');
+          const options = select.querySelectorAll(".custom-option");
+
+          // Open and close dropdown
+          button.addEventListener("click", function (e) {
+            e.stopPropagation();
+
+            customSelects.forEach(function (other) {
+              if (other !== select) {
+                other.classList.remove("open");
+              }
+            });
+
+            select.classList.toggle("open");
+          });
+
+          // Select dropdown option
+          options.forEach(function (option) {
+            option.addEventListener("click", function (e) {
+              e.stopPropagation();
+
+              const value = this.dataset.value;
+
+              text.textContent = value;
+              hiddenInput.value = value;
+
+              select.classList.remove("open");
+              select.classList.remove("error");
+
+              const error = select.parentElement.querySelector(".field-error");
+
+              if (error) {
+                error.classList.remove("show");
+              }
+            });
+          });
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", function () {
+          customSelects.forEach(function (select) {
+            select.classList.remove("open");
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

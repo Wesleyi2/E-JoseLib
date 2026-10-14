@@ -1,0 +1,17 @@
+Flask
+Flask-SocketIO
+mysql-connector-python
+qrcode[pil]
+numpy
+pandas
+openpyxl
+scikit-learn
+requests
+google-auth
+google-auth-oauthlib
+google-genai
+Pillow
+reportlab
+pypdf
+python-dotenv
+simple-websocket

@@ -1,0 +1,911 @@
+
+
+<style>
+  /* FONT*/
+
+  @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap");
+
+  /* MODAL OVERLAY*/
+
+.ejoselib-modal-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100vw;
+  height: 100vh;
+
+  padding: 20px;
+  box-sizing: border-box;
+
+  background: rgba(0, 12, 6, 0.78);
+
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+
+  z-index: 2147483647 !important;
+
+  isolation: isolate;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transition:
+    opacity 0.35s ease,
+    visibility 0.35s ease;
+}
+
+.ejoselib-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+  /* MODAL CARD*/
+
+  .ejoselib-modal-card {
+    position: relative;
+
+    width: min(950px, 94vw);
+    height: min(530px, 88vh);
+
+    min-height: 440px;
+
+    overflow: hidden;
+
+    border-radius: 20px;
+
+    background: #02150b;
+
+    box-shadow:
+      0 35px 90px rgba(0, 0, 0, 0.65),
+      0 0 50px rgba(24, 151, 17, 0.15);
+
+    border: 1px solid rgba(24, 151, 17, 0.3);
+
+    transform: scale(0.94) translateY(25px);
+
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .ejoselib-modal-overlay.active .ejoselib-modal-card {
+    transform: scale(1) translateY(0);
+  }
+
+  /* LIBRARY BACKGROUND*/
+
+  .ejoselib-modal-background {
+    position: absolute;
+    inset: 0;
+
+    background-image: url("{{ url_for('static', filename='library.png') }}");
+
+    background-size: cover;
+    background-position: center;
+
+    opacity: 0.72;
+
+    transform: scale(1.03);
+
+    z-index: 0;
+  }
+
+  /* DARK NETFLIX-STYLE GRADIENT*/
+
+  .ejoselib-modal-background::after {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background:
+      linear-gradient(
+        90deg,
+        #02150b 0%,
+        rgba(2, 21, 11, 0.94) 18%,
+        rgba(2, 21, 11, 0.72) 43%,
+        rgba(2, 21, 11, 0.48) 70%,
+        rgba(2, 21, 11, 0.82) 100%
+      ),
+      linear-gradient(
+        0deg,
+        #02150b 0%,
+        rgba(2, 21, 11, 0.1) 45%,
+        rgba(2, 21, 11, 0.45) 100%
+      );
+  }
+
+  /* GREEN AMBIENT LIGHT*/
+
+  .ejoselib-green-glow {
+    position: absolute;
+
+    width: 420px;
+    height: 420px;
+
+    left: -190px;
+    bottom: -230px;
+
+    border-radius: 50%;
+
+    background: radial-gradient(
+      circle,
+      rgba(24, 151, 17, 0.35) 0%,
+      rgba(24, 151, 17, 0.12) 35%,
+      transparent 70%
+    );
+
+    filter: blur(80px);
+
+    z-index: 1;
+
+    pointer-events: none;
+  }
+
+  /* CLOSE BUTTON*/
+
+  .ejoselib-modal-close {
+    position: absolute;
+
+    top: 18px;
+    right: 18px;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 50%;
+
+    background: rgba(20, 20, 20, 0.72);
+
+    color: #fff;
+
+    font-size: 22px;
+
+    cursor: pointer;
+
+    z-index: 20;
+
+    transition:
+      background 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .ejoselib-modal-close:hover {
+    background: rgba(25, 201, 74, 0.85);
+
+    color: #02150b;
+
+    transform: scale(1.08);
+  }
+
+  /* MAIN CONTENT*/
+
+  .ejoselib-modal-content {
+    position: relative;
+
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+
+    padding: 55px 65px;
+
+    z-index: 5;
+  }
+
+  /* LEFT CONTENT*/
+
+  .ejoselib-modal-info {
+    width: 58%;
+
+    max-width: 570px;
+  }
+
+  /* TITLE*/
+
+  .ejoselib-modal-title {
+    margin: 0;
+
+    color: #fff;
+
+    font-family: "Montserrat", Arial, sans-serif;
+
+    font-size: clamp(38px, 5vw, 62px);
+
+    font-weight: 800;
+
+    line-height: 1.02;
+
+    letter-spacing: -2px;
+
+    text-shadow: 0 5px 20px rgba(0, 0, 0, 0.45);
+  }
+
+  .ejoselib-modal-title span {
+    color: #189711;
+  }
+
+  /* GREETING*/
+
+  .ejoselib-modal-greeting {
+    margin: 18px 0 0;
+
+    color: rgba(255, 255, 255, 0.94);
+
+    font-family: "Montserrat", Arial, sans-serif;
+
+    font-size: 17px;
+
+    font-weight: 600;
+  }
+
+  /* DESCRIPTION*/
+
+  .ejoselib-modal-description {
+    max-width: 520px;
+
+    margin: 10px 0 0;
+
+    color: rgba(255, 255, 255, 0.72);
+
+    font-family: "Montserrat", Arial, sans-serif;
+
+    font-size: 14px;
+
+    line-height: 1.65;
+  }
+
+  /* FEATURE ROW*/
+
+  .ejoselib-feature-row {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 25px;
+  }
+
+  /* FEATURE*/
+
+  .ejoselib-feature {
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 8px 12px;
+
+    border-radius: 6px;
+
+    background: rgba(255, 255, 255, 0.08);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    color: rgba(255, 255, 255, 0.84);
+
+    font-family: "Montserrat", Arial, sans-serif;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    transition:
+      background 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .ejoselib-feature:hover {
+    background: rgba(25, 201, 74, 0.18);
+
+    border-color: rgba(49, 232, 102, 0.25);
+
+    transform: translateY(-2px);
+  }
+
+  /* FEATURE ICON*/
+
+  .ejoselib-feature-icon {
+    color: #31e866;
+
+    font-size: 13px;
+  }
+
+  /* BUTTON ROW*/
+
+  .ejoselib-modal-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 28px;
+  }
+
+  /* PRIMARY BUTTON*/
+
+  .ejoselib-primary-button {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    padding: 12px 23px;
+
+    border: 1px solid #189711;
+
+    border-radius: 5px;
+
+    background: #189711;
+    color: #ffffff;
+
+    font-family: "Montserrat", Arial, sans-serif;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    box-shadow: 0 8px 25px rgba(24, 151, 17, 0.28);
+
+    transition:
+      background 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .ejoselib-primary-button:hover {
+    background: #20ad19;
+    box-shadow: 0 10px 30px rgba(24, 151, 17, 0.4);
+    transform: translateY(-2px);
+  }
+
+  /* SECONDARY BUTTON*/
+
+  .ejoselib-secondary-button {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 11px 18px;
+
+    border: 1px solid rgba(255, 255, 255, 0.22);
+
+    border-radius: 5px;
+
+    background: rgba(255, 255, 255, 0.08);
+
+    color: #fff;
+
+    font-family: "Montserrat", Arial, sans-serif;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+  }
+
+  .ejoselib-secondary-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  /* FOOTER*/
+
+  .ejoselib-modal-footer {
+    margin-top: 18px;
+
+    color: rgba(255, 255, 255, 0.42);
+
+    font-family: "Montserrat", Arial, sans-serif;
+
+    font-size: 9px;
+  }
+
+  @media (max-width: 767px) {
+    .ejoselib-modal-overlay {
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    /* FIXED MODAL */
+
+    .ejoselib-modal-card {
+      width: min(430px, 94vw);
+
+      height: min(620px, 90vh);
+
+      min-height: 0;
+
+      max-height: 90vh;
+
+      overflow: hidden;
+
+      border-radius: 18px;
+    }
+
+    /* BACKGROUND */
+
+    .ejoselib-modal-background {
+      background-position: center;
+    }
+
+    .ejoselib-modal-background::after {
+      background: linear-gradient(
+        180deg,
+        rgba(2, 21, 11, 0.45) 0%,
+        rgba(2, 21, 11, 0.68) 30%,
+        rgba(2, 21, 11, 0.94) 62%,
+        #02150b 100%
+      );
+    }
+
+    /* CONTENT */
+
+    .ejoselib-modal-content {
+      height: 100%;
+
+      min-height: 0;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      padding: 48px 20px 20px;
+
+      box-sizing: border-box;
+
+      text-align: center;
+    }
+
+    .ejoselib-modal-info {
+      width: 100%;
+      max-width: 370px;
+      margin: 0 auto;
+    }
+
+    /* LABEL */
+
+    .ejoselib-modal-label {
+      font-size: 9px;
+
+      letter-spacing: 1.5px;
+
+      margin-bottom: 7px;
+    }
+
+    /* TITLE */
+
+    .ejoselib-modal-title {
+      font-size: 32px;
+
+      line-height: 1.05;
+
+      letter-spacing: -1px;
+
+      margin: 0;
+    }
+
+    /* GREETING */
+
+    .ejoselib-modal-greeting {
+      margin-top: 11px;
+
+      font-size: 13px;
+
+      line-height: 1.4;
+    }
+
+    /* DESCRIPTION */
+
+    .ejoselib-modal-description {
+      max-width: 340px;
+
+      margin: 8px auto 0;
+
+      font-size: 11px;
+
+      line-height: 1.5;
+    }
+
+
+    .ejoselib-feature-row {
+      display: flex;
+
+      align-items: flex-start;
+
+      justify-content: center;
+
+      width: 100%;
+
+      gap: 6px;
+
+      margin-top: 20px;
+    }
+
+    .ejoselib-feature {
+      flex: 1;
+
+      min-width: 0;
+
+      display: flex;
+
+      flex-direction: column;
+
+      align-items: center;
+
+      justify-content: flex-start;
+
+      gap: 6px;
+
+      padding: 0;
+
+      background: transparent;
+
+      border: none;
+
+      box-shadow: none;
+
+      text-align: center;
+
+      font-size: 8.5px;
+
+      line-height: 1.25;
+
+      color: rgba(255, 255, 255, 0.88);
+    }
+
+    .ejoselib-feature-icon {
+      width: 35px;
+
+      height: 35px;
+
+      min-width: 35px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      border-radius: 50%;
+
+      background: rgba(24, 151, 17, 0.14);
+
+      border: 1px solid rgba(24, 151, 17, 0.3);
+
+      color: #189711;
+
+      font-size: 13px;
+    }
+
+    .ejoselib-modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      width: 100%;
+      margin-top: 20px;
+
+      /* ACTION BUTTONS LANG ANG IBABABA */
+      transform: translateY(25px);
+    }
+
+    .ejoselib-primary-button,
+    .ejoselib-secondary-button {
+      width: 100%;
+
+      min-height: 40px;
+
+      box-sizing: border-box;
+
+      justify-content: center;
+    }
+
+    /* FOOTER */
+
+    .ejoselib-modal-footer {
+      margin-top: 45px;
+
+      font-size: 11px;
+
+      line-height: 1.4;
+
+      opacity: 0.65;
+    }
+
+    .ejoselib-modal-close {
+      top: 9px;
+
+      right: 9px;
+
+      width: 32px;
+
+      height: 32px;
+
+      font-size: 18px;
+
+      z-index: 10;
+    }
+  }
+
+  @media (max-width: 375px) {
+    .ejoselib-modal-card {
+      width: 94vw;
+
+      height: min(570px, 90vh);
+
+      max-height: 90vh;
+
+      overflow: hidden;
+    }
+
+    .ejoselib-modal-content {
+      padding: 45px 14px 17px;
+    }
+
+    .ejoselib-modal-title {
+      font-size: 27px;
+
+      letter-spacing: -0.8px;
+    }
+
+    .ejoselib-modal-greeting {
+      font-size: 12px;
+
+      margin-top: 9px;
+    }
+
+    .ejoselib-modal-description {
+      font-size: 10px;
+
+      line-height: 1.45;
+
+      max-width: 300px;
+    }
+
+    .ejoselib-feature-row {
+      gap: 3px;
+
+      margin-top: 17px;
+    }
+
+    .ejoselib-feature {
+      font-size: 7.5px;
+
+      gap: 5px;
+    }
+
+    .ejoselib-feature-icon {
+      width: 31px;
+
+      height: 31px;
+
+      min-width: 31px;
+
+      font-size: 11px;
+    }
+
+    .ejoselib-modal-actions {
+      margin-top: 17px;
+      gap: 6px;
+
+      /* slightly lower */
+      transform: translateY(20px);
+    }
+
+    .ejoselib-primary-button,
+    .ejoselib-secondary-button {
+      min-height: 37px;
+
+      font-size: 10px;
+    }
+
+    .ejoselib-modal-close {
+      width: 29px;
+
+      height: 29px;
+
+      font-size: 16px;
+    }
+  }
+
+
+  @media (max-width: 320px) {
+    .ejoselib-modal-card {
+      height: min(530px, 90vh);
+
+      overflow: hidden;
+    }
+
+    .ejoselib-modal-content {
+      padding: 42px 11px 14px;
+    }
+
+    .ejoselib-modal-title {
+      font-size: 24px;
+    }
+
+    .ejoselib-modal-description {
+      font-size: 9px;
+    }
+
+    .ejoselib-feature {
+      font-size: 7px;
+    }
+
+    .ejoselib-feature-icon {
+      width: 28px;
+
+      height: 28px;
+
+      min-width: 28px;
+
+      font-size: 10px;
+    }
+
+    .ejoselib-primary-button,
+    .ejoselib-secondary-button {
+      min-height: 35px;
+
+      font-size: 9.5px;
+    }
+  }
+</style>
+
+<!-- MODAL-->
+
+<div id="welcomeModal" class="ejoselib-modal-overlay">
+
+  <div class="ejoselib-modal-card">
+    <div class="ejoselib-modal-background"></div>
+    <div class="ejoselib-green-glow"></div>
+
+    <!-- CLOSE -->
+
+    <button
+      type="button"
+      class="ejoselib-modal-close"
+      onclick="closeWelcomeModal()"
+      aria-label="Close"
+    >
+      ×
+    </button>
+
+    <!-- CONTENT -->
+
+    <div class="ejoselib-modal-content">
+      <div class="ejoselib-modal-info">
+
+        <h1 class="ejoselib-modal-title">
+          Welcome to <br>
+          <span>E-JoseLib</span>
+        </h1>
+
+        <p class="ejoselib-modal-greeting">Hi, {{ student_name }}!</p>
+
+        <p class="ejoselib-modal-description">
+          Your digital library for discovering academic resources, borrowing
+          books, and getting intelligent assistance whenever you need it.
+        </p>
+
+
+        <div class="ejoselib-feature-row">
+
+          <div class="ejoselib-feature">
+            <span class="ejoselib-feature-icon">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </span>
+
+            Discover Books
+          </div>
+
+          <div class="ejoselib-feature">
+            <span class="ejoselib-feature-icon">
+              <i class="fa-solid fa-book-open"></i>
+            </span>
+
+            Borrow Resources
+          </div>
+
+          <div class="ejoselib-feature">
+            <span class="ejoselib-feature-icon">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </span>
+
+            Ask E-JoseLib AI
+          </div>
+        </div>
+
+
+        <div class="ejoselib-modal-actions">
+
+          <button
+            type="button"
+            class="ejoselib-primary-button"
+            onclick="closeWelcomeModal()"
+          >
+            <i class="fa-solid fa-play"></i>
+
+            Explore E-JoseLib
+          </button>
+
+          <button
+            type="button"
+            class="ejoselib-secondary-button"
+            onclick="closeWelcomeModal()"
+          >
+            <i class="fa-solid fa-xmark"></i>
+
+            Maybe Later
+          </button>
+        </div>
+
+        <div class="ejoselib-modal-footer">
+          Saint Joseph College of Rosario, Batangas Inc.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JAVASCRIPT -->
+<script>
+  /* OPEN MODAL */
+  function openWelcomeModal() {
+    const modal = document.getElementById("welcomeModal");
+
+    if (modal) {
+      modal.classList.add("active");
+      document.body.style.overflow = "hidden";
+    }
+  }
+
+  function closeWelcomeModal() {
+    const modal = document.getElementById("welcomeModal");
+
+    if (modal) {
+      modal.classList.remove("active");
+      document.body.style.overflow = "";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    openWelcomeModal();
+  });
+
+  const welcomeModal = document.getElementById("welcomeModal");
+
+  if (welcomeModal) {
+    welcomeModal.addEventListener("click", function (event) {
+      if (event.target === this) {
+        closeWelcomeModal();
+      }
+    });
+  }
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      closeWelcomeModal();
+    }
+  });
+</script>

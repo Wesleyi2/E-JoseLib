@@ -1,0 +1,1867 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Attendance Kiosk - E-JoseLib</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+
+    <body class="attendance-body">
+            <a href="{{ url_for('logout') }}" class="kiosk-back-home">
+        <span>Back</span>
+    </a>
+        <div class="attendance-overlay"></div>
+        <div class="attendance-wrapper">
+            
+            <div class="attendance-header">
+                <a href="{{ url_for('logout') }}" class="kiosk-logo-link">
+                    <img
+                        src="{{ url_for('static', filename='SJC_LOGO.png') }}"
+                        alt="School Logo"
+                    />
+                </a>
+
+                <div>
+                    <h1>
+                        E-JoseLib Digital Library
+                    </h1>
+                    <p>
+                        Saint Joseph College of Rosario, Batangas Inc.
+                    </p>
+                </div>
+            </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+
+        <div class="kiosk-message {{ category }}">
+            <i
+                class="fa-solid
+                {% if category == 'success' %}
+                    fa-circle-check
+                {% else %}
+                    fa-circle-exclamation
+                {% endif %}"
+            ></i>
+
+            <span>
+                {{ message }}
+            </span>
+        </div>
+
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+    <div class="attendance-content">
+    <div class="attendance-user-card"
+        id="attendanceUserCard"
+    >
+        <div class="id-card-top">
+        <span>LIBRARY</span>
+        <i class="fa-solid fa-id-card"></i>
+        </div>
+
+        <div class="user-avatar-wrapper">
+        <div class="user-avatar initials-avatar"
+            id="userAvatar"
+        >
+            <span id="userInitials">--</span>
+        </div>
+        </div>
+
+        <div class="user-details">
+        <p class="user-greeting"
+            id="userGreeting"
+        >
+            Welcome!
+        </p>
+
+        <h3 id="userName">No User</h3>
+
+        <p class="user-level"
+            id="userLevel"
+        >
+            Attendance Profile
+        </p>
+
+        <div class="user-info-row"
+            id="userGradeSectionRow"
+            style="display: none;"
+        >
+
+            <span id="userGradeSection">
+            Grade &amp; Section
+            </span>
+        </div>
+        </div>
+
+        <div class="id-card-footer">
+            <span id="attendanceStatus">
+                Waiting for Attendance
+            </span>
+        </div>
+    </div>
+
+    <div class="attendance-card">
+        <h2>Library Attendance</h2>
+
+    <!-- ATTENDANCE MODE TABS -->
+
+    <div class="attendance-tabs">
+
+      <button
+        type="button"
+        class="attendance-tab"
+        id="userTab"
+        onclick="selectAttendanceMode('user')"
+      >
+        <i class="fa-solid fa-user"></i>
+
+        <span>User</span>
+      </button>
+
+      <button
+        type="button"
+        class="attendance-tab"
+        id="qrTab"
+        onclick="selectAttendanceMode('qr')"
+      >
+        <i class="fa-solid fa-qrcode"></i>
+
+        <span> QR Scan </span>
+      </button>
+    </div>
+
+    <form method="POST"
+      id="attendanceForm"
+    >
+      <input
+        type="hidden"
+        name="attendance_mode"
+        id="attendanceMode"
+        value="user"
+      />
+
+
+    <!-- MANUAL USER INPUT -->
+
+    <div id="userInputContainer">
+        <input
+            type="text"
+            id="student_code"
+            name="student_code"
+            placeholder="Enter Student or Faculty Code"
+            autocomplete="off"
+            required
+        />
+    </div>
+
+    <!-- QR SCAN -->
+
+    <div id="qrScanContainer"
+        style="display: none;"
+    >
+
+    <div class="qr-scan-box">
+
+        <div class="qr-camera-wrapper">
+
+            <div id="qr-reader"
+                class="qr-reader"
+            ></div>
+
+            <div class="qr-detection-corners"
+                id="qrDetectionCorners"
+            >
+                <span
+                    class="qr-corner qr-corner-tl"
+                ></span>
+
+                <span
+                    class="qr-corner qr-corner-tr"
+                ></span>
+
+                <span
+                    class="qr-corner qr-corner-bl"
+                ></span>
+
+                <span
+                    class="qr-corner qr-corner-br"
+                ></span>
+            </div>
+        </div>
+
+        <!-- QR STATUS -->
+
+        <div
+            id="qrStatus"
+            class="qr-status"
+        >
+            Ready to scan your Library ID
+        </div>
+
+
+        <!-- PHYSICAL QR SCANNER -->
+
+        <input
+            type="text"
+            id="qrScannerInput"
+            class="qr-scanner-input"
+            autocomplete="off"
+            tabindex="-1"
+            aria-hidden="true"
+        />
+
+
+        <button
+            type="button"
+            class="qr-scan-button"
+            onclick="startQRScanner()"
+        >
+            <i class="fa-solid fa-camera"></i>
+            Start Camera
+        </button>
+    </div>
+
+    <!-- QR TIME GRID -->
+
+    <div class="qr-time-grid">
+        <div class="qr-time-box">
+            <span>
+                <i class="fa-solid fa-clock"></i>
+                Current Time
+            </span>
+            <h3 id="qrLiveTime"></h3>
+        </div>
+
+        <div class="qr-time-box">
+            <span>
+                <i class="fa-solid fa-calendar-days"></i>
+                Current Date
+            </span>
+            <h3 id="qrLiveDate"></h3>
+        </div>
+    </div>
+
+
+        <!-- QR FOOTER -->
+
+        <div class="qr-attendance-footer">
+            "Be Extraordinary in Ordinary Things"
+        </div>
+    </div>
+
+        <!--  MANUAL TIME / DATE -->
+
+        <div class="time-grid">
+            <div class="time-box">
+                <span>
+                    <i class="fa-solid fa-clock"></i>
+                    Current Time
+                </span>
+                <h3 id="liveTime"></h3>
+            </div>
+
+            <div class="time-box">
+                <span>
+                    <i class="fa-solid fa-calendar-days"></i>
+                    Current Date
+                </span>
+                <h3 id="liveDate"></h3>
+            </div>
+        </div>
+
+        <div
+            class="attendance-buttons"
+            id="manualAttendanceButtons"
+        >
+
+            <button
+                type="submit"
+                name="action"
+                value="time_in"
+                class="timein-btn"
+            >
+                <i class="fa-solid fa-right-to-bracket"></i>
+                Log In
+            </button>
+
+            <button
+                type="submit"
+                name="action"
+                value="time_out"
+                class="timeout-btn"
+            >
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Log Out
+                </button>
+             </div>
+           </form>
+
+            <div class="attendance-footer">
+                "Be Extraordinary in Ordinary Things"
+                </div>
+            </div>
+        </div>
+
+        <!-- HTML5 QR CODE -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <script>
+
+    // Prevent browser Back
+    history.pushState(null, "", location.href);
+
+    window.addEventListener("popstate", function () {
+        history.pushState(null, "", location.href);
+    });
+
+    function selectAttendanceMode(mode, clearUserCard = true) {
+
+        const userTab =
+            document.getElementById("userTab");
+
+        const qrTab =
+            document.getElementById("qrTab");
+
+        const userInputContainer =
+            document.getElementById("userInputContainer");
+
+        const qrScanContainer =
+            document.getElementById("qrScanContainer");
+
+        const manualAttendanceButtons =
+            document.getElementById("manualAttendanceButtons");
+
+        const timeGrid =
+            document.querySelector(".time-grid");
+
+        const attendanceFooter =
+            document.querySelector(".attendance-footer");
+
+        const studentCode =
+            document.getElementById("student_code");
+
+        const attendanceMode =
+            document.getElementById("attendanceMode");
+
+
+        if (
+            !userTab ||
+            !qrTab ||
+            !attendanceMode
+        ) {
+            return;
+        }
+
+
+    userTab.classList.remove("active");
+    qrTab.classList.remove("active");
+
+
+    /* MANUAL / USER MODE */
+
+    if (mode === "user") {
+
+        sessionStorage.setItem(
+            "attendanceMode",
+            "user"
+        );
+
+        stopQRScanner();
+        qrProcessing = false;
+        hideQRDetection();
+
+        if (clearUserCard) {
+            resetUserCard();
+        }
+
+        userTab.classList.add("active");
+        attendanceMode.value = "user";
+
+        /* Show manual input */
+
+        if (userInputContainer) {
+            userInputContainer.style.display =
+                "block";
+        }
+
+        if (qrScanContainer) {
+            qrScanContainer.style.display =
+                "none";
+        }
+
+        if (timeGrid) {
+            timeGrid.style.display =
+                "grid";
+        }
+
+        if (manualAttendanceButtons) {
+            manualAttendanceButtons.style.display =
+                "grid";
+        }
+
+        if (attendanceFooter) {
+
+            attendanceFooter.style.display =
+                "block";
+        }
+
+        if (studentCode) {
+            studentCode.required = true;
+            studentCode.value = "";
+
+            setTimeout(
+                function () {
+
+                    studentCode.focus();
+                },
+                100
+            );
+            }
+        }
+
+    /* QR MODE*/
+
+    else if (mode === "qr") {
+        sessionStorage.setItem(
+            "attendanceMode",
+            "qr"
+        );
+
+        if (clearUserCard) {
+
+            resetUserCard();
+
+        }
+
+        qrTab.classList.add("active");
+        attendanceMode.value = "qr";
+
+        if (userInputContainer) {
+            userInputContainer.style.display =
+                "none";
+        }
+
+        /* Show QR scanner */
+
+        if (qrScanContainer) {
+
+            qrScanContainer.style.display =
+                "flex";
+        }
+
+        if (timeGrid) {
+
+            timeGrid.style.display =
+                "none";
+        }
+
+        if (manualAttendanceButtons) {
+            manualAttendanceButtons.style.display =
+                "none";
+        }
+
+        if (attendanceFooter) {
+
+            attendanceFooter.style.display =
+                "none";
+        }
+
+        if (studentCode) {
+            studentCode.required = false;
+            studentCode.value = "";
+
+        }
+
+        qrProcessing = false;
+        hideQRDetection();
+
+        setTimeout(
+            function () {
+                startQRScanner();
+                focusPhysicalQRScanner();
+            },
+            200
+            );
+        }
+    }
+
+    /* INITIALIZE ATTENDANCE PAGE */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const savedMode =
+                sessionStorage.getItem(
+                    "attendanceMode"
+                );
+
+            const hasAttendanceUser =
+                {{ (attendance_user is not none)|tojson }};
+
+            if (savedMode === "qr") {
+                selectAttendanceMode(
+                    "qr",
+                    !hasAttendanceUser
+                );
+            }
+
+            else {
+                selectAttendanceMode(
+                    "user",
+                    !hasAttendanceUser
+                );
+            }
+        }
+     );
+
+    /*  QR SCANNER VARIABLES*/
+
+    let qrScanner = null;
+    let qrScannerRunning = false;
+    let qrProcessing = false;
+    let physicalQRBuffer = "";
+    let physicalQRTimeout = null;
+
+
+    let lastScannedCode = "";
+    let lastScanTime = 0;
+    const SAME_QR_COOLDOWN =
+        10000;
+
+    function showQRDetection() {
+
+        const detectionCorners =
+            document.getElementById(
+                "qrDetectionCorners"
+            );
+
+        if (detectionCorners) {
+            detectionCorners.classList.add(
+                "detected"
+            );
+        }
+    }
+
+    function hideQRDetection() {
+        const detectionCorners =
+            document.getElementById(
+                "qrDetectionCorners"
+            );
+
+        if (detectionCorners) {
+            detectionCorners.classList.remove(
+                "detected"
+            );
+        }
+    }
+
+    /* START CAMERA QR SCANNER */
+
+    function startQRScanner() {
+        const reader =
+            document.getElementById(
+                "qr-reader"
+            );
+
+        const status =
+            document.getElementById(
+                "qrStatus"
+            );
+
+        if (!reader) {
+
+            console.error(
+                "QR reader element not found."
+            );
+            return;
+        }
+
+        if (qrScannerRunning) {
+            focusPhysicalQRScanner();
+            return;
+        }
+
+        if (
+            typeof Html5Qrcode ===
+            "undefined"
+        ) {
+
+            console.error(
+                "Html5Qrcode library is not loaded."
+            );
+
+            if (status) {
+
+                status.textContent =
+                    "QR scanner library is unavailable.";
+            }
+
+            return;
+        }
+
+        qrProcessing = false;
+        hideQRDetection();
+
+        if (status) {
+
+            status.textContent =
+                "Starting camera...";
+        }
+
+        if (qrScanner) {
+
+            try {
+                qrScanner.clear();
+            }
+
+            catch (error) {
+
+                console.warn(
+                    "Previous QR scanner could not be cleared.",
+                    error
+                );
+            }
+
+            qrScanner = null;
+        }
+
+    qrScanner =
+        new Html5Qrcode(
+            "qr-reader"
+        );
+
+    const config = {
+
+        fps: 10,
+
+        qrbox: {
+            width: 220,
+            height: 220
+        },
+
+        aspectRatio: 4 / 3,
+
+        disableFlip: false
+
+    };
+
+    qrScanner
+        .start(
+            {
+                facingMode:
+                    "user"
+            },
+            config,
+
+            /* SUCCESS */
+
+            function (decodedText) {
+                handleQRCode(
+                    decodedText
+                );
+            },
+
+            function () {
+            }
+        )
+
+        .then(
+            function () {
+
+                qrScannerRunning =
+                    true;
+
+                /* Mirror front camera */
+
+                const video =
+                    reader.querySelector(
+                        "video"
+                    );
+
+                if (video) {
+
+                    video.style.width =
+                        "100%";
+
+                    video.style.height =
+                        "100%";
+
+                    video.style.objectFit =
+                        "cover";
+
+                    video.style.transform =
+                        "scaleX(-1)";
+                }
+
+                if (status) {
+
+                    status.textContent =
+                        "Ready. Scan your Library ID.";
+                }
+
+                hideQRDetection();
+                focusPhysicalQRScanner();
+            }
+        )
+
+        .catch(
+            function (error) {
+                console.error(
+                    "QR CAMERA ERROR:",
+                    error
+                );
+
+                qrScannerRunning =
+                    false;
+
+                hideQRDetection();
+
+                if (status) {
+
+                    status.textContent =
+                        "Camera unavailable. " +
+                        "You can use the physical QR scanner.";
+
+                }
+
+                focusPhysicalQRScanner();
+            }
+            );
+        }
+
+        /* CAMERA QR DETECTED */
+
+        function handleQRCode(
+            decodedText
+        ) {
+
+            if (qrProcessing) {
+
+                return;
+
+            }
+
+            const code =
+                String(
+                    decodedText || ""
+                ).trim();
+
+
+            if (!code) {
+
+                return;
+
+            }
+
+            console.log(
+                "QR CODE DETECTED:",
+                code
+            );
+
+            showQRDetection();
+            processScannedLibraryID(
+                code
+            );
+
+        }
+
+        /* PHYSICAL QR SCANNER FOCUS */
+
+        function focusPhysicalQRScanner() {
+
+            const input =
+                document.getElementById(
+                    "qrScannerInput"
+                );
+
+            if (input) {
+
+                input.focus();
+            }
+        }
+
+        /* PHYSICAL QR SCANNER */
+
+        document.addEventListener(
+            "keydown",
+            function(event) {
+
+                const qrContainer =
+                    document.getElementById(
+                        "qrScanContainer"
+                    );
+
+
+                if (!qrContainer) {
+
+                    return;
+
+                }
+
+                if (
+                    qrContainer.style.display ===
+                    "none"
+                ) {
+
+                    return;
+                }
+
+                if (
+                    event.key ===
+                    "Enter"
+                ) {
+
+                    event.preventDefault();
+
+                    const code =
+                        physicalQRBuffer.trim();
+
+                    physicalQRBuffer =
+                        "";
+
+                    if (physicalQRTimeout) {
+                        clearTimeout(
+                            physicalQRTimeout
+                        );
+                        physicalQRTimeout =
+                            null;
+                    }
+
+                    if (code) {
+                        console.log(
+                            "PHYSICAL QR SCANNED:",
+                            code
+                        );
+
+                        processScannedLibraryID(
+                            code
+                        );
+                    }
+
+                    return;
+                }
+
+
+        /* Collect characters from
+           USB / Bluetooth QR scanner */
+
+        if (
+            event.key.length === 1
+        ) {
+
+            physicalQRBuffer +=
+                event.key;
+
+
+            if (physicalQRTimeout) {
+
+                clearTimeout(
+                    physicalQRTimeout
+                );
+
+            }
+
+            physicalQRTimeout =
+                setTimeout(
+                    function () {
+
+                        physicalQRBuffer =
+                            "";
+
+                    },
+                    300
+                );
+            }
+        }
+    );
+
+
+    /* PROCESS SCANNED LIBRARY ID */
+
+    function processScannedLibraryID(
+        code
+    ) {
+
+        if (qrProcessing) {
+            return;
+        }
+
+        code =
+            String(
+                code || ""
+            ).trim();
+
+        if (!code) {
+
+            return;
+        }
+
+    const now =
+        Date.now();
+
+    if (
+        code === lastScannedCode &&
+        (
+            now -
+            lastScanTime
+        ) < SAME_QR_COOLDOWN
+    ) {
+
+        console.log(
+            "DUPLICATE QR SCAN IGNORED:",
+            code
+        );
+
+        const duplicateStatus =
+            document.getElementById(
+                "qrStatus"
+            );
+
+        if (duplicateStatus) {
+
+            duplicateStatus.textContent =
+                "QR already processed. " +
+                "Please wait before scanning again.";
+        }
+
+        hideQRDetection();
+
+        return;
+    }
+
+    lastScannedCode =
+        code;
+
+    lastScanTime =
+        now;
+
+
+    qrProcessing =
+        true;
+
+
+    console.log(
+        "LIBRARY ID SCANNED:",
+        code
+    );
+
+
+    const status =
+        document.getElementById(
+            "qrStatus"
+        );
+
+
+    if (status) {
+
+        status.textContent =
+            "Processing Library ID: " +
+            code;
+
+    }
+
+
+    /* Keep camera running */
+
+    fetch(
+        "{{ url_for('attendance_kiosk') }}",
+        {
+
+            method:
+                "POST",
+
+
+            headers: {
+
+                "Content-Type":
+                    "application/x-www-form-urlencoded",
+
+                "X-Requested-With":
+                    "XMLHttpRequest"
+
+            },
+
+            body:
+                new URLSearchParams({
+
+                    student_code:
+                        code,
+
+                    attendance_mode:
+                        "qr"
+                })
+            }
+        )
+
+
+        .then(
+            async function(response) {
+
+                let data =
+                    null;
+
+                try {
+
+                    data =
+                        await response.json();
+                }
+
+                catch (error) {
+
+                    console.error(
+                        "QR RESPONSE JSON ERROR:",
+                        error
+                    );
+
+                }
+
+                if (
+                    !response.ok ||
+                    !data ||
+                    !data.success
+                ) {
+
+                    const message =
+                        data &&
+                        data.message
+                            ? data.message
+                            : "Unable to process attendance.";
+
+
+                    throw new Error(
+                        message
+                    );
+                }
+
+                console.log(
+                    "QR ATTENDANCE SUCCESS:",
+                    data
+                );
+
+                if (data.user) {
+
+                    showAttendanceUser(
+                        data.user
+                    );
+                }
+
+                if (status) {
+
+                    if (
+                        data.action ===
+                        "time_in"
+                    ) {
+
+                        status.textContent =
+                            "✓ TIME IN recorded successfully.";
+                    }
+
+                    else if (
+                        data.action ===
+                        "time_out"
+                    ) {
+
+                        status.textContent =
+                            "✓ TIME OUT recorded successfully.";
+                    }
+
+                    else {
+
+                        status.textContent =
+                            "✓ Attendance recorded.";
+                    }
+                }
+
+                setTimeout(
+                    function() {
+
+                        hideQRDetection();
+                    },
+                    700
+                );
+
+                /* Allow another scan */
+
+                setTimeout(
+                    function() {
+
+                        qrProcessing =
+                            false;
+
+                        const qrTab =
+                            document.getElementById(
+                                "qrTab"
+                            );
+
+                        if (
+                            qrTab &&
+                            qrTab.classList.contains(
+                                "active"
+                            )
+                        ) {
+
+                            focusPhysicalQRScanner();
+                        }
+                    },
+                    1500
+                );
+            }
+        )
+
+        .catch(
+            function(error) {
+
+                console.error(
+                    "QR ATTENDANCE ERROR:",
+                    error
+                );
+
+
+                if (status) {
+
+                    status.textContent =
+                        error.message ||
+                        "Unable to process attendance.";
+
+                }
+
+                resetUserCard();
+                hideQRDetection();
+
+                /* Allow another scan */
+
+                setTimeout(
+                    function() {
+
+                        qrProcessing =
+                            false;
+
+
+                        const qrTab =
+                            document.getElementById(
+                                "qrTab"
+                            );
+
+                        if (
+                            qrTab &&
+                            qrTab.classList.contains(
+                                "active"
+                            )
+                        ) {
+
+                            focusPhysicalQRScanner();
+
+                        }
+                    },
+                    1500
+                );
+                }
+            );
+        }
+
+
+        /* STOP CAMERA QR SCANNER */
+
+        function stopQRScanner() {
+            hideQRDetection();
+
+            if (!qrScanner) {
+                qrScannerRunning =
+                    false;
+                return;
+            }
+
+            if (!qrScannerRunning) {
+                return;
+            }
+
+            qrScanner
+                .stop()
+                .then(
+                    function() {
+
+                qrScannerRunning =
+                    false;
+
+                try {
+                    qrScanner.clear();
+
+                }
+                catch (error) {
+
+                    console.warn(
+                        "QR CLEAR ERROR:",
+                        error
+                    );
+                }
+
+                qrScanner =
+                    null;
+            }
+        )
+
+        .catch(
+            function(error) {
+
+                console.error(
+                    "QR STOP ERROR:",
+                    error
+                );
+
+                qrScannerRunning =
+                    false;
+                qrScanner =
+                    null;
+            }
+          );
+
+        }
+
+
+    /* QR CLOCK */
+
+    function updateQRClock() {
+
+        const now =
+            new Date();
+
+
+    const qrLiveTime =
+        document.getElementById(
+            "qrLiveTime"
+        );
+
+    const qrLiveDate =
+        document.getElementById(
+            "qrLiveDate"
+        );
+
+    if (qrLiveTime) {
+
+        qrLiveTime.textContent =
+            now.toLocaleTimeString(
+                [],
+                {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit"
+                }
+            );
+        }
+
+    if (qrLiveDate) {
+
+        qrLiveDate.textContent =
+            now.toLocaleDateString(
+                [],
+                {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit"
+                }
+            );
+
+          }
+
+        }
+
+        updateQRClock();
+
+        setInterval(
+            updateQRClock,
+            1000
+        );
+
+
+      /* Live Clock */
+
+      function updateClock() {
+        const now =
+          new Date();
+
+        const liveTime =
+          document.getElementById("liveTime");
+        const liveDate =
+          document.getElementById("liveDate");
+
+
+        if (liveTime) {
+
+          liveTime.textContent =
+            now.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit"
+            });
+
+        }
+
+        if (liveDate) {
+
+          liveDate.textContent =
+            now.toLocaleDateString([], {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit"
+            });
+            }
+        }
+
+      updateClock();
+
+      setInterval(
+        updateClock,
+        1000
+      );
+
+      window.addEventListener(
+        "load",
+        function () {
+
+          const input =
+            document.getElementById("student_code");
+
+
+          if (input) {
+
+            input.value = "";
+
+            input.focus();
+
+          }
+
+        }
+      );
+
+
+      /* Greeting */
+
+      function getGreeting() {
+
+        const hour =
+          new Date().getHours();
+
+
+        if (
+          hour >= 5 &&
+          hour < 12
+        ) {
+
+          return "Good Morning";
+
+        }
+
+
+        if (
+          hour >= 12 &&
+          hour < 18
+        ) {
+
+          return "Good Afternoon";
+
+        }
+
+        return "Good Evening";
+      }
+
+
+      /* User Initials */
+
+      function getUserInitials(fullName) {
+
+        if (!fullName) {
+          return "--";
+
+        }
+
+        const nameParts =
+          fullName
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+
+
+        if (
+          nameParts.length === 0
+        ) {
+          return "--";
+        }
+
+        if (
+          nameParts.length === 1
+        ) {
+
+          return nameParts[0]
+            .substring(0, 2)
+            .toUpperCase();
+
+        }
+
+        const firstName =
+          nameParts[0]
+            .charAt(0);
+
+
+        const lastName =
+          nameParts[nameParts.length - 1]
+            .charAt(0);
+
+
+        return (
+          firstName +
+          lastName
+        ).toUpperCase();
+
+      }
+
+    /* Avatar Color */
+
+    function getAvatarColor(name) {
+
+        const colors = [
+            "#2563eb",
+            "#7c3aed",
+            "#db2777",
+            "#ea580c",
+            "#0891b2",
+            "#059669",
+            "#65a30d",
+            "#ca8a04",
+            "#9333ea",
+            "#0284c7"
+        ];
+
+        let hash = 0;
+
+        for (
+            let i = 0;
+            i < name.length;
+            i++
+        ) {
+
+            hash =
+                name.charCodeAt(i) +
+                ((hash << 5) - hash);
+
+        }
+
+        const index =
+            Math.abs(hash) %
+            colors.length;
+
+        return colors[index];
+    }
+
+    /* Reset User Card */
+
+    let userCardTimeout = null;
+
+    function resetUserCard() {
+        const card =
+            document.getElementById(
+                "attendanceUserCard"
+            );
+        const greeting =
+            document.getElementById(
+                "userGreeting"
+            );
+        const name =
+            document.getElementById(
+                "userName"
+            );
+        const level =
+            document.getElementById(
+                "userLevel"
+            );
+        const gradeSection =
+            document.getElementById(
+                "userGradeSection"
+            );
+        const gradeSectionRow =
+            document.getElementById(
+                "userGradeSectionRow"
+            );
+        const status =
+            document.getElementById(
+                "attendanceStatus"
+            );
+        const avatar =
+            document.getElementById(
+                "userAvatar"
+            );
+        const initials =
+            document.getElementById(
+                "userInitials"
+            );
+
+        if (userCardTimeout) {
+            clearTimeout(
+                userCardTimeout
+            );
+            userCardTimeout = null;
+        }
+
+        if (greeting) {
+
+            greeting.textContent =
+                "Welcome!";
+        }
+
+        if (name) {
+            name.textContent =
+                "No User";
+        }
+
+        if (level) {
+            level.textContent =
+                "Attendance Profile";
+        }
+
+        if (gradeSection) {
+            gradeSection.textContent =
+                "Grade & Section";
+        }
+
+        if (gradeSectionRow) {
+            gradeSectionRow.style.display =
+                "none";
+        }
+
+        if (status) {
+            status.textContent =
+                "Waiting for Attendance";
+        }
+
+        if (initials) {
+            initials.textContent =
+                "--";
+        }
+
+        if (avatar) {
+            avatar.style.background =
+                "rgba(255, 255, 255, 0.35)";
+
+            avatar.classList.add(
+                "initials-avatar"
+            );
+        }
+
+        if (card) {
+
+            card.classList.remove(
+                "success",
+                "time-in",
+                "time-out"
+            );
+        }
+      }
+          /* Show Attendance User */
+
+    function showAttendanceUser(user) {
+        const card =
+            document.getElementById(
+                "attendanceUserCard"
+            );
+        const greeting =
+            document.getElementById(
+                "userGreeting"
+            );
+        const name =
+            document.getElementById(
+                "userName"
+            );
+        const level =
+            document.getElementById(
+                "userLevel"
+            );
+        const gradeSection =
+            document.getElementById(
+                "userGradeSection"
+            );
+        const gradeSectionRow =
+            document.getElementById(
+                "userGradeSectionRow"
+            );
+        const status =
+            document.getElementById(
+                "attendanceStatus"
+            );
+        const avatar =
+            document.getElementById(
+                "userAvatar"
+            );
+        const initials =
+            document.getElementById(
+                "userInitials"
+            );
+
+        if (!card) {
+            return;
+        }
+
+
+        /* Prevent empty user from appearing */
+
+        if (
+            !user ||
+            !user.name ||
+            user.name === "No User"
+        ) {
+
+            resetUserCard();
+
+            return;
+
+        }
+
+
+        const userName =
+            user.name;
+
+
+        const userStatus =
+            user.status || "Completed";
+
+
+        /* Get role from users.role */
+
+        const role =
+            (user.role || "")
+                .toLowerCase()
+                .trim();
+
+
+        /* Clear Previous Timer */
+
+        if (userCardTimeout) {
+            clearTimeout(
+                userCardTimeout
+            );
+            userCardTimeout = null;
+
+        }
+
+        if (greeting) {
+
+            if (
+                userStatus === "Inside" ||
+                userStatus === "Already Inside"
+            ) {
+
+                greeting.textContent =
+                    `${getGreeting()},`;
+
+            } else {
+
+                greeting.textContent =
+                    "Goodbye,";
+            }
+        }
+
+        if (name) {
+            name.textContent =
+                userName;
+        }
+
+        if (level) {
+            if (role) {
+
+                level.textContent =
+                    role.charAt(0).toUpperCase() +
+                    role.slice(1);
+
+            } else {
+
+                level.textContent =
+                    "User";
+            }
+        }
+
+        if (gradeSectionRow) {
+            if (role === "student") {
+                gradeSectionRow.style.display =
+                    "flex";
+
+                if (gradeSection) {
+                    gradeSection.textContent =
+                        user.grade_section ||
+                        "-";
+                }
+            } else {
+
+                gradeSectionRow.style.display =
+                    "none";
+            }
+        }
+
+        /* Status */
+
+        if (status) {
+
+            if (
+                userStatus === "Inside"
+            ) {
+                status.textContent =
+                    "TIME IN • CURRENTLY INSIDE";
+            } else if (
+                userStatus === "Already Inside"
+            ) {
+                status.textContent =
+                    "ALREADY TIMED IN";
+            } else if (
+                userStatus === "No Active Attendance"
+            ) {
+                status.textContent =
+                    "NO ACTIVE TIME IN";
+            } else {
+                status.textContent =
+                    "TIME OUT • ATTENDANCE COMPLETED";
+            }
+        }
+
+        /* Initials */
+
+        if (initials) {
+            initials.textContent =
+                getUserInitials(
+                    userName
+                );
+        }
+
+        /* Avatar */
+        if (avatar) {
+
+            avatar.classList.add(
+                "initials-avatar"
+            );
+            avatar.style.background =
+                getAvatarColor(
+                    userName
+                );
+        }
+
+        /* Status Class */
+
+        card.classList.remove(
+            "time-in",
+            "time-out"
+        );
+
+
+        if (
+            userStatus === "Inside" ||
+            userStatus === "Already Inside"
+        ) {
+
+            card.classList.add(
+                "time-in"
+            );
+
+        } else {
+
+            card.classList.add(
+                "time-out"
+            );
+        }
+
+        /* Animation */
+
+        card.classList.remove(
+            "success"
+        );
+        void card.offsetWidth;
+        card.classList.add(
+            "success"
+        );
+
+
+        /* Privacy Reset After 5 Seconds */
+
+        userCardTimeout =
+            setTimeout(
+                function () {
+
+                    resetUserCard();
+
+                },
+                5000
+            );
+        }
+
+      document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+          const flashMessages =
+            document.querySelectorAll(
+              ".kiosk-message"
+            );
+
+          flashMessages.forEach(
+            function (message) {
+
+              setTimeout(
+                function () {
+
+                  message.classList.add(
+                    "hide"
+                  );
+
+                  setTimeout(
+                    function () {
+
+                      message.remove();
+
+                    },
+                    400
+                  );
+
+                },
+                4000
+              );
+
+            }
+          );
+
+        }
+      );
+
+
+    {% if attendance_user %}
+    showAttendanceUser({
+        name:
+            {{ attendance_user.name|default('', true)|tojson }},
+        role:
+            {{ attendance_user.role|default('student', true)|tojson }},
+        level:
+            {{ attendance_user.level|default('', true)|tojson }},
+        grade_section:
+            {{ attendance_user.grade_section|default('', true)|tojson }},
+        status:
+            {{ attendance_user.status|default('Completed', true)|tojson }},
+        greeting:
+            {{ attendance_user.greeting|default('', true)|tojson }}
+    });
+    {% else %}
+    resetUserCard();
+    {% endif %}
+
+    </script>
+  </body>
+</html>

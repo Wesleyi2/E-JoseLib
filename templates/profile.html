@@ -1,0 +1,973 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>My Profile - E-JoseLiB</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard-mobile.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+
+  <body>
+<!-- MOBILE TOPBAR -->
+
+<div class="mobile-topbar" id="mobileTopbar">
+
+    <div class="mobile-topbar-left">
+
+        <img
+            src="{{ url_for('static', filename='SJC_LOGO3.png') }}"
+            class="mobile-logo"
+            alt="SJC Logo"
+        >
+
+        <span class="mobile-topbar-title">
+            Profile
+        </span>
+
+    </div>
+
+
+    <!-- QR CODE -->
+
+    <a
+        href="{{ url_for('qr_code') }}"
+        class="mobile-qr-btn"
+        aria-label="My QR Code"
+        title="My QR Code"
+    >
+        <i class="fa-solid fa-qrcode"></i>
+    </a>
+
+</div>
+    <div class="dashboard">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="logo-section">
+          <img
+            src="{{ url_for('static', filename='SJC_LOGO3.png') }}"
+            class="school-logo"
+          />
+        </div>
+
+        <ul>
+          <a href="{{ url_for('dashboard') }}">
+            <li>
+              <i class="fa-solid fa-house"></i>
+              <span>Dashboard</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('catalog') }}">
+            <li>
+              <i class="fa-solid fa-book-open"></i>
+              <span>Catalog</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('transaction_history') }}">
+            <li>
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <span>Transaction History</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('qr_code') }}">
+              <li>
+                  <i class="fa-solid fa-qrcode"></i>
+                  <span>QR Code</span>
+              </li>
+          </a>
+        </ul>
+      </div>
+          
+    <!-- Main Content -->
+
+    <div class="main-content">
+
+      <!-- TOPBAR -->
+      <div class="topbar">
+
+        <div>
+          <h1>My Profile</h1>
+          <p>Manage your account information.</p>
+        </div>
+
+        <div class="topbar-right">
+
+          <!-- Notification -->
+          <div class="notification-area">
+
+            <div class="notification-btn" id="notificationBtn">
+              <i class="fa-regular fa-bell"></i>
+
+              <span
+                class="notification-badge"
+                id="notificationBadge"
+                {% if unread_count == 0 %}style="display:none;"{% endif %}
+              >
+                {{ unread_count }}
+              </span>
+            </div>
+
+        <div class="notification-menu" id="notificationMenu">
+
+          <div class="notification-header">
+            <h3>Notifications</h3>
+          </div>
+
+          {% if notifications %}
+
+            {% for n in notifications %}
+
+            <div class="notification-item {{ n.type }}">
+
+              <div class="notification-title">
+                {{ n.title }}
+              </div>
+
+              <div class="notification-message">
+                {{ n.message }}
+              </div>
+
+              <div class="notification-time">
+                {{ n.created_at.strftime("%b %d, %Y %I:%M %p") }}
+              </div>
+
+            </div>
+
+            {% endfor %}
+
+          {% else %}
+
+            <div class="notification-empty">
+
+              <i class="fa-regular fa-bell-slash"></i>
+
+              <h4>No notifications yet</h4>
+
+              <p>You're all caught up.</p>
+
+            </div>
+
+          {% endif %}
+        </div>
+      </div>
+
+
+      <!-- Profile Dropdown -->
+
+      <div class="profile-area">
+
+        <div class="profile-btn" id="profileBtn">
+
+          <div class="profile-avatar">
+            {{ user.name[0] }}
+          </div>
+
+          <span>{{ user.name }}</span>
+
+          <i class="fa-solid fa-chevron-down"></i>
+
+        </div>
+
+
+        <div class="profile-menu" id="profileMenu">
+
+          <a href="{{ url_for('profile') }}">
+            <i class="fa-solid fa-user"></i>
+            My Profile
+          </a>
+
+          <a
+            href="{{ url_for('logout') }}"
+            class="logout"
+          >
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- FLASH MESSAGE -->
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+
+    {% if messages %}
+
+      {% for category, message in messages %}
+
+        <div
+          class="flash-toast {{ category }}"
+          id="toast"
+        >
+          {{ message }}
+        </div>
+
+      {% endfor %}
+
+    {% endif %}
+
+  {% endwith %}
+
+
+
+  <!-- PROFILE BANNER -->
+
+  <div class="profile-banner">
+
+    <div class="profile-banner-avatar">
+      {{ user.name[0]|upper }}
+    </div>
+
+    <div class="profile-banner-content">
+
+      <h2>
+        {{ user.name }}
+      </h2>
+
+      <div class="profile-banner-role">
+
+        <span class="role-badge">
+
+          <i class="fa-solid fa-graduation-cap"></i>
+
+          {{ user.role|capitalize }}
+
+        </span>
+
+      </div>
+
+      <p class="profile-quote">
+        “Be Extraordinary in Ordinary Things.”
+      </p>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- STUDENT INFORMATION -->
+
+  <div class="profile-card student-info-card">
+
+    <div class="section-title">
+
+      <div class="section-title-icon">
+        <i class="fa-solid fa-user"></i>
+      </div>
+
+      <div>
+        <h2>User Information</h2>
+      </div>
+
+    </div>
+
+
+    <div class="profile-info">
+
+
+      <!-- STUDENT CODE -->
+
+      <div class="profile-item">
+
+        <div class="profile-item-icon">
+          <i class="fa-solid fa-hashtag"></i>
+        </div>
+
+        <div class="profile-item-content">
+
+          <label>User Code</label>
+
+          <p>
+            {{ user.student_code }}
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- LEVEL -->
+
+      <div class="profile-item">
+
+        <div class="profile-item-icon">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+
+        <div class="profile-item-content">
+
+          <label>Level</label>
+
+          <p>
+            {{ user.level or "N/A" }}
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- SECTION -->
+
+      <div class="profile-item">
+
+        <div class="profile-item-icon">
+          <i class="fa-solid fa-layer-group"></i>
+        </div>
+
+        <div class="profile-item-content">
+
+          <label>Section</label>
+
+          <p>
+            {{ user.section or "N/A" }}
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- EMAIL -->
+
+      <div class="profile-item">
+
+        <div class="profile-item-icon">
+          <i class="fa-solid fa-envelope"></i>
+        </div>
+
+        <div class="profile-item-content">
+
+          <label>Email Address</label>
+
+          <p>
+            {{ user.email or "No email registered" }}
+          </p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHANGE PASSWORD -->
+
+  <div class="profile-card password-card">
+
+    <div class="section-title">
+
+      <div class="section-title-icon">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <div>
+
+        <h2>Change Password</h2>
+
+        <p>
+          Keep your account secure by using a strong password.
+        </p>
+      </div>
+    </div>
+
+
+    <div class="password-layout">
+
+
+      <!-- PASSWORD FORM -->
+
+      <form
+        action="{{ url_for('change_password') }}"
+        method="POST"
+        class="password-form"
+      >
+
+
+        <!-- CURRENT PASSWORD -->
+
+        <div class="password-input-group">
+
+          <label for="current_password">
+            Current Password
+          </label>
+
+          <div class="password-input-wrapper">
+
+            <i class="fa-regular fa-lock"></i>
+
+            <input
+              type="password"
+              id="current_password"
+              name="current_password"
+              placeholder="Enter current password"
+              required
+            />
+
+            <button
+              type="button"
+              class="toggle-password"
+              data-target="current_password"
+              aria-label="Show password"
+            >
+              <i class="fa-regular fa-eye"></i>
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- NEW PASSWORD -->
+
+        <div class="password-input-group">
+
+          <label for="new_password">
+            New Password
+          </label>
+
+          <div class="password-input-wrapper">
+
+            <i class="fa-regular fa-lock"></i>
+
+            <input
+              type="password"
+              id="new_password"
+              name="new_password"
+              placeholder="Enter new password"
+              required
+            />
+
+            <button
+              type="button"
+              class="toggle-password"
+              data-target="new_password"
+              aria-label="Show password"
+            >
+              <i class="fa-regular fa-eye"></i>
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- CONFIRM PASSWORD -->
+
+        <div class="password-input-group">
+
+          <label for="confirm_password">
+            Confirm New Password
+          </label>
+
+          <div class="password-input-wrapper">
+
+            <i class="fa-regular fa-lock"></i>
+
+            <input
+              type="password"
+              id="confirm_password"
+              name="confirm_password"
+              placeholder="Confirm new password"
+              required
+            />
+
+            <button
+              type="button"
+              class="toggle-password"
+              data-target="confirm_password"
+              aria-label="Show password"
+            >
+              <i class="fa-regular fa-eye"></i>
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- UPDATE BUTTON -->
+
+        <div class="form-actions">
+
+          <button
+            type="submit"
+            class="save-btn"
+          >
+
+            <i class="fa-solid fa-key"></i>
+
+            <span>Update Password</span>
+
+            <i class="fa-solid fa-arrow-right"></i>
+
+          </button>
+
+        </div>
+
+      </form>
+
+
+
+      <!-- PASSWORD REQUIREMENTS -->
+
+      <div class="password-tips">
+
+        <div class="password-tips-header">
+
+          <div class="password-shield">
+
+            <i class="fa-solid fa-shield-halved"></i>
+
+          </div>
+
+          <h4>
+            Password Requirements
+          </h4>
+
+        </div>
+
+
+        <ul id="passwordRules">
+
+          <li data-rule="length">
+
+            <span class="rule-icon">
+              <i class="fa-solid fa-check"></i>
+            </span>
+
+            <span>
+              At least 8 characters long
+            </span>
+
+          </li>
+
+
+          <li data-rule="uppercase">
+
+            <span class="rule-icon">
+              <i class="fa-solid fa-check"></i>
+            </span>
+
+            <span>
+              One uppercase letter
+            </span>
+
+          </li>
+
+
+          <li data-rule="number">
+
+            <span class="rule-icon">
+              <i class="fa-solid fa-check"></i>
+            </span>
+
+            <span>
+              One number
+            </span>
+
+          </li>
+
+        </ul>
+
+
+        <div class="password-security-graphic">
+
+          <div class="security-shield">
+
+            <i class="fa-solid fa-lock"></i>
+
+          </div>
+
+          <span class="security-line line-left"></span>
+          <span class="security-line line-right"></span>
+          <span class="security-line line-top"></span>
+          <span class="security-line line-bottom"></span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- MOBILE LOGOUT -->
+
+  <div class="mobile-logout">
+
+    <a
+      href="{{ url_for('logout') }}"
+      class="mobile-logout-btn"
+    >
+
+      <i class="fa-solid fa-right-from-bracket"></i>
+
+      Logout Account
+
+    </a>
+
+  </div>
+
+</div>
+
+
+
+<!-- MOBILE BOTTOM NAV -->
+
+<nav class="mobile-bottom-nav">
+
+  <a href="{{ url_for('dashboard') }}">
+
+    <i class="fa-solid fa-house"></i>
+
+    <span>Dashboard</span>
+
+  </a>
+
+
+  <a href="{{ url_for('catalog') }}">
+
+    <i class="fa-solid fa-book-open"></i>
+
+    <span>Catalog</span>
+
+  </a>
+
+
+  <a href="{{ url_for('transaction_history') }}">
+
+    <i class="fa-solid fa-clock-rotate-left"></i>
+
+    <span>History</span>
+
+  </a>
+
+
+  <a
+    href="{{ url_for('profile') }}"
+    class="active"
+  >
+
+    <i class="fa-solid fa-user"></i>
+
+    <span>Profile</span>
+
+  </a>
+
+</nav>
+<script>
+  const notificationBtn = document.getElementById("notificationBtn");
+  const notificationMenu = document.getElementById("notificationMenu");
+  const notificationBadge = document.getElementById("notificationBadge");
+
+  const profileBtn = document.getElementById("profileBtn");
+  const profileMenu = document.getElementById("profileMenu");
+
+  let unreadNotifications = Number(
+    "{{ unread_count|default(0) }}"
+  );
+
+  if (notificationBadge && unreadNotifications === 0) {
+    notificationBadge.style.display = "none";
+  }
+
+  if (notificationBtn && notificationMenu) {
+    notificationBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+
+      if (profileMenu) {
+        profileMenu.classList.remove("show");
+      }
+
+      notificationMenu.classList.toggle("show");
+    });
+  }
+
+  if (profileBtn && profileMenu) {
+    profileBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+
+      if (notificationMenu) {
+        notificationMenu.classList.remove("show");
+      }
+
+      profileMenu.classList.toggle("show");
+    });
+  }
+
+  document.addEventListener("click", function () {
+    if (notificationMenu) {
+      notificationMenu.classList.remove("show");
+    }
+
+    if (profileMenu) {
+      profileMenu.classList.remove("show");
+    }
+  });
+
+
+  const toast = document.getElementById("toast");
+
+  if (toast) {
+    setTimeout(() => {
+      toast.style.opacity = "0";
+
+      setTimeout(() => {
+        toast.remove();
+      }, 300);
+    }, 3000);
+  }
+
+
+  const newPasswordInput = document.querySelector(
+    'input[name="new_password"]'
+  );
+
+  if (newPasswordInput) {
+    newPasswordInput.addEventListener("input", function () {
+      const val = this.value;
+
+      const rules = {
+        length: val.length >= 8,
+        uppercase: /[A-Z]/.test(val),
+        number: /[0-9]/.test(val),
+      };
+
+      for (const rule in rules) {
+        const li = document.querySelector(
+          `[data-rule="${rule}"]`
+        );
+
+        if (!li) {
+          continue;
+        }
+
+        const icon = li.querySelector(".rule-icon i");
+
+        if (rules[rule]) {
+          li.classList.add("rule-met");
+
+          if (icon) {
+            icon.className = "fa-solid fa-check";
+          }
+        } else {
+          li.classList.remove("rule-met");
+
+          if (icon) {
+            icon.className = "fa-solid fa-check";
+          }
+        }
+      }
+    });
+  }
+
+
+  document.querySelectorAll(".toggle-password").forEach(
+    function (button) {
+
+      button.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const targetId = this.getAttribute("data-target");
+        const input = document.getElementById(targetId);
+
+        if (!input) {
+          return;
+        }
+
+        const icon = this.querySelector("i");
+
+        if (input.type === "password") {
+
+          input.type = "text";
+
+          if (icon) {
+            icon.className = "fa-regular fa-eye-slash";
+          }
+
+          this.setAttribute(
+            "aria-label",
+            "Hide password"
+          );
+
+        } else {
+
+          input.type = "password";
+
+          if (icon) {
+            icon.className = "fa-regular fa-eye";
+          }
+
+          this.setAttribute(
+            "aria-label",
+            "Show password"
+          );
+        }
+      });
+
+    }
+  );
+
+
+  const mobileNotificationBtn =
+    document.getElementById(
+      "mobileNotificationBtn"
+    );
+
+  const mobileNotificationPanel =
+    document.getElementById(
+      "mobileNotificationPanel"
+    );
+
+  const mobileNotificationOverlay =
+    document.getElementById(
+      "mobileNotificationOverlay"
+    );
+
+  const mobileNotificationBadge =
+    document.getElementById(
+      "mobileNotificationBadge"
+    );
+
+  const closeMobileNotifications =
+    document.getElementById(
+      "closeMobileNotifications"
+    );
+
+
+  function openMobileNotifications() {
+
+    if (mobileNotificationPanel) {
+      mobileNotificationPanel.classList.add("show");
+    }
+
+    if (mobileNotificationOverlay) {
+      mobileNotificationOverlay.classList.add("show");
+    }
+
+    if (unreadNotifications > 0) {
+
+      fetch("/mark_notifications_read", {
+        method: "POST",
+      })
+        .then((response) => {
+
+          if (response.ok) {
+
+            unreadNotifications = 0;
+
+            if (notificationBadge) {
+              notificationBadge.style.display = "none";
+              notificationBadge.innerHTML = "";
+            }
+
+            if (mobileNotificationBadge) {
+              mobileNotificationBadge.style.display = "none";
+              mobileNotificationBadge.innerHTML = "";
+            }
+
+          }
+
+        })
+        .catch((error) => {
+          console.error(
+            "Notification update failed:",
+            error
+          );
+        });
+    }
+  }
+
+
+  function closeMobileNotificationsPanel() {
+
+    if (mobileNotificationPanel) {
+      mobileNotificationPanel.classList.remove("show");
+    }
+
+    if (mobileNotificationOverlay) {
+      mobileNotificationOverlay.classList.remove("show");
+    }
+  }
+
+
+  if (mobileNotificationBtn) {
+
+    mobileNotificationBtn.addEventListener(
+      "click",
+      function (e) {
+
+        e.stopPropagation();
+
+        if (
+          mobileNotificationPanel &&
+          mobileNotificationPanel.classList.contains("show")
+        ) {
+
+          closeMobileNotificationsPanel();
+
+        } else {
+
+          openMobileNotifications();
+
+        }
+
+      }
+    );
+
+  }
+
+
+  if (closeMobileNotifications) {
+
+    closeMobileNotifications.addEventListener(
+      "click",
+      closeMobileNotificationsPanel
+    );
+
+  }
+
+
+  if (mobileNotificationOverlay) {
+
+    mobileNotificationOverlay.addEventListener(
+      "click",
+      closeMobileNotificationsPanel
+    );
+
+  }
+
+
+  if (mobileNotificationPanel) {
+
+    mobileNotificationPanel.addEventListener(
+      "click",
+      function (e) {
+        e.stopPropagation();
+      }
+    );
+
+  }
+</script>
+  </body>
+</html>

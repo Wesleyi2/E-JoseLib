@@ -1,0 +1,1478 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - E-JoseLib</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard-mobile.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <!-- MOBILE TOPBAR PILL (mobile only) -->
+    <div class="mobile-topbar" id="mobileTopbar">
+      <div class="mobile-topbar-left">
+        <img
+          src="{{ url_for('static', filename='SJC_LOGO3.png') }}"
+          class="mobile-logo"
+          alt="SJC Logo"
+        />
+
+        <span class="mobile-topbar-title"> Dashboard </span>
+      </div>
+
+      <button class="mobile-notification-btn" id="mobileNotificationBtn">
+        <i class="fa-regular fa-bell"></i>
+
+        <span
+          class="notification-badge"
+          id="mobileNotificationBadge"
+          {% if unread_count == 0 %}style="display: none;"{% endif %}>
+          {{ unread_count }}
+        </span>
+      </button>
+    </div>
+
+    <!-- MOBILE NOTIFICATION PANEL -->
+    <div class="mobile-notification-panel" id="mobileNotificationPanel">
+      <div class="mobile-notification-header">
+        <h3>Notifications</h3>
+        <i class="fa-solid fa-xmark" id="closeMobileNotifications"></i>
+      </div>
+
+      {% if notifications %} {% for n in notifications %}
+      <div class="notification-item {{ n.type }}">
+        <div class="notification-title">{{ n.title }}</div>
+        <div class="notification-message">{{ n.message }}</div>
+        <div class="notification-time">
+          {{ n.created_at.strftime("%b %d, %Y %I:%M %p") }}
+        </div>
+      </div>
+      {% endfor %} {% else %}
+      <div class="notification-empty">
+        <i class="fa-regular fa-bell-slash"></i>
+        <h4>No notifications yet</h4>
+        <p>You're all caught up.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <div
+      class="mobile-notification-overlay"
+      id="mobileNotificationOverlay"
+    ></div>
+
+    <div class="dashboard">
+      <div class="sidebar" id="sidebar">
+        <div class="logo-section">
+          <img
+            src="{{ url_for('static', filename='SJC_LOGO3.png') }}"
+            class="school-logo"
+          />
+        </div>
+
+        <ul>
+          <a href="{{ url_for('dashboard') }}">
+            <li class="active">
+              <i class="fa-solid fa-house"></i>
+              <span>Dashboard</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('catalog') }}">
+            <li>
+              <i class="fa-solid fa-book-open"></i>
+              <span>Catalog</span>
+            </li>
+          </a>
+
+          <a href="{{ url_for('transaction_history') }}">
+            <li>
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <span>Transaction History</span>
+            </li>
+          </a>
+
+            <a href="{{ url_for('qr_code') }}">
+                <li>
+                    <i class="fa-solid fa-qrcode"></i>
+                    <span>QR Code</span>
+                </li>
+            </a>
+        </ul>
+
+        <!-- MOBILE ONLY: Profile & Logout -->
+        <div class="sidebar-profile-mobile">
+          <a href="{{ url_for('profile') }}">
+            <i class="fa-solid fa-user"></i>
+            <span>My Profile</span>
+          </a>
+
+          <a href="{{ url_for('logout') }}" class="sidebar-logout">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <div class="topbar">
+          <div>
+            <h1>Dashboard</h1>
+            <p>Welcome back, {{ student_name }}</p>
+          </div>
+
+          <div class="topbar-right">
+            <!-- Notification -->
+
+            <div class="notification-area">
+              <div class="notification-btn" id="notificationBtn">
+                <i class="fa-regular fa-bell"></i>
+
+                <span
+                  class="notification-badge"
+                  id="notificationBadge"
+                  {% if unread_count == 0 %}style="display: none;"{% endif %}>
+                  {{ unread_count }}
+                </span>
+              </div>
+
+              <div class="notification-menu" id="notificationMenu">
+                <div class="notification-header">
+                  <h3>Notifications</h3>
+                </div>
+
+                {% if notifications %} {% for n in notifications %}
+
+                <div class="notification-item {{ n.type }}">
+                  <div class="notification-title">{{ n.title }}</div>
+
+                  <div class="notification-message">{{ n.message }}</div>
+
+                  <div class="notification-time">
+                    {{ n.created_at.strftime("%b %d, %Y %I:%M %p") }}
+                  </div>
+                </div>
+
+                {% endfor %} {% else %}
+
+                <div class="notification-empty">
+                  <i class="fa-regular fa-bell-slash"></i>
+
+                  <h4>No notifications yet</h4>
+
+                  <p>You're all caught up.</p>
+                </div>
+
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Profile -->
+
+            <div class="profile-area">
+              <div class="profile-btn" id="profileBtn">
+                <div class="profile-avatar">{{ student_name[0] }}</div>
+
+                <span>{{ student_name }}</span>
+
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+
+              <div class="profile-menu" id="profileMenu">
+                <a href="{{ url_for('profile') }}">
+                  <i class="fa-solid fa-user"></i>
+                  My Profile
+                </a>
+
+                <a href="{{ url_for('logout') }}" class="logout">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                  Logout
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-stats">
+          <div class="stat-card">
+            <div>
+              <h4>Borrowed Books</h4>
+              <h2>{{ borrowed_count }}</h2>
+              <p>Currently borrowed</p>
+            </div>
+
+            <i class="fa-solid fa-book-open"></i>
+          </div>
+
+          <div class="stat-card">
+            <div>
+              <h4>Library Visits</h4>
+              <h2>{{ library_visits }}</h2>
+              <p>This semester</p>
+            </div>
+
+            <i class="fa-regular fa-calendar"></i>
+          </div>
+        </div>
+
+        <div class="dashboard-section-card">
+          <div class="section-header">
+            <i class="fa-solid fa-book-open"></i>
+
+            <div>
+              <h2>Currently Borrowed</h2>
+              <p>Keep track of your due dates</p>
+            </div>
+          </div>
+
+          {% if borrowed_books %}
+
+        <div class="borrowed-grid">
+            {% for book in borrowed_books %}
+
+            <div class="borrow-card">
+                <img
+                    src="{{ url_for('static', filename='covers/' + book.cover_image) }}"
+                    alt="{{ book.title }}"
+                />
+
+                <div class="borrow-card-content">
+                    <div class="borrow-book-preview">
+                        <h3 class="borrow-book-title">
+                            {{ book.title }}
+                        </h3>
+
+                        <div class="borrow-hover-card">
+                            <strong>{{ book.title }}</strong>
+
+                            {% if book.author %}
+                                <span>{{ book.author }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if book.author %}
+                    <div class="borrow-book-preview">
+                        <p class="borrow-book-author">
+                            {{ book.author }}
+                        </p>
+
+                        <div class="borrow-hover-card">
+                            <strong>{{ book.author }}</strong>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="due-badge">
+                        <i class="fa-regular fa-calendar"></i>
+
+                        <div>
+                            <strong>Due: {{ book.due_date }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          {% else %}
+
+          <p class="empty-mini">No borrowed books yet.</p>
+
+          {% endif %}
+        </div>
+
+        <!-- RECOMMENDED BOOKS -->
+
+        <div class="dashboard-section-card">
+          <div class="section-header">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+            <div>
+              <h2>Recommended For You</h2>
+
+              <p>
+                Personalized recommendations based on your borrowing history
+              </p>
+            </div>
+          </div>
+
+          {% if recommended_books %}
+
+          <div class="recommendation-wrapper">
+            <div class="recommendation-grid">
+              {% for book in recommended_books %}
+
+                <div class="recommend-card">
+                    <img
+                        src="{{ url_for('static', filename='covers/' + book.cover_image) }}"
+                        alt="{{ book.title }}"
+                    />
+
+                    <div class="recommend-text-hover">
+                        <h3>{{ book.title }}</h3>
+
+                        <div class="recommend-hover-card">
+                            <strong>{{ book.title }}</strong>
+
+                            {% if book.author %}
+                                <span>{{ book.author }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="recommend-text-hover recommend-author-hover">
+                        <p>{{ book.author }}</p>
+
+                        <div class="recommend-hover-card">
+                            <strong>{{ book.author }}</strong>
+                        </div>
+                    </div>
+
+                    <span>{{ book.category }}</span>
+
+                    <a
+                        href="{{ url_for('book_details', book_id=book.book_id) }}"
+                        class="recommend-btn"
+                    >
+                        View Book
+                    </a>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          {% else %}
+          <p>No recommendations available yet.</p>
+
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <nav class="mobile-bottom-nav">
+      <a href="{{ url_for('dashboard') }}" class="active">
+        <i class="fa-solid fa-house"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <a href="{{ url_for('catalog') }}">
+        <i class="fa-solid fa-book-open"></i>
+        <span>Catalog</span>
+      </a>
+
+      <a href="{{ url_for('transaction_history') }}">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        <span>History</span>
+      </a>
+
+      <a href="{{ url_for('profile') }}">
+        <i class="fa-solid fa-user"></i>
+        <span>Profile</span>
+      </a>
+    </nav>
+
+    <!-- FLOATING CHAT BUTTON-->
+
+    <div class="chat-toggle" id="chatToggle">
+      <img
+        src="{{ url_for('static', filename='tigerbot.png') }}"
+        alt="AI Assistant"
+      />
+    </div>
+
+    <!-- WELCOME MODAL -->
+    {% if show_welcome_modal %}
+        {% include 'modal_card.html' %}
+    {% endif %}
+
+
+<!-- E-JOSELIB CHATBOT -->
+
+<div class="chatbot" id="chatbot">
+
+  <!-- CHAT HEADER -->
+  <div class="chat-header">
+    <div>
+      <h2>E-JoseLib Assistant</h2>
+      <p>AI-Powered Library Help</p>
+    </div>
+
+    <div class="chat-header-actions">
+      <i
+        class="fa-solid fa-trash"
+        id="clearChatBtn"
+        title="Clear Conversation"
+        role="button"
+        tabindex="0"
+        aria-label="Clear Conversation"
+      ></i>
+
+      <i
+        class="fa-solid fa-xmark"
+        id="closeChat"
+        role="button"
+        tabindex="0"
+        aria-label="Close Chat"
+      ></i>
+    </div>
+  </div>
+
+  <!-- CHAT MESSAGES -->
+  <div class="chat-body" id="chatBody">
+
+    {% if chat_history %}
+
+      {% for chat in chat_history %}
+
+        {% if chat.sender == 'user' %}
+
+          <div class="user-message">
+            {{ chat.message }}
+          </div>
+
+        {% elif chat.sender == 'system' %}
+
+          {% if chat.message == 'GEMINI_QUOTA_NOTICE' %}
+
+            <div
+              class="quota-notice"
+              role="status"
+              aria-live="polite"
+            >
+              <i
+                class="fa-solid fa-circle-exclamation"
+                aria-hidden="true"
+              ></i>
+
+              <span>
+                Gemini AI usage limit reached.
+                E-JoseLib is temporarily using its ML chatbot.
+              </span>
+            </div>
+
+          {% elif chat.message == 'GEMINI_AVAILABLE_NOTICE' %}
+
+            <div
+              class="quota-notice"
+              role="status"
+              aria-live="polite"
+            >
+              <i
+                class="fa-solid fa-circle-check"
+                aria-hidden="true"
+              ></i>
+
+              <span>
+                Gemini AI is available again!
+                You are now chatting with Gemini AI.
+              </span>
+            </div>
+
+          {% else %}
+
+            <div
+              class="quota-notice"
+              role="status"
+              aria-live="polite"
+            >
+              <i
+                class="fa-solid fa-circle-info"
+                aria-hidden="true"
+              ></i>
+
+              <span>{{ chat.message }}</span>
+            </div>
+
+          {% endif %}
+
+        {% elif chat.sender == 'bot' %}
+
+          <div class="bot-message">
+            {{ chat.message }}
+          </div>
+
+        {% endif %}
+
+      {% endfor %}
+
+    {% else %}
+
+      <div class="bot-message">
+        👋 Hello {{ student_name }}!
+
+        <br><br>
+
+        I'm your E-JoseLib Assistant.
+
+        <br><br>
+
+        I can help you:
+
+        <br>Find books
+        <br>Recommend books
+        <br>Library hours
+        <br>Borrowing policies
+      </div>
+
+    {% endif %}
+
+  </div>
+
+  <!-- QUICK QUESTIONS -->
+  {% if not chat_history %}
+
+    <div class="quick-questions">
+
+      <button
+        type="button"
+        onclick="quickAsk('Library hours')"
+      >
+        Library Hours
+      </button>
+
+      <button
+        type="button"
+        onclick="quickAsk('Borrowing policy')"
+      >
+        Borrowing Policy
+      </button>
+
+      <button
+        type="button"
+        onclick="quickAsk('Recommend programming books')"
+      >
+        Programming Books
+      </button>
+
+      <button
+        type="button"
+        onclick="quickAsk('Available books')"
+      >
+        Available Books
+      </button>
+
+    </div>
+
+  {% endif %}
+
+  <!-- CHAT INPUT -->
+  <div class="chat-input">
+
+    <input
+      id="chatInput"
+      type="text"
+      placeholder="Ask anything..."
+      autocomplete="off"
+      aria-label="Type your message"
+    >
+
+    <button
+      id="sendBtn"
+      type="button"
+      aria-label="Send Message"
+    >
+      <i class="fa-solid fa-paper-plane"></i>
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- CLEAR CHAT MODAL -->
+<div class="return-modal" id="clearChatModal">
+
+  <div class="return-modal-content">
+
+    <h2>Clear Conversation?</h2>
+
+    <p>
+      This will permanently delete your conversation
+      with the E-JoseLib Assistant.
+    </p>
+
+    <p class="borrow-note">
+      This action cannot be undone.
+    </p>
+
+    <div class="modal-buttons">
+
+      <button
+        type="button"
+        class="cancel-btn"
+        onclick="closeClearChatModal()"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        class="modal-delete-btn"
+        id="confirmClearChat"
+      >
+        Delete
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- SOCKET.IO -->
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // 1. INITIALIZE ELEMENTS
+
+    const socket = typeof io === "function" ? io() : null;
+
+    if (socket) {
+    socket.on("connect", function () {
+        console.log("✅ Socket.IO connected:", socket.id);
+        console.log("Transport:", socket.io.engine.transport.name);
+    });
+
+    socket.on("connect_error", function (error) {
+        console.error("❌ Socket.IO connection error:", error.message);
+    });
+
+    socket.on("disconnect", function (reason) {
+        console.warn("⚠️ Socket.IO disconnected:", reason);
+    });
+}
+
+    const chatbot = document.getElementById("chatbot");
+    const toggle = document.getElementById("chatToggle");
+    const closeChat = document.getElementById("closeChat");
+    const clearChatBtn = document.getElementById("clearChatBtn");
+
+    const sendBtn = document.getElementById("sendBtn");
+    const input = document.getElementById("chatInput");
+    const chatBody = document.getElementById("chatBody");
+
+    const clearChatModal = document.getElementById("clearChatModal");
+    const confirmClearChat = document.getElementById("confirmClearChat");
+
+    let currentChatbotSource = "gemini";
+    let isSending = false;
+
+
+    // 2. CHATBOT SOURCE AND NOTICES
+
+    function showChatbotNotice(message, source) {
+
+        if (!chatBody || !message) {
+            return;
+        }
+
+        const notice = document.createElement("div");
+
+        notice.className = "quota-notice";
+        notice.setAttribute("role", "status");
+        notice.setAttribute("aria-live", "polite");
+
+        const icon = document.createElement("i");
+
+        if (String(source).toLowerCase() === "gemini") {
+            icon.className = "fa-solid fa-circle-check";
+        } else {
+            icon.className = "fa-solid fa-circle-exclamation";
+        }
+
+        icon.setAttribute("aria-hidden", "true");
+
+        const messageElement = document.createElement("span");
+        messageElement.textContent = message;
+
+        notice.appendChild(icon);
+        notice.appendChild(messageElement);
+
+        chatBody.appendChild(notice);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+
+    function updateChatbotSource(source, noticeMessage) {
+
+        if (!source) {
+            return;
+        }
+
+        currentChatbotSource = String(source).toLowerCase();
+
+        console.log("Chatbot source:", currentChatbotSource);
+        console.log("Chatbot notice:", noticeMessage);
+
+        if (noticeMessage) {
+            showChatbotNotice(
+                noticeMessage,
+                currentChatbotSource
+            );
+        }
+    }
+
+
+    // 3. CHATBOT OPEN AND CLOSE
+
+    if (toggle && chatbot) {
+
+        toggle.addEventListener("click", function () {
+
+            chatbot.classList.toggle("show-chat");
+
+            if (chatbot.classList.contains("show-chat")) {
+
+                setTimeout(function () {
+
+                    if (chatBody) {
+                        chatBody.scrollTop = chatBody.scrollHeight;
+                    }
+
+                    if (input) {
+                        input.focus();
+                    }
+
+                }, 100);
+            }
+        });
+    }
+
+    if (closeChat && chatbot) {
+
+        closeChat.addEventListener("click", function () {
+            chatbot.classList.remove("show-chat");
+        });
+
+        closeChat.addEventListener("keydown", function (event) {
+
+            if (event.key === "Enter" || event.key === " ") {
+
+                event.preventDefault();
+                chatbot.classList.remove("show-chat");
+            }
+        });
+    }
+
+
+    // 4. ADD USER MESSAGE
+
+    function addUserMessage(message) {
+
+        const messageElement = document.createElement("div");
+
+        messageElement.className = "user-message";
+        messageElement.textContent = message;
+
+        chatBody.appendChild(messageElement);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+
+    // 5. ESCAPE HTML
+
+    function escapeHTML(value) {
+
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+
+    // 6. SAFELY EXTRACT BOOK LINKS
+
+    function extractBookLinks(message) {
+
+        const bookLinks = [];
+
+        const text = String(message ?? "").replace(
+            /<a\s+href=["'](\/book\/\d+)["']\s+class=["']chat-book-link["']>([\s\S]*?)<\/a>/gi,
+            function (match, href, label) {
+
+                if (!/^\/book\/\d+$/.test(href)) {
+                    return escapeHTML(match);
+                }
+
+                const title = label.replace(
+                    /<i\s+class=["']fa-solid fa-up-right-from-square chat-link-icon["']\s*><\/i>/gi,
+                    ""
+                );
+
+                const safeTitle = title
+                    .replace(/<[^>]*>/g, "")
+                    .trim();
+
+                const token =
+                    `__EJOSELIB_BOOK_LINK_${bookLinks.length}__`;
+
+                bookLinks.push({
+                    token: token,
+                    href: href,
+                    title: safeTitle
+                });
+
+                return token;
+            }
+        );
+
+        return {
+            text: text,
+            links: bookLinks
+        };
+    }
+
+
+    // 7. FORMAT BOT RESPONSE
+
+    function formatBotMessage(message) {
+
+        if (!message) {
+            return "";
+        }
+
+        const extracted = extractBookLinks(message);
+
+        let text = escapeHTML(extracted.text);
+
+        // Format bold text.
+        text = text.replace(
+            /\*\*(.*?)\*\*/g,
+            '<span class="chat-title">$1</span>'
+        );
+
+        const lines = text.split(/\r?\n/);
+
+        const formattedLines = [];
+
+        let numberedItems = [];
+
+        function flushNumberedItems() {
+
+            if (numberedItems.length > 0) {
+
+                formattedLines.push(
+                    '<ol class="chat-list">' +
+                    numberedItems.map(function (item) {
+                        return "<li>" + item + "</li>";
+                    }).join("") +
+                    "</ol>"
+                );
+
+                numberedItems = [];
+            }
+        }
+
+        function isBookLinkLine(line) {
+
+            return extracted.links.some(function (bookLink) {
+                return bookLink.token === line;
+            });
+        }
+
+        lines.forEach(function (line) {
+
+            const trimmedLine = line.trim();
+
+            if (!trimmedLine) {
+
+                flushNumberedItems();
+
+                formattedLines.push(
+                    '<div class="chat-spacer"></div>'
+                );
+
+                return;
+            }
+
+            if (isBookLinkLine(trimmedLine)) {
+
+                flushNumberedItems();
+
+                formattedLines.push(
+                    '<div class="chat-line">' +
+                    trimmedLine +
+                    "</div>"
+                );
+
+                return;
+            }
+
+            const numberedMatch = trimmedLine.match(
+                /^\d+\.\s+(.+)$/
+            );
+
+            if (numberedMatch) {
+
+                numberedItems.push(numberedMatch[1]);
+                return;
+            }
+
+            flushNumberedItems();
+
+            if (/^[•*-]\s+/.test(trimmedLine)) {
+
+                const bulletText = trimmedLine.replace(
+                    /^[•*-]\s+/,
+                    ""
+                );
+
+                formattedLines.push(
+                    '<div class="chat-bullet">• ' +
+                    bulletText +
+                    "</div>"
+                );
+
+                return;
+            }
+
+            formattedLines.push(
+                '<div class="chat-line">' +
+                trimmedLine +
+                "</div>"
+            );
+        });
+
+        flushNumberedItems();
+
+        let formattedHTML = formattedLines.join("");
+
+        extracted.links.forEach(function (bookLink) {
+
+            const safeHref = escapeHTML(bookLink.href);
+            const safeTitle = escapeHTML(bookLink.title);
+
+            const safeLink =
+                '<a href="' + safeHref + '"' +
+                ' class="chat-book-link">' +
+                safeTitle +
+                ' <i class="fa-solid fa-up-right-from-square chat-link-icon"' +
+                ' aria-hidden="true"></i>' +
+                "</a>";
+
+            formattedHTML = formattedHTML.replace(
+                bookLink.token,
+                safeLink
+            );
+        });
+
+        return formattedHTML;
+    }
+
+
+    // 8. FORMAT SAVED CHAT HISTORY
+
+    function formatChatHistory() {
+
+        const historyMessages = document.querySelectorAll(
+            "#chatBody .bot-message"
+        );
+
+        historyMessages.forEach(function (messageElement) {
+
+            // Prevent formatting the same message repeatedly.
+            if (messageElement.dataset.formatted === "true") {
+                return;
+            }
+
+            const originalMessage = messageElement.textContent.trim();
+
+            if (originalMessage !== "") {
+
+                messageElement.innerHTML = formatBotMessage(
+                    originalMessage
+                );
+
+                messageElement.dataset.formatted = "true";
+            }
+        });
+    }
+
+    // Render messages already loaded from the database.
+    formatChatHistory();
+
+
+    // 9. ADD BOT MESSAGE
+
+    function addBotMessage(message) {
+
+        const messageElement = document.createElement("div");
+
+        messageElement.className = "bot-message";
+        messageElement.innerHTML = formatBotMessage(message);
+        messageElement.dataset.formatted = "true";
+
+        chatBody.appendChild(messageElement);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+
+    // 10. MESSENGER-STYLE TYPING INDICATOR
+
+    function showTypingIndicator() {
+
+        removeTypingIndicator();
+
+        if (!chatBody) {
+            return;
+        }
+
+        const typingElement = document.createElement("div");
+
+        typingElement.className = "chatbot-typing";
+        typingElement.id = "typingIndicator";
+        typingElement.setAttribute("role", "status");
+        typingElement.setAttribute("aria-label", "Assistant is typing");
+
+        typingElement.innerHTML = `
+            <span></span>
+            <span></span>
+            <span></span>
+        `;
+
+        chatBody.appendChild(typingElement);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+
+    function removeTypingIndicator() {
+
+        const typing = document.getElementById("typingIndicator");
+
+        if (typing) {
+            typing.remove();
+        }
+    }
+
+
+    // 11. SEND MESSAGE
+
+    async function sendMessage() {
+
+        if (isSending || !input || !sendBtn || !chatBody) {
+            return;
+        }
+
+        const message = input.value.trim();
+
+        if (!message) {
+            return;
+        }
+
+        isSending = true;
+
+        addUserMessage(message);
+
+        input.value = "";
+        sendBtn.disabled = true;
+
+        showTypingIndicator();
+
+        try {
+
+            const response = await fetch("/chatbot", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: message
+                })
+            });
+
+            const data = await response.json();
+
+            removeTypingIndicator();
+
+            if (response.ok && data.success) {
+
+                // Show the chatbot answer first.
+                addBotMessage(
+                    data.response ||
+                    data.reply ||
+                    "I couldn't generate a response."
+                );
+
+                // Keep the existing Gemini/ML source handling.
+                updateChatbotSource(
+                    data.source,
+                    data.ai_notice
+                );
+
+            } else {
+
+                console.error("Chatbot request failed:", {
+                    status: response.status,
+                    success: data.success,
+                    source: data.source,
+                    error: data.error
+                });
+
+                addBotMessage(
+                    data.error ||
+                    "Sorry, I couldn't process your message."
+                );
+            }
+
+        } catch (error) {
+
+            removeTypingIndicator();
+
+            addBotMessage(
+                "Something went wrong while connecting to the E-JoseLib Assistant."
+            );
+
+            console.error("Chatbot error:", error);
+
+        } finally {
+
+            // Ensure the typing indicator is removed.
+            removeTypingIndicator();
+
+            isSending = false;
+            sendBtn.disabled = false;
+
+            if (input) {
+                input.focus();
+            }
+        }
+    }
+
+
+    // 12. SEND BUTTON AND ENTER KEY
+
+    if (sendBtn) {
+        sendBtn.addEventListener("click", sendMessage);
+    }
+
+    if (input) {
+
+        input.addEventListener("keydown", function (event) {
+
+            if (event.key === "Enter" && !event.shiftKey) {
+
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+
+
+    // 13. QUICK QUESTIONS
+
+    window.quickAsk = function (question) {
+
+        if (!input || isSending) {
+            return;
+        }
+
+        input.value = question;
+        sendMessage();
+    };
+
+
+    // 14. CLEAR CHAT MODAL
+
+    window.openClearChatModal = function () {
+
+        if (clearChatModal) {
+            clearChatModal.style.display = "flex";
+        }
+    };
+
+    window.closeClearChatModal = function () {
+
+        if (clearChatModal) {
+            clearChatModal.style.display = "none";
+        }
+    };
+
+    if (clearChatBtn) {
+
+        clearChatBtn.addEventListener(
+            "click",
+            window.openClearChatModal
+        );
+
+        clearChatBtn.addEventListener("keydown", function (event) {
+
+            if (event.key === "Enter" || event.key === " ") {
+
+                event.preventDefault();
+                window.openClearChatModal();
+            }
+        });
+    }
+
+    if (clearChatModal) {
+
+        clearChatModal.addEventListener("click", function (event) {
+
+            if (event.target === clearChatModal) {
+                window.closeClearChatModal();
+            }
+        });
+    }
+
+
+    // 15. CONFIRM CLEAR CHAT
+
+    if (confirmClearChat) {
+
+        confirmClearChat.addEventListener(
+            "click",
+            async function () {
+
+                confirmClearChat.disabled = true;
+
+                try {
+
+                    const response = await fetch("/clear_chat", {
+                        method: "POST"
+                    });
+
+                    if (response.ok) {
+
+                        window.closeClearChatModal();
+                        location.reload();
+
+                    } else {
+
+                        alert(
+                            "Unable to clear the conversation. Please try again."
+                        );
+                    }
+
+                } catch (error) {
+
+                    console.error("Clear chat error:", error);
+
+                    alert(
+                        "Something went wrong while clearing the conversation."
+                    );
+
+                } finally {
+
+                    confirmClearChat.disabled = false;
+                }
+            }
+        );
+    }
+
+
+    // 16. CHAT INITIAL SCROLL
+
+    if (chatBody) {
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+});
+
+
+      // NOTIFICATIONS
+
+      const notificationBtn = document.getElementById("notificationBtn");
+      const notificationMenu = document.getElementById("notificationMenu");
+      const notificationBadge = document.getElementById("notificationBadge");
+      const profileBtn = document.getElementById("profileBtn");
+      const profileMenu = document.getElementById("profileMenu");
+
+      let unreadNotifications = Number("{{ unread_count|default(0) }}");
+
+      if (notificationBadge && unreadNotifications > 0) {
+        notificationBadge.innerText = unreadNotifications;
+      }
+
+      notificationBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+
+        profileMenu.classList.remove("show");
+
+        notificationMenu.classList.toggle("show");
+
+        if (
+          notificationMenu.classList.contains("show") &&
+          unreadNotifications > 0
+        ) {
+          fetch("/mark_notifications_read", {
+            method: "POST",
+          })
+            .then((response) => {
+              if (response.ok) {
+                notificationBadge.style.display = "none";
+
+                unreadNotifications = 0;
+              }
+            })
+
+            .catch((error) => {
+              console.error("Failed to mark notifications as read:", error);
+            });
+        }
+      });
+
+      profileBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        notificationMenu.classList.remove("show");
+        profileMenu.classList.toggle("show");
+      });
+
+      document.addEventListener("click", function () {
+        notificationMenu.classList.remove("show");
+        profileMenu.classList.remove("show");
+      });
+
+      const mobileNotificationBtn = document.getElementById(
+        "mobileNotificationBtn",
+      );
+      const mobileNotificationPanel = document.getElementById(
+        "mobileNotificationPanel",
+      );
+      const mobileNotificationOverlay = document.getElementById(
+        "mobileNotificationOverlay",
+      );
+      const mobileNotificationBadge = document.getElementById(
+        "mobileNotificationBadge",
+      );
+      const closeMobileNotifications = document.getElementById(
+        "closeMobileNotifications",
+      );
+
+
+      socket.on("new_overdue_notification", function (data) {
+        console.log("REALTIME OVERDUE NOTIFICATION:", data);
+
+        unreadNotifications++;
+
+        if (notificationBadge) {
+          notificationBadge.innerText = unreadNotifications;
+          notificationBadge.style.display = "flex";
+        }
+
+        if (mobileNotificationBadge) {
+          mobileNotificationBadge.innerText = unreadNotifications;
+          mobileNotificationBadge.style.display = "flex";
+        }
+
+        const notificationHTML = `
+          <div class="notification-item ${data.type || "warning"}">
+            <div class="notification-title">
+              ${data.title || "Overdue Book"}
+            </div>
+
+            <div class="notification-message">
+              ${data.message || "You have an overdue book."}
+            </div>
+
+            <div class="notification-time">
+              ${data.created_at || "Just now"}
+            </div>
+          </div>
+        `;
+
+        if (notificationMenu) {
+          const emptyState =
+            notificationMenu.querySelector(".notification-empty");
+
+          if (emptyState) {
+            emptyState.remove();
+          }
+
+          notificationMenu.insertAdjacentHTML(
+            "afterbegin",
+            notificationHTML
+          );
+        }
+
+        if (mobileNotificationPanel) {
+          const emptyState =
+            mobileNotificationPanel.querySelector(".notification-empty");
+
+          if (emptyState) {
+            emptyState.remove();
+          }
+
+          mobileNotificationPanel.insertAdjacentHTML(
+            "afterbegin",
+            notificationHTML
+          );
+        }
+      });
+
+      function openMobileNotifications() {
+        mobileNotificationPanel.classList.add("show");
+        mobileNotificationOverlay.classList.add("show");
+
+        if (unreadNotifications > 0) {
+          fetch("/mark_notifications_read", {
+            method: "POST",
+          }).then((response) => {
+            if (response.ok) {
+              unreadNotifications = 0;
+
+              if (notificationBadge) {
+                notificationBadge.style.display = "none";
+                notificationBadge.innerHTML = "";
+              }
+
+              if (mobileNotificationBadge) {
+                mobileNotificationBadge.style.display = "none";
+                mobileNotificationBadge.innerHTML = "";
+              }
+            }
+          });
+        }
+      }
+
+      function closeMobileNotificationsPanel() {
+        mobileNotificationPanel.classList.remove("show");
+        mobileNotificationOverlay.classList.remove("show");
+      }
+
+      mobileNotificationBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+
+        if (mobileNotificationPanel.classList.contains("show")) {
+          closeMobileNotificationsPanel();
+        } else {
+          openMobileNotifications();
+        }
+      });
+      closeMobileNotifications.addEventListener(
+        "click",
+        closeMobileNotificationsPanel,
+      );
+      mobileNotificationOverlay.addEventListener("click", function () {
+        closeMobileNotificationsPanel();
+      });
+
+      clearChatBtn.addEventListener("click", () => {
+        openClearChatModal();
+      });
+
+      mobileNotificationPanel.addEventListener("click", function (e) {
+        e.stopPropagation();
+      });
+
+</script>
+  </body>
+</html>

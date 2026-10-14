@@ -1,0 +1,1011 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
+    <title>Login - E-JoseLib</title>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style-mobile.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+
+  <body>
+
+    <!-- ========================================
+     E-JOSELIB DEPLOYMENT LOADING SCREEN
+======================================== -->
+<div
+    id="ejLoading"
+    class="ej-loading"
+    aria-live="polite"
+    aria-atomic="true"
+    aria-hidden="true"
+>
+    <div class="loading-panel">
+
+        <img
+            src="{{ url_for('static', filename='SJC_LOGO.png') }}"
+            alt="Saint Joseph College Logo"
+            class="loading-logo"
+        >
+
+        <div id="loadingMessage" class="loading-title">
+            Please wait...
+        </div>
+
+        <div class="loading-dots" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+    </div>
+</div>
+
+    <a href="{{ url_for('index') }}" class="back-landing">
+        <i class="fa-solid fa-arrow-left"></i>
+        Back
+    </a>
+    
+    <div class="login-card">
+
+      <div class="login-logo">
+        <img
+          src="{{ url_for('static', filename='SJC_LOGO.png') }}"
+          alt="School Logo"
+        />
+      </div>
+
+
+      <h2>Welcome Back!</h2>
+
+      <p class="subtitle">
+        Login to access E-JoseLib Digital Library
+      </p>
+
+
+      <form
+        method="POST"
+        id="loginForm"
+      >
+
+        <div class="input-group">
+
+          <label for="student_code">
+            Student Code / Email
+          </label>
+
+          <div class="input-box">
+
+            <i class="fa-solid fa-envelope"></i>
+
+            <input
+              type="text"
+              name="student_code"
+              id="student_code"
+              placeholder="eg. SJC00000001"
+              required
+            />
+
+          </div>
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label for="password">
+            Password
+          </label>
+
+          <div class="input-box">
+
+            <i class="fa-solid fa-lock"></i>
+
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Enter your password"
+              required
+            />
+
+            <i
+              class="fa-solid fa-eye toggle-password"
+              id="togglePassword"
+            ></i>
+
+          </div>
+
+        </div>
+
+
+        <div class="forgot-password">
+
+          <a href="{{ url_for('forgot_password') }}">
+
+            <i class="fa-solid fa-key"></i>
+
+            Forgot Password?
+
+          </a>
+
+        </div>
+
+        <button
+            type="submit"
+            id="loginBtn"
+        >
+            Login
+        </button>
+
+
+        <div class="terms-check">
+            <label class="terms-label" for="termsCheckbox">
+
+                <input
+                    type="checkbox"
+                    id="termsCheckbox"
+                />
+
+                <span class="custom-checkbox"></span>
+
+                <span class="terms-text">
+                    I agree to the
+
+                    <a
+                        href="#"
+                        class="terms-link"
+                        id="openTerms"
+                    >
+                        Terms & Conditions
+                    </a>
+                </span>
+
+            </label>
+        </div>
+
+
+
+      {% if error %}
+
+      <p class="error">
+        {{ error }}
+      </p>
+
+      {% endif %}
+
+    </div>
+
+
+    <div
+      class="terms-modal-overlay"
+      id="termsModal"
+    >
+
+      <div class="terms-modal">
+
+        <div class="terms-modal-header">
+
+          <div>
+
+            <h2>
+              E-JoseLib Terms and Conditions
+            </h2>
+
+            <p>
+              Saint Joseph College Rosario Batangas Inc.
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            class="terms-close"
+            id="closeTerms"
+            aria-label="Close"
+          >
+
+            <i class="fa-solid fa-xmark"></i>
+
+          </button>
+
+        </div>
+
+
+        <div class="terms-modal-body">
+
+          <section>
+
+            <h3>
+              1. Acceptance of Terms
+            </h3>
+
+            <p>
+              By accessing and using E-JoseLib, you acknowledge
+              that you have read, understood, and agreed to these
+              Terms and Conditions. E-JoseLib is provided as a
+              digital library system for authorized students,
+              faculty members, librarians, and administrators of
+              Saint Joseph College Rosario Batangas Inc.
+            </p>
+
+          </section>
+
+
+          <section>
+
+            <h3>
+              2. Account Responsibility
+            </h3>
+
+            <p>
+              Users are responsible for maintaining the
+              confidentiality of their account credentials.
+              Users must not share their password, account,
+              or access credentials with another person.
+            </p>
+
+            <p>
+              Users are responsible for activities performed
+              using their account. If you believe that your
+              account has been accessed without authorization,
+              you should immediately report the concern to
+              the library administrator.
+            </p>
+
+          </section>
+
+
+          <section>
+
+            <h3>
+              3. Library Resources
+            </h3>
+
+            <p>
+              E-JoseLib provides access to academic and library
+              resources made available by the institution.
+              Users agree to use these resources only for
+              legitimate academic, educational, and library
+              purposes.
+            </p>
+
+          </section>
+
+
+          <section>
+
+            <h3>
+              4. Borrowing and Returning Books
+            </h3>
+
+            <p>
+              Users are responsible for books and other library
+              resources borrowed through E-JoseLib. Borrowed
+              resources must be returned according to the
+              assigned due date and library policies.
+            </p>
+
+            <p>
+              Users may be required to settle reported damage,
+              loss, or other applicable library concerns before
+              additional borrowing privileges are granted.
+            </p>
+
+          </section>
+
+
+          <section>
+
+            <h3>
+              5. Accurate Information
+            </h3>
+
+            <p>
+              Users agree to provide accurate information when
+              using E-JoseLib. Users should not impersonate
+              another person or use another user's account.
+            </p>
+
+          </section>
+
+
+          <section>
+
+            <h3>
+              6. Prohibited Use
+            </h3>
+
+            <p>
+              Users must not attempt to gain unauthorized access
+              to another account, modify library records without
+              authorization, interfere with the operation of the
+              system, or misuse any E-JoseLib feature.
+            </p>
+
+          </section>
+
+
+          <section>
+
+            <h3>
+              7. Notifications
+            </h3>
+
+            <p>
+              E-JoseLib may provide notifications regarding
+              borrowing requests, due dates, overdue resources,
+              returned resources, account activities, and other
+              library-related matters.
+            </p>
+
+          </section>
+
+
+          <section>
+
+            <h3>
+              8. Privacy and Personal Information
+            </h3>
+
+            <p>
+              E-JoseLib may process information necessary to
+              provide library services, including account
+              information, library transactions, attendance
+              records, and system notifications.
+            </p>
+
+            <p>
+              Information collected through the system should
+              only be accessed and used by authorized personnel
+              for legitimate institutional and library purposes,
+              subject to applicable school policies and
+              privacy requirements.
+            </p>
+
+          </section>
+
+
+          <section>
+
+            <h3>
+              9. System Availability
+            </h3>
+
+            <p>
+              The institution may perform maintenance,
+              updates, or modifications to E-JoseLib when
+              necessary. Certain features may temporarily be
+              unavailable during maintenance or technical
+              issues.
+            </p>
+
+          </section>
+
+
+          <section>
+
+            <h3>
+              10. Changes to These Terms
+            </h3>
+
+            <p>
+              E-JoseLib and the institution may update these
+              Terms and Conditions when necessary. Users may
+              be required to review and accept updated terms
+              before continuing to use the system.
+            </p>
+
+          </section>
+
+
+          <section>
+
+            <h3>
+              11. Agreement
+            </h3>
+
+            <p>
+              By checking the agreement box and using E-JoseLib,
+              you confirm that you have read and understood these
+              Terms and Conditions and agree to comply with the
+              applicable library and institutional policies.
+            </p>
+
+          </section>
+
+        </div>
+
+
+        <div class="terms-modal-footer">
+
+          <button
+            type="button"
+            class="terms-decline-btn"
+            id="declineTerms"
+          >
+            Close
+          </button>
+
+          <button
+            type="button"
+            class="terms-agree-btn"
+            id="agreeTerms"
+          >
+
+            <i class="fa-solid fa-check"></i>
+
+            I Agree
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* PASSWORD VISIBILITY TOGGLE */
+
+    const password = document.getElementById("password");
+    const togglePassword = document.getElementById("togglePassword");
+
+    if (togglePassword && password) {
+        togglePassword.addEventListener("click", function () {
+
+            const showPassword = password.type === "password";
+
+            password.type = showPassword ? "text" : "password";
+
+            togglePassword.classList.toggle("fa-eye", !showPassword);
+            togglePassword.classList.toggle("fa-eye-slash", showPassword);
+
+            togglePassword.setAttribute(
+                "aria-label",
+                showPassword ? "Hide password" : "Show password"
+            );
+        });
+    }
+
+
+    /* LOADING SCREEN ELEMENTS */
+
+    const overlay = document.getElementById("ejLoading");
+    const loadingMessage = document.getElementById("loadingMessage");
+    const form = document.getElementById("loginForm");
+    const loginBtn = document.getElementById("loginBtn");
+
+    let loginSubmitting = false;
+
+
+    /* SHOW LOADING SCREEN */
+
+    function showEJoseLoading(message = "LOGGING IN...") {
+
+        if (!overlay) {
+            console.error("E-JoseLib loading screen not found.");
+            return;
+        }
+
+        if (loadingMessage) {
+            loadingMessage.textContent = message;
+        }
+
+        overlay.classList.add("is-visible");
+        overlay.setAttribute("aria-hidden", "false");
+    }
+
+
+    /* HIDE LOADING SCREEN */
+
+    function hideEJoseLoading() {
+
+        if (!overlay) return;
+
+        overlay.classList.remove("is-visible");
+        overlay.setAttribute("aria-hidden", "true");
+    }
+
+
+    /* LOGIN ERROR MESSAGE */
+
+    function showLoginError(message) {
+
+        if (!form) return;
+
+        let errorElement = form.querySelector(".error");
+
+        if (!errorElement) {
+            errorElement = document.createElement("p");
+            errorElement.className = "error";
+            errorElement.setAttribute("role", "alert");
+            errorElement.setAttribute("aria-live", "polite");
+
+            form.appendChild(errorElement);
+        }
+
+        errorElement.textContent = message;
+        errorElement.style.display = "block";
+    }
+
+
+    /* CLEAR LOGIN ERROR */
+
+    function clearLoginError() {
+
+        if (!form) return;
+
+        const errorElement = form.querySelector(".error");
+
+        if (errorElement) {
+            errorElement.remove();
+        }
+    }
+
+
+    /* CLEAR LOGIN INPUTS */
+
+    function clearLoginInputs() {
+
+        const studentCodeInput =
+            form.querySelector('[name="student_code"]');
+
+        const passwordInput =
+            form.querySelector('[name="password"]');
+
+        if (studentCodeInput) {
+            studentCodeInput.value = "";
+        }
+
+        if (passwordInput) {
+            passwordInput.value = "";
+            passwordInput.type = "password";
+        }
+
+        if (togglePassword) {
+            togglePassword.classList.add("fa-eye");
+            togglePassword.classList.remove("fa-eye-slash");
+
+            togglePassword.setAttribute(
+                "aria-label",
+                "Show password"
+            );
+        }
+
+        if (studentCodeInput) {
+            studentCodeInput.focus();
+        }
+    }
+
+
+    /* RESET LOGIN BUTTON */
+
+    function resetLoginButton() {
+
+        loginSubmitting = false;
+
+        if (loginBtn) {
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Login";
+        }
+    }
+
+
+    /* RESTORE PAGE AFTER BACK OR FORWARD */
+
+    window.addEventListener("pageshow", function () {
+
+        hideEJoseLoading();
+        resetLoginButton();
+    });
+
+
+    /* TERMS AND CONDITIONS ELEMENTS */
+
+    const termsCheckbox = document.getElementById("termsCheckbox");
+    const termsModal = document.getElementById("termsModal");
+
+    const openTerms = document.getElementById("openTerms");
+    const closeTerms = document.getElementById("closeTerms");
+    const declineTerms = document.getElementById("declineTerms");
+    const agreeTerms = document.getElementById("agreeTerms");
+
+    const TERMS_KEY = "ejoselib_terms_accepted";
+
+
+    /* OPEN TERMS MODAL */
+
+    function openTermsModal() {
+
+        if (!termsModal) return;
+
+        termsModal.classList.add("show");
+        document.body.classList.add("modal-open");
+    }
+
+
+    /* CLOSE TERMS MODAL */
+
+    function closeTermsModal() {
+
+        if (!termsModal) return;
+
+        termsModal.classList.remove("show");
+        document.body.classList.remove("modal-open");
+    }
+
+
+    /* SAVE TERMS AGREEMENT */
+
+    function saveTermsAgreement() {
+
+        try {
+            localStorage.setItem(TERMS_KEY, "true");
+        } catch (error) {
+            console.warn("Unable to save Terms agreement.", error);
+        }
+
+        if (termsCheckbox) {
+            termsCheckbox.checked = true;
+        }
+    }
+
+
+    /* REMOVE TERMS AGREEMENT */
+
+    function removeTermsAgreement() {
+
+        try {
+            localStorage.removeItem(TERMS_KEY);
+        } catch (error) {
+            console.warn("Unable to remove Terms agreement.", error);
+        }
+
+        if (termsCheckbox) {
+            termsCheckbox.checked = false;
+        }
+    }
+
+
+    /* RESTORE PREVIOUS AGREEMENT */
+
+    try {
+
+        const savedTerms = localStorage.getItem(TERMS_KEY);
+
+        if (savedTerms === "true" && termsCheckbox) {
+            termsCheckbox.checked = true;
+        }
+
+    } catch (error) {
+        console.warn("Unable to restore Terms agreement.", error);
+    }
+
+
+    /* TERMS CHECKBOX CHANGE */
+
+    if (termsCheckbox) {
+
+        termsCheckbox.addEventListener("change", function () {
+
+            if (this.checked) {
+                saveTermsAgreement();
+            } else {
+                removeTermsAgreement();
+            }
+        });
+    }
+
+
+    /* OPEN TERMS BUTTON */
+
+    if (openTerms) {
+
+        openTerms.addEventListener("click", function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            openTermsModal();
+        });
+    }
+
+
+    /* CLOSE TERMS BUTTONS */
+
+    if (closeTerms) {
+        closeTerms.addEventListener("click", closeTermsModal);
+    }
+
+    if (declineTerms) {
+        declineTerms.addEventListener("click", closeTermsModal);
+    }
+
+
+    /* AGREE TO TERMS */
+
+    if (agreeTerms) {
+
+        agreeTerms.addEventListener("click", function () {
+
+            saveTermsAgreement();
+            closeTermsModal();
+        });
+    }
+
+
+    /* CLOSE MODAL BY CLICKING OUTSIDE */
+
+    if (termsModal) {
+
+        termsModal.addEventListener("click", function (event) {
+
+            if (event.target === termsModal) {
+                closeTermsModal();
+            }
+        });
+    }
+
+
+    /* CLOSE MODAL WITH ESCAPE */
+
+    document.addEventListener("keydown", function (event) {
+
+        if (
+            event.key === "Escape" &&
+            termsModal &&
+            termsModal.classList.contains("show")
+        ) {
+            closeTermsModal();
+        }
+    });
+
+
+    /* LOGIN FORM AJAX AND FETCH */
+
+    if (form) {
+
+        form.addEventListener("submit", async function (event) {
+
+            event.preventDefault();
+
+            /* PREVENT DUPLICATE SUBMISSIONS */
+
+            if (loginSubmitting) {
+                return;
+            }
+
+
+            /* VALIDATE INPUTS BEFORE LOADING */
+
+            const studentCodeInput =
+                form.querySelector('[name="student_code"]');
+
+            const passwordInput =
+                form.querySelector('[name="password"]');
+
+            const studentCode = studentCodeInput
+                ? studentCodeInput.value.trim()
+                : "";
+
+            const passwordValue = passwordInput
+                ? passwordInput.value
+                : "";
+
+
+            /* BOTH FIELDS ARE EMPTY */
+
+            if (!studentCode && !passwordValue.trim()) {
+
+                clearLoginError();
+
+                showLoginError(
+                    "Please enter your Student Code/Email and Password."
+                );
+
+                if (studentCodeInput) {
+                    studentCodeInput.focus();
+                }
+
+                return;
+            }
+
+
+            /* STUDENT CODE OR EMAIL IS EMPTY */
+
+            if (!studentCode) {
+
+                clearLoginError();
+
+                showLoginError(
+                    "Please enter your Student Code or Email."
+                );
+
+                if (studentCodeInput) {
+                    studentCodeInput.focus();
+                }
+
+                return;
+            }
+
+
+            /* PASSWORD IS EMPTY */
+
+            if (!passwordValue.trim()) {
+
+                clearLoginError();
+
+                showLoginError(
+                    "Please enter your Password."
+                );
+
+                if (passwordInput) {
+                    passwordInput.focus();
+                }
+
+                return;
+            }
+
+
+            /* REQUIRE TERMS AGREEMENT */
+
+            if (!termsCheckbox || !termsCheckbox.checked) {
+
+                openTermsModal();
+                return;
+            }
+
+
+            /* HTML FORM VALIDATION */
+
+            if (!form.reportValidity()) {
+                return;
+            }
+
+
+            /* START LOGIN AND SHOW LOADING */
+
+            loginSubmitting = true;
+
+            clearLoginError();
+
+            if (loginBtn) {
+                loginBtn.disabled = true;
+                loginBtn.textContent = "Logging in...";
+            }
+
+            saveTermsAgreement();
+
+            showEJoseLoading("LOGGING IN...");
+
+
+            /* SEND LOGIN REQUEST */
+
+            try {
+
+                const response = await fetch(form.action, {
+                    method: "POST",
+                    body: new FormData(form),
+                    credentials: "same-origin",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "Accept": "application/json"
+                    }
+                });
+
+
+                /* CHECK SERVER RESPONSE TYPE */
+
+                const contentType =
+                    response.headers.get("content-type") || "";
+
+                if (!contentType.includes("application/json")) {
+                    throw new Error(
+                        "Unexpected server response. Check the Flask login route."
+                    );
+                }
+
+                const data = await response.json();
+
+
+                /* SUCCESSFUL LOGIN */
+
+                if (
+                    response.ok &&
+                    data.success === true &&
+                    typeof data.redirect === "string" &&
+                    data.redirect.trim() !== ""
+                ) {
+
+                    window.location.assign(data.redirect);
+                    return;
+                }
+
+
+                /* FAILED LOGIN */
+
+                hideEJoseLoading();
+                resetLoginButton();
+
+                /* CLEAR BOTH INPUTS AFTER INVALID CREDENTIALS */
+
+                if (
+                    response.status === 401 ||
+                    response.status === 429
+                ) {
+                    clearLoginInputs();
+                }
+
+                showLoginError(
+                    data.message ||
+                    "Login failed. Please check your credentials."
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "E-JoseLib AJAX login error:",
+                    error
+                );
+
+                hideEJoseLoading();
+                resetLoginButton();
+
+                showLoginError(
+                    "Unable to complete login. Please try again. " +
+                    "Check your connection or contact the administrator."
+                );
+            }
+        });
+
+
+        /* PREVENT ENTER WITHOUT TERMS AGREEMENT */
+
+        form.addEventListener("keydown", function (event) {
+
+            if (event.key !== "Enter") {
+                return;
+            }
+
+            const target = event.target;
+
+            if (
+                target &&
+                target.matches("input") &&
+                !target.value.trim()
+            ) {
+                return;
+            }
+
+            if (!termsCheckbox || !termsCheckbox.checked) {
+
+                event.preventDefault();
+                openTermsModal();
+            }
+        });
+    }
+
+});
+</script>
+ 
