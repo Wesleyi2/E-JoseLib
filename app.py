@@ -537,6 +537,20 @@ Saint Joseph College of Rosario, Batangas Inc.
 #   Recommendation Books
 
 def get_db_connection():
+    # Railway database configuration
+    mysql_host = os.environ.get("MYSQLHOST")
+
+    if mysql_host:
+        return mysql.connector.connect(
+            host=mysql_host,
+            user=os.environ.get("MYSQLUSER"),
+            password=os.environ.get("MYSQLPASSWORD"),
+            database=os.environ.get("MYSQLDATABASE"),
+            port=int(os.environ.get("MYSQLPORT", 3306)),
+            connection_timeout=10
+        )
+
+    # Local XAMPP configuration
     return mysql.connector.connect(
         host="localhost",
         user="root",
