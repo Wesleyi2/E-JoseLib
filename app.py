@@ -541,6 +541,8 @@ def get_db_connection():
     mysql_host = os.environ.get("MYSQLHOST")
 
     if mysql_host:
+        print("[DB CONFIG] MYSQLHOST is SET.")
+
         return mysql.connector.connect(
             host=mysql_host,
             user=os.environ.get("MYSQLUSER"),
@@ -550,13 +552,23 @@ def get_db_connection():
             connection_timeout=10
         )
 
+    # Prevent Railway from silently using localhost
+    if os.environ.get("RAILWAY_ENVIRONMENT"):
+        print("[DB CONFIG ERROR] MYSQLHOST is MISSING in Railway.")
+        raise RuntimeError(
+            "MYSQLHOST is missing in the Railway environment."
+        )
+
     # Local XAMPP configuration
+    print("[DB CONFIG] Using local XAMPP configuration.")
+
     return mysql.connector.connect(
         host="localhost",
         user="root",
         password="",
         database="ejoselib_db"
     )
+
 
 
 def get_recommended_books(user_id):
