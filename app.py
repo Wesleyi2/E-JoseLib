@@ -20057,6 +20057,8 @@ def change_password():
 load_chatbot_intents()
 
 if __name__ == "__main__":
+    import os
+
     print("[SYSTEM] Starting attendance auto-timeout service...")
 
     socketio.start_background_task(
@@ -20066,7 +20068,8 @@ if __name__ == "__main__":
     socketio.run(
         app,
         host="0.0.0.0",
-        port=8000,
-        debug=True,
-        use_reloader=True
+        port=int(os.environ.get("PORT", 8000)),
+        debug=False,
+        use_reloader=False,
+        allow_unsafe_werkzeug=True
     )
