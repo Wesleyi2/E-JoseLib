@@ -32,3 +32,5 @@ attendance_export.pdf
 # OS Files
 .DS_Store
 Thumbs.db
+# Large video file
+static/E-JOSELIB.mp4
