@@ -7,8 +7,6 @@ pandas
 openpyxl
 scikit-learn
 requests
-google-auth
-google-auth-oauthlib
 google-genai
 Pillow
 reportlab
